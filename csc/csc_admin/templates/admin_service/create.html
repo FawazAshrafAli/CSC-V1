@@ -1,0 +1,32 @@
+{% extends "base/base.html" %}
+
+{% block page_title %}Create Service{% endblock page_title %}
+
+{% block main %}
+<div class="container-fluid">
+    
+    
+    <form method="POST" action="{% url 'services:create' %}" enctype="multipart/form-data" style="width: 480px;">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="name" class="form-label">Service Name</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Service Name"/>            
+        </div> <br>
+        <div class="form-group">
+            <label for="image" class="form-label">Image</label>
+            <input type="file" class="form-control" id="image" name="image"/>            
+        </div> <br>
+        <div class="form-group">
+            <label for="description" class="form-label">Description</label>
+            <div id="editor-container" class="form-control" style="height: 300px;" oninput="console.log(document.getElementById('content').value)"></div>
+            <input type="hidden" class="form-control" name="content" id="content">
+        </div>
+        <br>
+        <div class="form-group text-center">
+            <button class="btn btn-primary w-50" type="submit">Submit</button>
+        </div>
+    </form>
+
+
+</div>
+{% endblock main %}

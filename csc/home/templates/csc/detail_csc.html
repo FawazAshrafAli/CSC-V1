@@ -1,0 +1,30 @@
+{% extends "base/base.html" %}
+{% block page_title %}CSC{% endblock page_title %}
+
+{% block main %}
+    <div class="row container-fluid mt-3 px-5" style="height: 620px">
+        <div class="col-md-6 d-flex justify-content-center border-end">
+            <div style="width: 480px">
+                <img src="https://cscindia.info/wp-content/uploads/2022/02/CSC-banner-2-2.jpg" alt="CSC Banner Image" width="480">
+                <h3 class="text-center">{{csc.name}}</h3>
+                <h6 class="text-center">CSC ID: {{csc.pk}}</h6>
+                <hr>
+                <p><a href="callto:{{csc.phone}}">{{csc.phone}}</a> | <a href="callto:{{csc.alternative_number}}">{{csc.alternative_number}}</a></p>
+                <hr>
+                <a href="mailto:{{csc.email}}">{{csc.email}}</a>
+                <hr>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h4>{{csc.name}}</h4>
+            <p>{{csc.address}}</p>
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1959.6039834036612!2d76.1947135783409!3d10.795377913663573!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba7c568ed8e9d7f%3A0x93f91e51266d28fe!2sCharutha%20Building!5e0!3m2!1sen!2sus!4v1716889400584!5m2!1sen!2sus" width="100%" height="200" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <hr>
+            <h4>Our Service</h4>
+            <hr>
+            {% for service in services %}
+                <button class="btn btn-outline-primary btn-sm rounded-pill m-1">{{service.service}}</button>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock main %}
