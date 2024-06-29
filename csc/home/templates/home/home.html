@@ -1,138 +1,712 @@
 {% extends "base/base.html" %}
 {% load static %}
-{% block page_title %}Home Page{% endblock page_title %}
 
-{% block main %}
-<div class="container mt-5 pb-3 shadow" id="csc-finder">
-    <div class="text-center pt-3" id="csc-finder-heading">
-        <h3>FIND THE NEAREST COMMON SERVICE CENTER</h3>
-    </div>
-    <br>
-    <div id="csc-finder-form-div">
-        <form method="GET" onsubmit="event.preventDefault(); filteredCscFinder();">
-            <div class="row">
-                <div class="form-group col-md-3 pb-3">
-                    <label for="state" class="form-label text-upper">State</label>
-                    <select class="form-control" name="state" id="state-dropdown" onchange="populateDistricts();">
-                        <option value="" disabled selected>Select State</option>
-                        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-                        <option value="Andhra Pradesh">Andhra Pradesh</option>
-                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-                        <option value="Assam">Assam</option>
-                        <option value="Bihar">Bihar</option>
-                        <option value="Chandigarh">Chandigarh</option>
-                        <option value="Chhattisgarh">Chhattisgarh</option>
-                        <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
-                        <option value="Delhi">Delhi</option>
-                        <option value="Goa">Goa</option>
-                        <option value="Gujarat">Gujarat</option>
-                        <option value="Haryana">Haryana</option>
-                        <option value="Himachal Pradesh">Himachal Pradesh</option>
-                        <option value="Jharkhand">Jharkhand</option>
-                        <option value="Karnataka">Karnataka</option>
-                        <option value="Kerala">Kerala</option>
-                        <option value="Ladakh">Ladakh</option>
-                        <option value="Lakshadweep">Lakshadweep</option>
-                        <option value="Madhya Pradesh">Madhya Pradesh</option>
-                        <option value="Maharashtra">Maharashtra</option>
-                        <option value="Manipur">Manipur</option>
-                        <option value="Meghalaya">Meghalaya</option>
-                        <option value="Mizoram">Mizoram</option>
-                        <option value="Nagaland">Nagaland</option>
-                        <option value="Odisha">Odisha</option>
-                        <option value="Puducherry">Puducherry</option>
-                        <option value="Punjab">Punjab</option>
-                        <option value="Rajasthan">Rajasthan</option>
-                        <option value="Sikkim">Sikkim</option>
-                        <option value="Tamil Nadu">Tamil Nadu</option>
-                        <option value="Telangana">Telangana</option>
-                        <option value="Tripura">Tripura</option>
-                        <option value="Uttar Pradesh">Uttar Pradesh</option>
-                        <option value="Uttarakhand">Uttarakhand</option>
-                        <option value="West Bengal">West Bengal</option>
-                    </select>
-                </div>
-                <div class="form-group col-md-3 pb-3">
-                    <label for="district" class="form-label text-upper">District</label>
-                    <select class="form-control" name="district" id="district-dropdown" onchange="populateBlocks()">
-                        <option value="" disabled selected>Select District</option>
-                    </select>            
-                </div>
-                <div class="form-group col-md-3 pb-3">
-                    <label for="block" class="form-label text-upper">Block</label>
-                    <select class="form-control" name="block" id="block-dropdown">
-                        <option value="" disabled selected>Select Block</option>
-                    </select>
-                </div>
-                <div class="form-group col-md-3 pb-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary text-upper w-100">Search</button>
-                </div>
-            </div>
-        </form>
-        <br>
-        <div class="row">
-            <div class="col-md-4">
-                <form method="GET" onsubmit="event.preventDefault(); pincodeCscFinder();">
-                    {% csrf_token %}
-                    <div class="row">
-                        <div class="form-group pb-3">
-                            <label for="pincode" class="form-label text-upper">Pincode</label>
-                            <input type="text" name="pincode" id="pincode-input" class="form-control" placeholder="Pincode" required>
-                        </div>            
-                    </div>
-                    <div class="form-group pb-3 text-center">
-                        <button type="submit" class="btn btn-primary text-upper w-100">Search</button>
-                    </div>
-                </form>
-                <br>
-                <button class="btn btn-primary" onclick="event.preventDefault(); cscNearMe()">Locate Me</button>                            
-            </div>
-            <div class="col-md-8">
-                <span class="text-success" id="place"></span>
-                <div style="overflow: auto; max-height: 320px;">
-                    <div id="csc-centers"></div>
-                </div>
-            </div>                        
-        </div>
-    </div>
+{% block home_nav %} current {% endblock home_nav %}
+
+{% block content %}
+<!-- Banner
+================================================== -->
+<div class="main-search-container plain-color">
+	<div class="main-search-inner">
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+                
+					<div class="main-search-headlines">
+						<h2>
+							Apply for
+							<!-- Typed words can be configured in script settings at the bottom of this HTML file -->
+							<span class="typed-words"></span>
+						</h2>
+						<h4>CSC - Common Services Centre programme is an initiative of the Ministry of Electronics and IT (MeitY), Government of India.</h4>
+					</div>
+
+					<div class="main-search-input">
+
+						<div class="main-search-input-item">
+							<input type="text" placeholder="Search With Pincode" value=""/>
+						</div>
+
+						<div class="main-search-input-item">
+							<select class="chosen-select" data-placeholder="Select State">
+								<option label="Select State"></option>
+								<option>Shops</option>
+								<option>Hotels</option>
+								<option>Restaurants</option>
+								<option>Fitness</option>
+								<option>Events</option>
+							</select>
+                            
+						</div>
+
+						<div class="main-search-input-item">
+							<select class="chosen-select" data-placeholder="Select District">
+								<option label="Select District"></option>
+								<option>Shops</option>
+								<option>Hotels</option>
+								<option>Restaurants</option>
+								<option>Fitness</option>
+								<option>Events</option>
+							</select>
+						</div>
+                        
+                        	<div class="main-search-input-item">
+							<select class="chosen-select" data-placeholder="Select Block">
+								<option label="Select Block"></option>
+								<option>Shops</option>
+								<option>Hotels</option>
+								<option>Restaurants</option>
+								<option>Fitness</option>
+								<option>Events</option>
+							</select>
+						</div>
+
+						<button class="button" onclick="window.location.href='listings-half-screen-map-list.html'">Search</button>
+
+					</div>
+				</div>
+			</div>
+			<!-- Features Categories -->
+			<div class="row">
+				<div class="col-md-12">
+					<h5 class="highlighted-categories-headline">Or browse featured categories:</h5>
+					  
+					<div class="highlighted-categories">
+						<!-- Box -->
+						<a href="listings-list-with-sidebar.html" class="highlighted-category">
+					    	<h4>FSSAI</h4>
+						</a>	
+
+						<!-- Box -->
+						<a href="listings-list-full-width.html" class="highlighted-category">
+					    	<h4>GST</h4>
+						</a>	
+
+						<!-- Box -->
+						<a href="listings-half-screen-map-list.html" class="highlighted-category">
+					    	<h4>Tickets</h4>
+						</a>	
+
+						<!-- Box -->
+						<a href="listings-half-screen-map-list.html" class="highlighted-category">
+					    	<h4>Registration</h4>
+						</a>		
+					</div>
+					
+				</div>
+			</div>
+			<!-- Featured Categories - End -->
+		</div>
+
+	</div>
+
+	<!-- Main Search Photo Slider -->
+	<div class="container msps-container">
+
+		<div class="main-search-photo-slider">
+			<div class="msps-slider-container">
+				<div class="msps-slider">
+					<div class="item"><img src="{% static 'images/slider01.jpeg' %}" class="item" title="Title 1"/></div>
+					<div class="item"><img src="{% static 'images/slider02.jpeg' %}" class="item" title="Title 1"/></div>
+					<div class="item"><img src="{% static 'images/slider03.jpeg' %}" class="item" title="Title 1"/></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="msps-shapes" id="scene">
+
+			<div class="layer" data-depth="0.2">
+				<svg height="40" width="40" class="shape-a">
+					<circle cx="20" cy="20" r="17" stroke-width="4" fill="transparent" stroke="#C400FF" />
+				</svg>
+			</div>
+
+			<div class="layer" data-depth="0.5">
+				<svg width="90" height="90" viewBox="0 0 500 800" class="shape-b">
+				<g transform="translate(281,319)">
+				<path fill="transparent" style="transform:rotate(25deg)" stroke-width="35" stroke="#F56C83" fill  d="M260.162831,132.205081
+				A18,18 0 0,1 262.574374,141.205081
+				A18,18 0 0,1 244.574374,159.205081H-244.574374
+				A18,18 0 0,1 -262.574374,141.205081
+				A18,18 0 0,1 -260.162831,132.205081L-15.588457,-291.410162
+				A18,18 0 0,1 0,-300.410162
+				A18,18 0 0,1 15.588457,-291.410162Z"/></g></svg>
+			</div>
+
+			<div class="layer" data-depth="0.2" data-invert-x="false" data-invert-y="false" style="z-index: -10">
+				<svg height="200" width="200" viewbox="0 0 250 250" class="shape-c">
+				<path d="
+				    M 0, 30
+				    C 0, 23.400000000000002 23.400000000000002, 0 30, 0
+				    S 60, 23.400000000000002 60, 30
+				        36.599999999999994, 60 30, 60
+				        0, 36.599999999999994 0, 30
+				" fill="#FADB5F" transform="rotate(
+				    -25,
+				    100,
+				    100
+				) translate(
+				    0
+				    0
+				) scale(3.5)"></path>
+				</svg>
+			</div>
+
+
+			<div class="layer" data-depth="0.6" style="z-index: -10">
+				<svg height="120" width="120" class="shape-d">
+					<circle cx="60" cy="60" r="60" fill="#222" />
+				</svg>
+			</div>
+
+
+			<div class="layer" data-depth="0.2">
+				<svg height="70" width="70" viewBox="0 0 200 200"  class="shape-e">
+					<path fill="#FF0066" d="M68.5,-24.5C75.5,-0.8,58.7,28.5,33.5,46.9C8.4,65.4,-25.2,73.1,-42.2,60.2C-59.2,47.4,-59.6,13.9,-49.8,-13.7C-40,-41.3,-20,-63.1,5.4,-64.8C30.7,-66.6,61.5,-48.3,68.5,-24.5Z" transform="translate(100 100)" />
+				</svg>
+			</div>
+
+		</div>
+	</div>
+
+
+
 </div>
-{% endblock main %}
-
-{% block scripts %}
-<!-- Include Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<!-- Include jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Include Select2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<!-- <script>
-    $(document).ready(function() {
-        $('#state-dropdown').select2({
-            placeholder: "Select State",
-            allowClear: true
-        });
-    });
-</script> -->
-
-<!-- Find CSC center nearer -->
-<script src="{% static 'js/cscFinder/cscNearMe.js' %}"></script>
-
-<!-- Filtered CSC Finder -->
-<script src="{% static 'js/cscFinder/filteredCscFinder.js' %}"></script>
-
-<!-- Fetch Districts -->
-<script src="{% static 'js/cscFinder/getDistricts.js' %}"></script>
-
-<!-- Fetch Blocks -->
-<script src="{% static 'js/cscFinder/getBlocks.js' %}"></script>
-
-<!-- Fetch Location using pincode -->
-<script src="{% static 'js/cscFinder/pincodeCscFinder.js' %}"></script>
-{% endblock scripts %}    
 
 
+<!-- Content
+================================================== -->
+<section class="fullwidth margin-top-0 padding-top-0 padding-bottom-40"  style="background: rgb(255 249 244);">
+<div class="container">
+	<div class="row">
+
+		<div class="col-md-12">
+			<h3 class="headline margin-top-75">
+				<strong class="headline-with-separator">COMMON SERVICE CENTRES (CSC)</strong>
+			</h3>
+            
+            <p>CSC - Common Services Centre programme is an initiative of the Ministry of Electronics and IT (MeitY), Government of India. CSCs are easy access points for delivery of various digital services to rural and urban people in India, thereby contributing to a digitally and financially inclusive society.In rural India. CSCs are easy access points for delivery of various digital services to rural and urban people in India, thereby contributing to a digitally and financially inclusive society.In rural India, CSCs are not just service delivery points, but changing agents too, promoting rural entrepreneurship and building rural capacities and livelihoods.CSC e-Governance Services India Limited is incorporated under the Companies Act, 1956 which provides a centralized collaborative framework for delivery of services to citizens through CSCs, besides ensuring systematic viability and sustainability of the scheme. The CSCs offer web-enabled e-governance services in rural areas, including applications for Passport, Pancard, Aadhaar, Voter ID, Ration Card etc , various Government certificates, and utility payments such as electricity, telephone and water bills. People can access high quality and cost-effective video, voice and data content and services, in the areas of e-governance, education, health, telemedicine, tele-law, entertainment as well as other private services through CSCs.
+
+</p>
+		</div>
+
+		 
+	</div>
+</div>
+</section>
+<!-- Category Boxes / End -->
+
+
+<!-- Listings -->
+<div class="container margin-top-70">
+	<div class="row">
+
+		<div class="col-md-12">
+			<h3 class="headline centered margin-bottom-45">
+					<strong class="headline-with-separator">Our Services</strong>
+				<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
+			</h3>
+		</div>
+
+		<div class="col-md-12">
+			<div class="simple-slick-carousel dots-nav">
+
+			<!-- Listing Item -->
+			<div class="carousel-item">
+				<a href="listings-single-page.html" class="listing-item-container">
+					<div class="listing-item">
+						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
+                       <div class="listing-item-content">
+							<h3>FSSAI Registration</h3>
+							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
+						</div>
+					</div>
+				 
+				</a>
+			</div>
+			<!-- Listing Item / End -->		<!-- Listing Item -->
+			<div class="carousel-item">
+				<a href="listings-single-page.html" class="listing-item-container">
+					<div class="listing-item">
+						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
+                       <div class="listing-item-content">
+							<h3>FSSAI Registration</h3>
+							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
+						</div>
+					</div>
+				 
+				</a>
+			</div>
+			<!-- Listing Item / End -->
+            
+            		<!-- Listing Item -->
+			<div class="carousel-item">
+				<a href="listings-single-page.html" class="listing-item-container">
+					<div class="listing-item">
+						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
+                       <div class="listing-item-content">
+							<h3>FSSAI Registration</h3>
+							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
+						</div>
+					</div>
+				 
+				</a>
+			</div>
+			<!-- Listing Item / End -->
+            
+            
+            		<!-- Listing Item -->
+			<div class="carousel-item">
+				<a href="listings-single-page.html" class="listing-item-container">
+					<div class="listing-item">
+						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
+                       <div class="listing-item-content">
+							<h3>FSSAI Registration</h3>
+							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
+						</div>
+					</div>
+				 
+				</a>
+			</div>
+			<!-- Listing Item / End -->
+            
+            
+            		<!-- Listing Item -->
+			<div class="carousel-item">
+				<a href="listings-single-page.html" class="listing-item-container">
+					<div class="listing-item">
+						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
+                       <div class="listing-item-content">
+							<h3>FSSAI Registration</h3>
+							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
+						</div>
+					</div>
+				 
+				</a>
+			</div>
+			<!-- Listing Item / End -->
+            
+            
+            		<!-- Listing Item -->
+			<div class="carousel-item">
+				<a href="listings-single-page.html" class="listing-item-container">
+					<div class="listing-item">
+						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
+                       <div class="listing-item-content">
+							<h3>FSSAI Registration</h3>
+							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
+						</div>
+					</div>
+				 
+				</a>
+			</div>
+			<!-- Listing Item / End -->
+            
+            
+            		<!-- Listing Item -->
+			<div class="carousel-item">
+				<a href="listings-single-page.html" class="listing-item-container">
+					<div class="listing-item">
+						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
+                       <div class="listing-item-content">
+							<h3>FSSAI Registration</h3>
+							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
+						</div>
+					</div>
+				 
+				</a>
+			</div>
+			<!-- Listing Item / End -->
+            
+            
+            		<!-- Listing Item -->
+			<div class="carousel-item">
+				<a href="listings-single-page.html" class="listing-item-container">
+					<div class="listing-item">
+						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
+                       <div class="listing-item-content">
+							<h3>FSSAI Registration</h3>
+							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
+						</div>
+					</div>
+				 
+				</a>
+			</div>
+			<!-- Listing Item / End -->
+			</div>
+			
+		</div>
+
+	</div>
+</div>
+<!-- Listings / End -->
+
+<section class="fullwidth margin-top-70 padding-top-75 padding-bottom-70" data-background-color="#f1f1f1" style="background: #f1f1f1;">
+	<!-- Info Section -->
+	<div class="container">
+
+		<div class="row">
+			<div class="col-md-12">
+				<h3 class="headline centered"> Frequently Asked Questions (FAQ)	</h3>
+                
+   
+			<!-- Toggles Container -->
+			<div class="style-2">
+
+				<!-- Toggle 1 -->
+				<div class="toggle-wrap">
+					<span class="trigger"><a href="#">What is common service Centre scheme? <i class="sl sl-icon-plus"></i></a></span>
+					<div class="toggle-container" style="display: none;">
+						<p>Under the National e-Governance Plan (NeGP) formulated by the Department of Electronics and Information Technology (DEITY), Ministry of Communication and Information Technology, Government of India, the Common Services Centers (CSCs) are conceptualized as ICT enabled, front end service delivery points for delivery of Government, Social and Private Sector services in the areas of agriculture, health, education, entertainment, FMCG products, banking and financial services, utility payments, et </p>
+					</div>
+				</div>
+
+				<!-- Toggle 2 -->
+				<div class="toggle-wrap">
+					<span class="trigger"><a href="#">What Are The Services Provided by CSC? <i class="sl sl-icon-plus"></i> </a></span>
+					<div class="toggle-container" style="display: none;">
+						<p>CSC (Common Service Centre) Center Offers Services are GST Registration, FSSAI Registration, MSME Registration, Trademark Registration, Government Registration, Flight Ticket Booking, Train Ticket Booking, Visa Assistance, Pancard Services, Passport Services, Insurance Services, Income Tax Filing, ISO Registration, BIS Registration, Barcode Registration, Recharge, and Bill Payments, Banking and Money Transfer, Digital Signature, Aadhaar Enrollment, Aadhaar Registration and Updation, Marriage Registration, Ration Card Services, Scholarship Registration, Educational Registrations, Govt Job Applications, Voter ID Card Services, Driving Licence Related Services, Vahan Related Services, eDistrict Services, UDID Card</p>
+					</div>
+				</div>
+                
+                
+                <div class="toggle-wrap">
+					<span class="trigger"><a href="#">How do I find the common service Centre? <i class="sl sl-icon-plus"></i> </a></span>
+					<div class="toggle-container" style="display: none;">
+						<p>You had better visit the home page <a href="https://cscindia.info">https://cscindia.info</a> and search the nearest Common Service Center</p>
+					</div>
+				</div>
+                
+                
+                <div class="toggle-wrap">
+					<span class="trigger"><a href="#">What is VLE full form? <i class="sl sl-icon-plus"></i> </a></span>
+					<div class="toggle-container" style="display: none;">
+						<p>VLE means Village Level Entrepreneur</p>
+					</div>
+				</div>
+                
+                
+                <div class="toggle-wrap">
+					<span class="trigger"><a href="#">Is CSC Govt authorised? <i class="sl sl-icon-plus"></i> </a></span>
+					<div class="toggle-container" style="display: none;">
+						<p>CSC is described as a special purpose vehicle (SPV) and named CSC e-Governance Services India Limited (CSC-SPV), which has been promoted by the government of India’s Ministry of Electronics and Information Technology (MeitY), is a “government company” under the provisions of the Companies Act of 2013 and other laws.</p>
+					</div>
+				</div>
+
+			</div>
+			<!-- Toggles Container / End -->
+		 
+                
+			</div>
+		</div>
+
+	</div>
+	<!-- Info Section / End -->
+ 
+
+</section>
+
+
+<!-- Parallax -->
+<div class="parallax"
+	data-background="images/slider-bg-02.jpg' %}"
+	data-color="#36383e"
+	data-color-opacity="0.6"
+	data-img-width="800"
+	data-img-height="505">
+
+	<!-- Infobox -->
+	<div class="text-content white-font">
+		<div class="container">
+
+			<div class="row">
+             <h2>Add Your CSC - Common Services Centre</h2>
+				<div class="col-md-6 col-12">
+					<ul class="list-3 color">
+						<li>This is NOT registration for a new CSC ID (यह नई सीएससी आईडी के लिए पंजीकरण नहीं है)</li>
+						<li>This is a Google-optimized smart locator for CSC entrepreneurs (यह सीएससी उद्यमियों के लिए गूगल-अनुकूलित स्मार्ट लोकेटर है)</li>
+						<li>This is NOT official from CSC e-governance India Ltd but an initiative of entrepreneurs (यह सीएससी ई-गवर्नेंस इंडिया लिमिटेड की ओर से आधिकारिक नहीं है बल्कि उद्यमियों की एक पहल है)</li>
+					</ul>
+				 </div>
+                 
+                 <div class="col-md-6 col-12">
+					<ul class="list-3 color">
+						<li>Make sure that No CSC is added in the locator very near to you (सुनिश्चित करें कि आपके बहुत नजदीक लोकेटर में कोई सीएससी नहीं जोड़ा गया है)</li>
+						<li>After user registration, login and add your CSC details. (उपयोगकर्ता पंजीकरण के बाद, लॉगिन करें और अपना सीएससी विवरण जोड़ें।)</li>
+						<li>If you do not add your CSC details in 3 days, your user registration will be deleted (यदि आप 3 दिनों में अपना सीएससी विवरण नहीं जोड़ते हैं, तो आपका उपयोगकर्ता पंजीकरण हटा दिया जाएगा)</li>
+					</ul>
+				 </div>
+                
+                
+			</div>
+<a href="#" class="button margin-top-25">Get Started</a>
+		</div>
+	</div>
+
+	<!-- Infobox / End -->
+
+</div>
+<!-- Parallax / End -->
 
 
 
 
+
+<!-- Fullwidth Section -->
+<section class="fullwidth padding-top-75 padding-bottom-70" data-background-color="#f8f8f8">
+
+	<div class="container">
+		<div class="row">
+
+			<div class="col-md-12">
+				<h3 class="headline centered margin-bottom-45">
+					Shop Now
+					<span>Online Shopping </span>
+				</h3>
+			</div>
+		</div>
+	</div>
+
+	<!-- Carousel / Start -->
+	<div class="simple-fw-slick-carousel dots-nav">
+
+
+
+		<!-- Listing Item -->
+		<div class="fw-carousel-item">
+			<div class="product-grid">
+				<div class="product-image">
+					<a href="#" class="image">
+						<img class="pic-1" src="{% static 'images/img-3.jpg' %}">
+						<img class="pic-2" src="{% static 'images/img-4.jpg' %}">
+					</a>
+					 <span class="product-sale-label">sale!</span>
+					 
+					<div class="product-rating">
+ 
+						<a class="add-to-cart" href="#"> ORDER NOW </a>
+					</div>
+				</div>
+				<div class="product-content">
+					<h3 class="title"><a href="#">Men's Shirt</a></h3>
+					<div class="price">₹20.00</div>
+					
+				</div>
+			</div>
+		</div>
+		<!-- Listing Item / End -->
+
+		
+		<!-- Listing Item -->
+		<div class="fw-carousel-item">
+			<div class="product-grid">
+				<div class="product-image">
+					<a href="#" class="image">
+						<img class="pic-1" src="{% static 'images/img-3.jpg' %}">
+						<img class="pic-2" src="{% static 'images/img-4.jpg' %}">
+					</a>
+					 <span class="product-sale-label">sale!</span>
+					 
+					<div class="product-rating">
+ 
+						<a class="add-to-cart" href="#"> ORDER NOW </a>
+					</div>
+				</div>
+				<div class="product-content">
+					<h3 class="title"><a href="#">Men's Shirt</a></h3>
+					<div class="price">₹20.00</div>
+					
+				</div>
+			</div>
+		</div>
+		<!-- Listing Item / End -->
+
+		
+		<!-- Listing Item -->
+		<div class="fw-carousel-item">
+			<div class="product-grid">
+				<div class="product-image">
+					<a href="#" class="image">
+						<img class="pic-1" src="{% static 'images/img-3.jpg' %}">
+						<img class="pic-2" src="{% static 'images/img-4.jpg' %}">
+					</a>
+					 <span class="product-sale-label">sale!</span>
+					 
+					<div class="product-rating">
+ 
+						<a class="add-to-cart" href="#"> ORDER NOW </a>
+					</div>
+				</div>
+				<div class="product-content">
+					<h3 class="title"><a href="#">Men's Shirt</a></h3>
+					<div class="price">₹20.00</div>
+					
+				</div>
+			</div>
+		</div>
+		<!-- Listing Item / End -->
+
+		
+		<!-- Listing Item -->
+		<div class="fw-carousel-item">
+			<div class="product-grid">
+				<div class="product-image">
+					<a href="#" class="image">
+						<img class="pic-1" src="{% static 'images/img-3.jpg' %}">
+						<img class="pic-2" src="{% static 'images/img-4.jpg' %}">
+					</a>
+					 <span class="product-sale-label">sale!</span>
+					 
+					<div class="product-rating">
+ 
+						<a class="add-to-cart" href="#"> ORDER NOW </a>
+					</div>
+				</div>
+				<div class="product-content">
+					<h3 class="title"><a href="#">Men's Shirt</a></h3>
+					<div class="price">₹20.00</div>
+					
+				</div>
+			</div>
+		</div>
+		<!-- Listing Item / End -->
+
+		
+		<!-- Listing Item -->
+		<div class="fw-carousel-item">
+			<div class="product-grid">
+				<div class="product-image">
+					<a href="#" class="image">
+						<img class="pic-1" src="{% static 'images/img-3.jpg' %}">
+						<img class="pic-2" src="{% static 'images/img-4.jpg' %}">
+					</a>
+					 <span class="product-sale-label">sale!</span>
+					 
+					<div class="product-rating">
+ 
+						<a class="add-to-cart" href="#"> ORDER NOW </a>
+					</div>
+				</div>
+				<div class="product-content">
+					<h3 class="title"><a href="#">Men's Shirt</a></h3>
+					<div class="price">₹20.00</div>
+					
+				</div>
+			</div>
+		</div>
+		<!-- Listing Item / End -->
+
+		
+		<!-- Listing Item -->
+		<div class="fw-carousel-item">
+			<div class="product-grid">
+				<div class="product-image">
+					<a href="#" class="image">
+						<img class="pic-1" src="{% static 'images/img-3.jpg' %}">
+						<img class="pic-2" src="{% static 'images/img-4.jpg' %}">
+					</a>
+					 <span class="product-sale-label">sale!</span>
+					 
+					<div class="product-rating">
+ 
+						<a class="add-to-cart" href="#"> ORDER NOW </a>
+					</div>
+				</div>
+				<div class="product-content">
+					<h3 class="title"><a href="#">Men's Shirt</a></h3>
+					<div class="price">₹20.00</div>
+					
+				</div>
+			</div>
+		</div>
+		<!-- Listing Item / End -->
+
+	</div>
+	<!-- Carousel / End -->
+
+
+</section>
+<!-- Fullwidth Section / End -->
+
+
+
+
+<!-- Recent Blog Posts -->
+<section class="fullwidth margin-top-0 padding-top-75 padding-bottom-75" data-background-color="#fff">
+	<div class="container">
+
+		<div class="row">
+			<div class="col-md-12">
+				<h3 class="headline centered margin-bottom-55">
+					<strong class="headline-with-separator">From The Blog</strong>
+				</h3>
+			</div>
+		</div>
+
+		<div class="row">
+			<!-- Blog Post Item -->
+			<div class="col-md-4">
+				<a href="pages-blog-post.html" class="blog-compact-item-container">
+					<div class="blog-compact-item">
+						<img src="{% static 'images/blog-post-02.jpg' %}" alt="">
+						<span class="blog-item-tag">Tips</span>
+						<div class="blog-compact-item-content">
+							<ul class="blog-post-tags">
+								<li>22 August 2019</li>
+							</ul>
+							<h3>Hotels for All Budgets</h3>
+							<p>Sed sed tristique nibh iam porta volutpat finibus. Donec in aliquet urneget mattis lorem. Pellentesque pellentesque.</p>
+						</div>
+					</div>
+				</a>
+			</div>
+			<!-- Blog post Item / End -->
+
+			<!-- Blog Post Item -->
+			<div class="col-md-4">
+				<a href="pages-blog-post.html" class="blog-compact-item-container">
+					<div class="blog-compact-item">
+						<img src="{% static 'images/blog-post-02.jpg' %}" alt="">
+						<span class="blog-item-tag">Tips</span>
+						<div class="blog-compact-item-content">
+							<ul class="blog-post-tags">
+								<li>22 August 2019</li>
+							</ul>
+							<h3>Hotels for All Budgets</h3>
+							<p>Sed sed tristique nibh iam porta volutpat finibus. Donec in aliquet urneget mattis lorem. Pellentesque pellentesque.</p>
+						</div>
+					</div>
+				</a>
+			</div>
+			<!-- Blog post Item / End -->
+
+			<!-- Blog Post Item -->
+			<div class="col-md-4">
+				<a href="pages-blog-post.html" class="blog-compact-item-container">
+					<div class="blog-compact-item">
+						<img src="{% static 'images/blog-post-02.jpg' %}" alt="">
+						<span class="blog-item-tag">Tips</span>
+						<div class="blog-compact-item-content">
+							<ul class="blog-post-tags">
+								<li>22 August 2019</li>
+							</ul>
+							<h3>Hotels for All Budgets</h3>
+							<p>Sed sed tristique nibh iam porta volutpat finibus. Donec in aliquet urneget mattis lorem. Pellentesque pellentesque.</p>
+						</div>
+					</div>
+				</a>
+			</div>
+			<!-- Blog post Item / End -->
+
+			<div class="col-md-12 centered-content">
+				<a href="pages-blog.html" class="button border margin-top-10">View Blog</a>
+			</div>
+
+		</div>
+
+	</div>
+</section>
+<!-- Recent Blog Posts / End -->
+
+{% endblock content %}

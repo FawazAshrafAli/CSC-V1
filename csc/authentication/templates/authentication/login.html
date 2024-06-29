@@ -1,0 +1,62 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Titlebar
+================================================== -->
+<div id="titlebar">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<h2>CSC Login</h2>
+				<!-- Breadcrumbs -->
+				<nav id="breadcrumbs">
+					<ul>
+						<li><a href="{% include "components/home_link.html" %}">Home</a></li>
+						<li>CSC Login</li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<!-- Pricing Tables
+================================================== -->
+
+<div id="sign-in-dialog">
+	<div class="tabs-container alt">
+		<!-- Login -->
+		<div class="tab-content" id="tab1">	
+			<h3>Login</h3>		
+			<form method="post" class="login">
+				<p class="form-row form-row-wide">
+					<label for="username">Username:
+						<i class="im im-icon-Male"></i>
+						<input type="text" class="input-text" name="username" id="username" value="" />
+					</label>
+				</p>
+				<p class="form-row form-row-wide">
+					<label for="password">Password:
+						<i class="im im-icon-Lock-2"></i>
+						<input class="input-text" type="password" name="password" id="password"/>
+					</label>
+					<span class="lost_password">
+						<a href="#" >Lost Your Password?</a>
+					</span>
+				</p>
+				<div class="form-row">
+					<input type="submit" class="button border margin-top-5" name="login" value="Login" />
+					<div class="checkboxes margin-top-10">
+						<input id="remember-me" type="checkbox" name="check">
+						<label for="remember-me">Remember Me</label>
+					</div>
+				</div>				
+			</form>
+		</div>
+	</div>
+</div>
+
+{% endblock content %}

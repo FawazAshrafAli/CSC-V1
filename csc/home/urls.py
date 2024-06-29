@@ -4,7 +4,7 @@ from .views import HomePageView, PincodeLocationView, LocateMeView, FilteredLoca
 app_name = "home"
 
 urlpatterns = [
-    path('', HomePageView.as_view(), name="home"),    
+    path('', HomePageView.as_view(), name="view"),    
     path('filtered_location/', FilteredLocationView.as_view(), name="filtered_location"),
     path('get_pincode_location/', PincodeLocationView.as_view(), name="get_pincode_location"),
     path('locate_me/', LocateMeView.as_view(), name="locate_me"),

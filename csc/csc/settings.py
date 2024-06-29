@@ -50,6 +50,13 @@ INSTALLED_APPS = [
     'home',
     'services',
     'csc_admin',
+    'base',
+    'about_us',
+    'products',
+    'contact_us',
+    'blog',
+    'authentication',
+    'csc_center',
 ]
 
 MIDDLEWARE = [

@@ -21,10 +21,16 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('django_admin/', admin.site.urls),
-    path('', include('home.urls', namespace='home')), # Home page url
-    path('services/', include('services.urls', namespace='services')), # Service page url
+    path('', include('home.urls', namespace='home')), # Home app url
+    path('authentication/', include('authentication.urls', namespace='authentication')),
+    path('about_us/', include('about_us.urls', namespace='about_us')), # About_us app url
+    path('services/', include('services.urls', namespace='services')), # Services app url
+    path('products/', include('products.urls', namespace='products')), # Products app url
+    path('contact_us/', include('contact_us.urls', namespace='contact_us')), # Contact_us app url
+    path('blog/', include('blog.urls', namespace='blog')), # Blog app url
+    path('csc_center/', include('csc_center.urls', namespace = "csc_center")), # CSC Center app url
 
-    path('admin/', include('csc_admin.urls', namespace='csc_admin')), # CSC Admin page url
+    path('admin/', include('csc_admin.urls', namespace='csc_admin')), # CSC Admin app url
 
     path('ckeditor/', include('ckeditor_uploader.urls')),
 ]
