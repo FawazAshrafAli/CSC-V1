@@ -31,7 +31,8 @@
 		<!-- Login -->
 		<div class="tab-content" id="tab1">	
 			<h3>Login</h3>		
-			<form method="post" class="login">
+			<form method="POST" class="login">
+				{% csrf_token %}
 				<p class="form-row form-row-wide">
 					<label for="username">Username:
 						<i class="im im-icon-Male"></i>
@@ -44,11 +45,11 @@
 						<input class="input-text" type="password" name="password" id="password"/>
 					</label>
 					<span class="lost_password">
-						<a href="#" >Lost Your Password?</a>
+						<a href="#" tabindex="-1">Lost Your Password?</a>
 					</span>
 				</p>
-				<div class="form-row">
-					<input type="submit" class="button border margin-top-5" name="login" value="Login" />
+				<div class="form-row">				
+					<button type="submit" class="button border margin-top-5" name="login" value="Login" >Login</button>
 					<div class="checkboxes margin-top-10">
 						<input id="remember-me" type="checkbox" name="check">
 						<label for="remember-me">Remember Me</label>

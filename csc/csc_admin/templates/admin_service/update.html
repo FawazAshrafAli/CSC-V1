@@ -1,18 +1,135 @@
-{% extends "base/base.html" %}
+{% extends "admin_base/base.html" %}
+{% load static %}
 {% load crispy_forms_tags %}
 
-{% block page_title %}Create Service{% endblock page_title %}
+{% block title_prefix %}Update Service{% endblock title_prefix %}
 
-{% block main %}
-<div class="container-fluid">
+<!-- Meta Tags Start -->
+{% block meta_description %}
+"Service Updation of Common Service Centres (CSC) in India"
+{% endblock meta_description %}
 
-    <form method="post" enctype="multipart/form-data" style="width: 480px;">
-        {% csrf_token %}
-        {{ form.media }}
-        {{ form|crispy }}
-        <div class="form-group">
-            <button class="btn btn-success" type="submit">Update</button>
-        </div>
-    </form>
+{% block meta_og_description %}
+"Service Updation of Common Service Centres (CSC) in India"
+{% endblock meta_og_description %}
+<!-- Meta Tags Start -->
+
+{% block content %}
+<style>
+    #current-service-image a {
+        color: blue;
+    }
+
+    #current-service-image button {
+        color: black;
+        background-color: #fff;
+        font-size: 13px;
+        padding: 0px 10px;
+        border: none;
+        box-shadow: 0px 0px 3px #777;
+        border-radius: 5%;
+    }
+
+    #current-service-image button:hover {
+        color: #fff;
+        background-color: darkred;
+    }
+</style>
+
+<div class="dashboard-content">
+
+	<!-- Titlebar -->
+	<div id="titlebar">
+		<div class="row">
+			<div class="col-md-12">
+				<h2>Update Service</h2>
+				<!-- Breadcrumbs -->
+				<nav id="breadcrumbs">
+					<ul>
+						<li><a href="{% include "admin_components/home_link.html" %}">Home</a></li>						
+						<li><a href="{% url 'csc_admin:services' %}">Services</a></li>
+                        <li><a href="{% url 'csc_admin:service' service.pk %}">{{service.name}}</a></li>						
+                        <li>Update</li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+	</div>
+
+    <div class="row">
+        <div class="row">
+			<div class="col-lg-12">
+				<div id="add-listing" class="separated-form">
+					<!-- Section -->
+					<form method="POST" action="{% url 'csc_admin:update_service' service.pk %}" enctype="multipart/form-data" class="add-listing-section">
+						{% csrf_token %}
+						<!-- Headline -->
+						<div class="add-listing-headline">
+							<h3><i class="sl sl-icon-doc"></i> Service Informations</h3>
+						</div>
+
+						<!-- Title -->
+						<div class="row with-forms">
+							<div class="col-md-6">
+                            	<h5>Service Name <i class="tip" data-tip-content="Name of service"></i></h5>
+								<input class="search-field" type="text" name="name" value="{{service.name}}" placeholder="Name of your CSC"/ required>
+                             </div>                							
+                             <div class="col-md-6">
+                                 <h5>Service Image <i class="tip" data-tip-content="Image of service"></i></h5>
+                                 <input class="search-field" type="file" name="image" id="service-image-input"/>                                 
+                                 <span id="current-service-image">{% if service.image %} current image: <a href="{{service.image.url}}" target="_blank" style="color:blue">{{service.image.name}}</a>&nbsp;&nbsp;<button type="button">Clear</button> {% endif %}</span>                                 
+                             </div>                							
+						</div>
+                        <br>
+						<!-- <div class="row submit-section">
+							<div class="col-md-6">
+								<h5>Service Image <i class="tip" data-tip-content="Image of service"></i></h5>
+								<div class="dropzone dz-clickable" id="my-dropzone">
+									<div class="dz-default dz-message"><span><i class="sl sl-icon-plus"></i> Click here or drop files to upload</span></div>
+								</div>
+							</div>
+						</div> -->
+                        <div class="row with-forms">
+							<div class="col-md-12">
+                                <h5>Service Description <i class="tip" data-tip-content="Description of service"></i></h5>								
+                                {{ form.media }}
+                                {{ form.description }}
+							</div>
+						</div>
+                        <br>
+						<div class="row with-forms text-center">
+							<button type="submit" class="button">Update</button>
+						</div>						
+					</form>
+				</div>
+			</div>
+		</div>
+    </div>
+
 </div>
-{% endblock main %}
+{% endblock content %}
+
+{% block scripts %}
+<!-- Remove Service Image -->
+<script src="{% static 'w3/services/js/removeServiceImage.js' %}"></script>
+
+<!-- Preview Updating Service Image's Link -->
+<script>
+    
+    function previewServiceImageLink () {
+        const serviceImageInput = $('#service-image-input')[0];
+        const file = serviceImageInput.files[0]
+        const fileName = file.name
+
+        if (file) {
+            const imageUrl = URL.createObjectURL(file);
+            let html = `current image: <a href=${imageUrl} target="_blank" />${fileName}</a>`;
+            $('#current-service-image').html(html);
+            $('#current-service-image').show();
+        };
+    };
+
+    $('#service-image-input').on('change', previewServiceImageLink)
+
+</script>
+{% endblock scripts %}

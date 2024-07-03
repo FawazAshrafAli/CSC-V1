@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     AdminHomeView, ListServiceView, DetailServiceView, 
     UpdateServiceView, CreateServiceView, JsonSeviceDetailView, 
-    DeleteServiceView
+    DeleteServiceView, RemoveServiceImageView
     )
 
 app_name = "csc_admin"
@@ -15,6 +15,8 @@ urlpatterns = [
     path("create_service/", CreateServiceView.as_view(), name="create_service"),
     path("update_service/<pk>", UpdateServiceView.as_view(), name="update_service"),
     path("delete_service/<pk>", DeleteServiceView.as_view(), name="delete_service"),
+
+    path("remove_service_image/<pk>", RemoveServiceImageView.as_view(), name="remove_service_image"),
 
     path("get_service_details/<pk>", JsonSeviceDetailView.as_view(), name="get_service_details"),
 ]

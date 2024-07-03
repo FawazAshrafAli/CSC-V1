@@ -190,33 +190,18 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 CKEDITOR_UPLOAD_PATH = "uploads/"
 CKEDITOR_CONFIGS = {
     'default': {
-        'toolbar': 'full',
-        'extraPlugins': ','.join(
-            [
-                'uploadimage',  # The "image" plugin must be enabled in the toolbar.
-                'image2',  # The new version of the "image" plugin, which offers resizable images.
-                'table',  # The table plugin.
-            ]
-        ),
-        'height': 300,
-        'width': '100%',
-        'toolbarGroups': [
-            {'name': 'document', 'groups': ['mode', 'document', 'doctools']},
-            {'name': 'clipboard', 'groups': ['clipboard', 'undo']},
-            {'name': 'editing', 'groups': ['find', 'selection', 'spellchecker']},
-            {'name': 'forms'},
-            {'name': 'basicstyles', 'groups': ['basicstyles', 'cleanup']},
-            {'name': 'paragraph', 'groups': ['list', 'indent', 'blocks', 'align', 'bidi']},
-            {'name': 'links'},
-            {'name': 'insert'},
-            {'name': 'styles'},
-            {'name': 'colors'},
-            {'name': 'tools'},
-            {'name': 'others'},
-            {'name': 'about'}
+        'toolbar': 'Custom',
+        'toolbar_Custom': [
+            ['Format', 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript'],
+            ['NumberedList', 'BulletedList', 'Blockquote'],
+            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ['Link', 'Unlink', 'Anchor'],
+            ['Table', 'HorizontalRule', 'SpecialChar'],
+            ['Source'],
         ],
-        'removeButtons': 'Underline,Subscript,Superscript',  # Removed some unnecessary buttons.
-        'format_tags': 'p;h1;h2;h3;pre',
-        'removeDialogTabs': 'image:advanced;link:advanced',
-    }
+        'allowedContent': True,  # This allows all content, including tables
+    },
 }
+
+
+AUTH_USER_MODEL = 'authentication.User'

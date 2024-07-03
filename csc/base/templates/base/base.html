@@ -30,6 +30,8 @@
 
 <meta property="og:url" content="https://cscindia.info/" />
 
+{% block meta_tags %}{% endblock meta_tags %}
+
 <link rel="canonical" href="https://cscindia.info/" />
 
 <script type="application/ld+json">
@@ -312,6 +314,8 @@
 }
 </script>
 
+{% block schema_markup %}{% endblock schema_markup %}
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -341,7 +345,7 @@
 				
 				<!-- Logo -->
 				<div id="logo">
-					<a href="index.html"><img src="{% static 'images/logo.png' %}" alt="CSC Centers in India"></a>
+					<a href="{% url 'home:view' %}"><img src="{% static 'images/logo.png' %}" alt="CSC Centers in India"></a>
 				</div>
 
 				<!-- Mobile Navigation -->

@@ -1,52 +1,78 @@
 {% extends "admin_base/base.html" %}
-{% load crispy_forms_tags %}
-{% block page_title %}Services{% endblock page_title %}
+{% load static %}
 
-{% block main %}
-<div class="container">
-    <div class="row">
-        <div class="text-end p-2">
-            <button class="btn btn-sm btn-success" data-bs-toggle="offcanvas" data-bs-target="#create-service-modal">Create</button>
-        </div>
-        <hr>
-        {% for service in services %}
-        <div class="col-lg-4 my-3 d-flex justify-content-center align-items-end">
-            <a class="btn" href="{% url 'csc_admin:service' service.pk %}">
-                <div class="card shadow" style="min-width: 400px; min-height: 350px">
-                    {% if service.image %}
-                    <div class="d-flex justify-content-center" style="background-image: linear-gradient(to bottom, silver, white 65%);">
-                        <img class="card-img-top" src="{{service.image.url}}" alt="Service Image" style="width: 250px;">
-                    </div>
-                    {% endif %}
-                    <div class="card-body d-flex justify-content-center align-items-end w-100" style="width: fit-content;">
-                        <h5 class="card-title text-center">{{service.name}}</h5>
-                    </div>
-                </div>
-            </a>
-        </div>
-        {% endfor %}
-    </div>
+<!-- Meta Tags Start -->
+{% block meta_description %}
+"List of Services in Common Service Centres (CSC) in India"
+{% endblock meta_description %}
+
+{% block meta_og_description %}
+"List of Services in Common Service Centres (CSC) in India"
+{% endblock meta_og_description %}
+<!-- Meta Tags Start -->
+
+{% block add_btn %}
+<a href="{% url 'csc_admin:create_service' %}" class="button border with-icon" id="add-service-btn">ADD SERVICE <i class="sl sl-icon-plus"></i></a>
+{% endblock add_btn %}
+
+{% block content %}
+
+<div class="dashboard-content">
+
+	<!-- Titlebar -->
+	<div id="titlebar">
+		<div class="row">
+			<div class="col-md-12">
+				<h2>Services</h2>
+				<!-- Breadcrumbs -->
+				<nav id="breadcrumbs">
+					<ul>
+						<li><a href="{% include "admin_components/home_link.html" %}">Home</a></li>						
+						<li>Services</li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		
+		<!-- Listings -->
+		<div class="col-lg-12 col-md-12">
+			<div class="dashboard-list-box margin-top-0">
+				<div class="row">
+					<!-- Listing Item -->
+				{% for service in services %}
+				<div class="col-lg-4 col-md-6">
+					<div class="product-grid">
+						<div class="product-image">
+							<a href="{% url 'csc_admin:service' service.pk %}" class="image">
+								<img class="pic-1" src="{% if service.image %} {{service.image.url}} {% else %} {% static 'images/img-3.jpg' %}  {% endif %}">
+								<img class="pic-2" src="{% if service.image %} {{service.image.url}} {% else %} {% static 'images/img-3.jpg' %}  {% endif %}">
+							</a>
+							
+							<div class="product-rating">
+		
+								<a class="add-to-cart" href="{% url 'csc_admin:service' service.pk %}"> View Service </a>
+							</div>
+						</div>
+						<div class="product-content">
+							<h3 class="title"><a href="{% url 'csc_admin:service' service.pk %}">{{service.name}}</a></h3>					
+						</div>
+					</div>
+				</div>
+				{% endfor %}
+				<!-- Listing Item / End -->
+				</div>
+			</div>
+		</div>
+
+
+		<!-- Copyrights -->
+		<div class="col-md-12">
+			<div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
+		</div>
+	</div>
+
 </div>
-<br>
-
-<!-- Create Service Offset -->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="create-service-modal" aria-labelledby="offcanvasExampleLabel" style="width: 720px;">
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title" id="offcanvasExampleLabel">Create Service</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body">
-      <div>
-        <form method="POST" enctype="multipart/form-data" action="{% url 'csc_admin:create_service' %}">
-            {% csrf_token %}
-            <div class="form-group">                
-                {{ form|crispy }}
-            </div>
-            <div class="form-group text-center">
-                <button class="btn btn-primary" type="submit" style="width: 120px;">Create</button>
-            </div>
-        </form>
-      </div>        
-    </div>
-<div>
-{% endblock main %}
+{% endblock content %}

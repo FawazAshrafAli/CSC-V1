@@ -1,0 +1,106 @@
+{% extends "admin_base/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block page_title %}Services{% endblock page_title %}
+
+{% block links %}{{ form.media }}{% endblock links %}
+
+{% block main %}
+    <div class="container">
+        <div class="row">
+        <div class="text-end p-2">
+            <button class="btn btn-sm btn-warning text-uppercase rounded-start-pill px-3" data-bs-toggle="offcanvas" data-bs-target="#update-service-offcanvas">Update</button>
+            <button type="button" class="btn btn-danger btn-sm text-uppercase px-3 rounded-end-pill" data-bs-toggle="modal" data-bs-target="#service-deletion-modal" data-service-id="{{service.pk}}" onclick="deleteService({{service.pk}})">delete</button>
+        </div>
+        <hr>
+            <div class="col-md-4 d-flex justify-content-center align-items-start pb-2">
+                <div class="card shadow" style="width: 400px; min-height: 350px ">                
+                    {% if service.image %}
+                    <div class="d-flex justify-content-center" style="background-image: linear-gradient(to bottom, silver, white 65%);">
+                        <img class="card-img-top" src="{{service.image.url}}" alt="Service Image" style="width: 250px;">
+                    </div>
+                    {% endif %}
+                    <div class="card-body d-flex justify-content-center align-items-end w-100" style="width: fit-content;">
+                        <h4 class="card-title text-center">{{service.name}}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="border-top border-bottom py-1" style="height: 500px; overflow-y: auto;">{{service.description|safe}}</div>                
+            </div>
+        </div>
+
+        <!-- Service Deletion Modal -->
+        <div
+        class="modal fade "
+        id="service-deletion-modal"
+        tabindex="-1"
+        
+        role="dialog"
+        aria-labelledby="modalTitleId"
+        aria-hidden="true">
+            <div
+                class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm"
+                role="document"
+            >
+                <div class="modal-content" style="min-width: 480px;">
+                    <div class="modal-header">
+                        <h6 class="modal-title text-uppercase" id="modalTitleId">
+                            <span class="text-danger">Deleting</span> service  . . .
+                        </h6>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <small><p>Deleting <i><span id="deleting-service-object"></span></i></small>.</p>
+                        <p>Are you sure?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <form method="GET" action="{% url 'csc_admin:delete_service' service.pk %}" class="d-flex justify-content-between w-100">
+                            <button type="submit" class="btn btn-danger btn-sm text-uppercase px-4">Delete</button>
+                            <button
+                                type="button"
+                                class="btn btn-secondary btn-sm text-uppercase px-4"
+                                data-bs-dismiss="modal"
+                            >
+                                Cancel
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="update-service-offcanvas" aria-labelledby="offcanvasExampleLabel" style="width: 720px;">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasExampleLabel">Update Service</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <div>
+            <form method="POST" enctype="multipart/form-data" action="{% url 'csc_admin:update_service' service.pk %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    
+                    {{ form|crispy }}
+                </div>
+                <div class="form-group text-center">
+                    <button class="btn btn-primary" type="submit" style="width: 120px;">Update</button>
+                </div>
+            </form>
+          </div>        
+        </div>
+    <div>
+
+    {% block scripts %}
+    <script src="{% static 'js/service/deleteService.js' %}"></script>
+    {% endblock scripts %}
+    
+{% endblock main %}

@@ -1,5 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group, Permission
 
-# class user(AbstractUser):
-#     pass
+class User(AbstractUser):
+    phone = models.CharField(max_length=20)
+    address = models.TextField()
+    
