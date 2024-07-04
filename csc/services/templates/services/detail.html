@@ -1,0 +1,157 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block services_nav %} current {% endblock services_nav %}
+
+{% block content %}
+
+<!-- Titlebar
+================================================== -->
+<div id="titlebar">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<h2>Services</h2>
+				<!-- Breadcrumbs -->
+				<nav id="breadcrumbs">
+					<ul>
+						<li><a href="{% include "components/home_link.html" %}">Home</a></li>
+                        <li><a href="{% url 'services:list' %}">Services</a></li>
+						<li>{{service.name}}</li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<!-- Content
+================================================== -->
+<div class="container">
+
+	<!-- Blog Posts -->
+	<div class="blog-page">
+	<div class="row">
+
+
+		<!-- Post Content -->
+		<div class="col-lg-9 col-md-8 padding-right-30">
+
+
+			<!-- Blog Post -->
+			<div class="blog-post single-post">
+				
+				<!-- Img -->
+				<img class="post-img" src={% if service.image %} {{service.image.url}} {% else %} "{% static 'images/blog-post-02.jpg' %}" {% endif %} alt="Image of Service" style="width:360px">
+
+				
+				<!-- Content -->
+				<div class="post-content">
+
+					<h3>{{service.name}}</h3>
+
+					<ul class="post-meta">
+						<li>{{service.created}}</li>		
+					</ul>
+
+					<div>{{service.description|safe}}</div>
+
+
+				<!-- AddToAny BEGIN -->
+<div class="a2a_kit a2a_kit_size_32 a2a_default_style" data-a2a-url="https://cscindia.info/">
+	<a class="a2a_dd" href="https://www.addtoany.com/share"></a>
+	<a class="a2a_button_facebook"></a>
+	<a class="a2a_button_x"></a>
+	<a class="a2a_button_pinterest"></a>
+	<a class="a2a_button_threads"></a>
+	<a class="a2a_button_linkedin"></a>
+	<a class="a2a_button_reddit"></a>
+	</div>
+	<script async src="https://static.addtoany.com/menu/page.js"></script>
+	<!-- AddToAny END -->
+
+			 
+					<div class="clearfix"></div>
+
+				</div>
+			</div>
+ 
+
+			 
+  
+	</div>
+	<!-- Content / End -->
+
+
+
+	<!-- Widgets -->
+	<div class="col-lg-3 col-md-4">
+		<div class="sidebar right">
+ 
+
+			<!-- Widget -->
+			<div class="widget margin-top-40">
+
+                <div class="with-forms  margin-top-0">
+                    <h3 class="margin-top-0 margin-bottom-25">APPLY NOW</h3>
+					<!-- Date Range Picker - docs: http://www.daterangepicker.com/ -->
+					
+                    <input type="text" placeholder="Name:" value="">
+                    <input type="text" placeholder="E-Mail ID:" value="">
+                    <input type="text" placeholder="Phone No:" value="">
+                    <select class="chosen-select" data-placeholder="Select Services" >
+                        <option label="Select Services"></option>
+                        {% for service in services %}
+                        <option value="{{service.pk}}">{{service.name}}</option>
+                        {% endfor %}                      
+                    </select>
+                    <textarea name="" id="" cols="10" rows="2" style="margin-top: 16px;" placeholder="Message"></textarea>
+
+                    <a href="pages-booking.html" class="button book-now fullwidth margin-top-5">SUBMIT NOW</a>
+				
+   
+
+				</div>
+ 
+
+			</div>
+			<!-- Widget / End-->
+
+
+
+<!-- Widget -->
+<div class="widget margin-top-40">
+    <h3>SERVICES</h3>
+<ul class="list-4 color">
+                        {% for service in services|slice:'4' %}
+						<li>{{service.name}}</li>
+                        {% endfor %}
+					</ul>
+</div>
+<!-- Widget / End -->
+
+
+			<!-- Widget -->
+			<div class="widget margin-top-40">
+				<h3>Tags</h3>
+				<ul class="option-set">
+                    <li><a href="#filter">Tags 01</a></li>
+                    <li><a href="#filter">Tags 01</a></li>
+                    <li><a href="#filter">Tags 01</a></li>
+                </ul>
+			</div>
+			<!-- Widget / End-->
+
+			<div class="clearfix"></div>
+			<div class="margin-bottom-40"></div>
+		</div>
+	</div>
+	</div>
+	<!-- Sidebar / End -->
+
+
+</div>
+</div>
+
+{% endblock content %}

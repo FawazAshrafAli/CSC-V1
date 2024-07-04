@@ -1,5 +1,4 @@
-from django.db.models.query import QuerySet
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
@@ -7,10 +6,7 @@ from django.views.generic import View, TemplateView, CreateView, DetailView, Upd
 from django.http import JsonResponse, Http404
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
-
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse
 
 from .forms import CreateServiceForm, UpdateServiceForm
 
@@ -20,8 +16,16 @@ class BaseAdminView(LoginRequiredMixin, View):
     login_url = reverse_lazy("authentication:login")
 
     def get(self, request, *args, **kwargs):
-        if request.user.is_superuser:
+        if request.user.is_superuser:            
             return super().get(request, *args, **kwargs)
+        else:
+             return redirect(reverse_lazy('authentication:login'))
+        
+    def get_context_data(self, **kwargs):
+        context = {}
+        context['services'] = Service.objects.all()
+        return context
+    
 
 
 class AdminHomeView(BaseAdminView, TemplateView):
@@ -60,6 +64,7 @@ class CreateServiceView(BaseAdminView, CreateView):
         context = super().get_context_data(**kwargs)
         service = self.model.objects.all().last()
         context['service'] = service
+        context['service_page'] = True
         return context
                                     
 
@@ -72,6 +77,11 @@ class UpdateServiceView(BaseAdminView, UpdateView):
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('csc_admin:service', kwargs = {'pk' : self.kwargs['pk']})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['service_page'] = True
+        return context
     
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -110,24 +120,23 @@ class ListServiceView(BaseAdminView, ListView):
     template_name = 'admin_service/list.html'
     context_object_name = "services"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['service_page'] = True
+        return context    
 
 
 # Nuclear Views
 @method_decorator(csrf_exempt, name="dispatch")
 class RemoveServiceImageView(BaseAdminView, UpdateView):
     model = Service
-    field = ['image']
-    
-
-    def get_success_url(self, **kwargs):
-        return reverse_lazy('csc_admin:update_service', kwargs = {'pk' : self.kwargs['pk']})
+    field = ['image']    
     
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         self.object.image = None
         self.object.save()
         return JsonResponse({"message": "Successfully removed image."})
-
 
 
 @method_decorator(never_cache, name="dispatch")
@@ -140,16 +149,8 @@ class DetailServiceView(BaseAdminView, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = self.form_class(instance=self.object)
+        context['service_page'] = True
         return context
-
-
-class JsonSeviceDetailView(BaseAdminView, DetailView):
-    model = Service
-
-    def render_to_response(self, context):
-        service = context['object']
-        name = service.name
-        return JsonResponse({'name': name})
     
 
 @method_decorator(never_cache, name="dispatch")
@@ -159,13 +160,13 @@ class DeleteServiceView(BaseAdminView, View):
 
     def get(self, request, *args, **kwargs):
         try:
-            try:
-                self.object = get_object_or_404(Service, pk = self.kwargs['pk'])
-                self.object.delete()
-                messages.success(self.request, "Successfully deleted service.")
-                return redirect(self.success_url)
-            except Http404:            
-                pass
+            self.object = get_object_or_404(Service, pk = self.kwargs['pk'])
+            self.object.delete()
+            messages.success(self.request, "Successfully deleted service.")
+            return redirect(self.success_url)
+        
+        except Http404:            
+            pass
         except Exception as e:
             print(e)
             pass

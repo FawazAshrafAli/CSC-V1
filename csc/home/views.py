@@ -9,10 +9,17 @@ from django.utils.decorators import method_decorator
 
 from .models import Block
 from .models import CommonServiceCenter as CSC
+from services.models import Service
 
 
 class HomePageView(TemplateView):
     template_name = 'home/home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["services"] = Service.objects.all()
+        return context
+    
 
 
 @method_decorator(never_cache, name="dispatch")

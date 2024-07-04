@@ -20,3 +20,8 @@ class DetailServiceView(DetailView):
     template_name = 'services/detail.html'
     context_object_name = "service"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['services'] = Service.objects.all()
+        return context
+
