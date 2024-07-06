@@ -340,7 +340,7 @@
 
 						<li><a href="#">About Us</a></li>
 
-						<li><a href="#">Blog</a></li>
+						<li><a href="{% url 'csc_admin:blogs' %}" {% if request.path == '/admin/blogs/' or blog_page %} class="current" {% endif %}>Blog</a></li>
 
 						<li><a {% if request.path == '/admin/services/' or service_page %} class="current" {% endif %} href="{% include 'admin_components/admin_services_link.html' %}">Services</a></li>											
 					</ul>
@@ -397,11 +397,17 @@
 			<ul data-submenu-title="Main">
 				<li {% if request.path == '/admin/' %} class="active" {% endif %}><a href="dashboard.html"><i class="sl sl-icon-home"></i> Home</a></li>
 				<li><a href="dashboard-messages.html"><i class="sl sl-icon-info"></i> About Us</a></li>
-				<li><a href="dashboard-bookings.html"><i class="fa fa-user"></i> BLog</a></li>
 
-				<li {% if request.path == '/admin/services/' or service_page %} class="active" {% endif %} ><a><i class="sl sl-icon-layers"></i> Services</a>
+				<li {% if request.path == '/admin/blogs/' or blog_page %} class="active" {% endif %} ><a href="{% url 'csc_admin:blogs' %}"><i class="fa fa-book"></i> Blog</a>
 					<ul>
-						<li><a href="{% include 'admin_components/admin_services_link.html' %}">List Services</a></li>
+						<li><a href="{% url 'csc_admin:blogs' %}">List Blog</a></li>
+						<li><a href="{% url 'csc_admin:create_blog' %}">Add Blog</a></li>						
+					</ul>	
+				</li>
+
+				<li {% if request.path == '/admin/services/' or service_page %} class="active" {% endif %} ><a><i class="fa fa-handshake"></i> Services</a>
+					<ul>
+						<li><a href="{% url 'csc_admin:services' %}">List Services</a></li>
 						<li><a href="{% url 'csc_admin:create_service' %}">Add Service</a></li>						
 					</ul>	
 				</li>
@@ -456,6 +462,16 @@
 <script type="text/javascript" src="{% static 'scripts/jquery-ui.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'scripts/tooltips.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'scripts/custom.js' %}"></script>
+
+
+<!-- w3 -->
+<script>
+	$(document).ready(() => {
+		setTimeout(() => {
+			$('#message-div').hide();
+		}, 3000);
+	})
+</script>
 
 {% block scripts %}{% endblock scripts %}
 

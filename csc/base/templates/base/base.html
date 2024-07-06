@@ -371,40 +371,36 @@
 						</li>
 
 						<li itemprop="name"><a itemprop="url" class="{% block services_nav %}{% endblock services_nav %}" href="{% url 'services:list' %}">Services</a>
-							<div class="mega-menu mobile-styles three-columns">
-
+							<div class="mega-menu mobile-styles {% if service_group_1 and service_group_2 and service_group_3 %} three-columns {% elif service_group_1 and service_group_2 %} two-columns {% elif service_group_1 %} one-columns {% endif %} ">
+									{% if services|length > 0 %}
 									<div class="mega-menu-section">
 										<ul>
-											<li itemprop="name"><a itemprop="url" href="#">User Profile</a></li>
-											<li itemprop="name"><a itemprop="url" href="#">Booking Page</a></li>
-											<li itemprop="name"><a itemprop="url" href="#">Add Listing</a></li>
-											<li itemprop="name"><a itemprop="url" href="{% url 'blog:list' %}">Blog</a></li>
-                                            <li itemprop="name"><a itemprop="url" href="#">Booking Page</a></li>
-											<li itemprop="name"><a itemprop="url" href="#">Add Listing</a></li>
+											{% for service in services|slice:'0:6' %}
+											<li itemprop="name"><a itemprop="url" href="{% url 'services:detail' service.pk %}">{{service.name}}</a></li>
+											{% endfor %}
 										</ul>
 									</div>
+									{% endif %}
 		
+									{% if services|length > 6 %}
 									<div class="mega-menu-section">
 										<ul>
-											<li itemprop="name"><a itemprop="url" href="#">User Profile</a></li>
-											<li itemprop="name"><a itemprop="url" href="#">Booking Page</a></li>
-											<li itemprop="name"><a itemprop="url" href="#">Add Listing</a></li>
-											<li itemprop="name"><a itemprop="url" href="{% url 'blog:list' %}">Blog</a></li>
-                                            <li itemprop="name"><a itemprop="url" href="#">Booking Page</a></li>
-											<li itemprop="name"><a itemprop="url" href="#">Add Listing</a></li>
+											{% for service in services|slice:'6:12' %}
+											<li itemprop="name"><a itemprop="url" href="{% url 'services:detail' service.pk %}">{{service.name}}</a></li>
+											{% endfor %}
 										</ul>
 									</div>
+									{% endif %}
 
+									{% if services|length > 6 %}
 									<div class="mega-menu-section">
 										<ul>
-											<li itemprop="name"><a itemprop="url" href="#">User Profile</a></li>
-											<li itemprop="name"><a itemprop="url" href="#">Booking Page</a></li>
-											<li itemprop="name"><a itemprop="url" href="#">Add Listing</a></li>
-											<li itemprop="name"><a itemprop="url" href="{% url 'blog:list' %}">Blog</a></li>
-                                            <li itemprop="name"><a itemprop="url" href="#">Booking Page</a></li>
-											<li itemprop="name"><a itemprop="url" href="#">Add Listing</a></li>
+											{% for service in services|slice:'12:18' %}
+											<li itemprop="name"><a itemprop="url" href="{% url 'services:detail' service.pk %}">{{service.name}}</a></li>
+											{% endfor %}
 										</ul>
 									</div>
+									{% endif %}
 									
 							</div>
 						</li>

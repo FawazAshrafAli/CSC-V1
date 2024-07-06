@@ -7,10 +7,15 @@ from django.http import JsonResponse, Http404
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
 
-from .forms import CreateServiceForm, UpdateServiceForm
+from .forms import (
+    CreateServiceForm, UpdateServiceForm, CreateBlogForm,
+    UpdateBlogForm
+    )
 
 from services.models import Service
+from blog.models import Blog, Category, Tag
 
 class BaseAdminView(LoginRequiredMixin, View):
     login_url = reverse_lazy("authentication:login")
@@ -22,7 +27,7 @@ class BaseAdminView(LoginRequiredMixin, View):
              return redirect(reverse_lazy('authentication:login'))
         
     def get_context_data(self, **kwargs):
-        context = {}
+        context = super().get_context_data(**kwargs)
         context['services'] = Service.objects.all()
         return context
     
@@ -32,6 +37,7 @@ class AdminHomeView(BaseAdminView, TemplateView):
     template_name = 'admin_home/home.html'
 
 
+##################################### SERVICE START #####################################
 @method_decorator(csrf_exempt, name="dispatch")
 class CreateServiceView(BaseAdminView, CreateView):
     model = Service
@@ -39,7 +45,6 @@ class CreateServiceView(BaseAdminView, CreateView):
     template_name = 'admin_service/create.html'
     success_url = reverse_lazy('csc_admin:create_service')
     
-    @method_decorator(csrf_exempt)
     def post(self, request, *args, **kwargs):
         form = self.get_form()
         name = request.POST.get('name')
@@ -64,6 +69,7 @@ class CreateServiceView(BaseAdminView, CreateView):
         context = super().get_context_data(**kwargs)
         service = self.model.objects.all().last()
         context['service'] = service
+        context['form'] = self.get_form()
         context['service_page'] = True
         return context
                                     
@@ -123,21 +129,8 @@ class ListServiceView(BaseAdminView, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['service_page'] = True
-        return context    
-
-
-# Nuclear Views
-@method_decorator(csrf_exempt, name="dispatch")
-class RemoveServiceImageView(BaseAdminView, UpdateView):
-    model = Service
-    field = ['image']    
+        return context
     
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.image = None
-        self.object.save()
-        return JsonResponse({"message": "Successfully removed image."})
-
 
 @method_decorator(never_cache, name="dispatch")
 class DetailServiceView(BaseAdminView, DetailView):
@@ -170,3 +163,193 @@ class DeleteServiceView(BaseAdminView, View):
         except Exception as e:
             print(e)
             pass
+
+
+# Nuclear Views
+@method_decorator(csrf_exempt, name="dispatch")
+class RemoveServiceImageView(BaseAdminView, UpdateView):
+    model = Service
+    field = ['image']    
+    
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.image = None
+        self.object.save()
+        return JsonResponse({"message": "Successfully removed image."})
+
+##################################### SERVICE END #####################################
+
+
+##################################### BLOG START #####################################
+
+class BaseAdminBlogView(BaseAdminView, View):
+    model = Blog
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['blog_page'] = True
+        return context
+
+class BlogListView(BaseAdminBlogView, ListView):
+    template_name = 'admin_blog/list.html'
+    queryset = Blog.objects.all()
+    context_object_name = 'blogs'
+
+
+class BlogDetailView(BaseAdminBlogView, DetailView):
+    template_name = 'admin_blog/detail.html'
+    query_pk_and_slug = 'slug'
+
+
+class CreateBlogView(BaseAdminBlogView, CreateView):
+    template_name = 'admin_blog/create.html'
+    success_url = reverse_lazy('csc_admin:create_blog')
+    redirection_url = success_url
+    form_class = CreateBlogForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.get_form()
+        context['categories'] = Category.objects.all().order_by('name')
+        return context    
+
+    def post(self, request, *args, **kwargs):
+        title = request.POST.get('title')        
+        image = request.FILES.get('image')        
+        category_list = request.POST.getlist('category')
+        summary = request.POST.get('summary')        
+        author = request.user
+        tags = request.POST.get('tags')
+        
+        try:
+            form = self.get_form()
+            if form.is_valid():
+                content = form.cleaned_data['content']
+                blog = Blog.objects.create(
+                    title = title, image = image, author = author,
+                    summary = summary, content = content                    )
+                
+                if category_list:
+                    blog.categories.set(category_list)
+                    blog.save()
+                
+                if tags:
+                    tag_list = tags.split(',')
+                    for tag in tag_list:
+                        tag = tag.strip().capitalize()
+                        if tag not in (' ', ','):
+                            tag_obj = Tag.objects.filter(name = tag)                                                        
+                            if not tag_obj.exists():
+                                tag_obj = Tag.objects.create(name = tag)
+                            else:
+                                tag_obj = tag_obj.first().pk
+                            blog.tags.add(tag_obj)
+                            blog.save()                                    
+
+                messages.success(request, "Blog Saved")
+                return redirect(self.success_url)
+            else:
+                messages.error(request, "Content cannot be empty.")
+                return redirect(self.redirection_url)
+        except Exception as e:
+            print(e)
+            return HttpResponse(f"Error 404: {e}")
+
+
+class UpdateBlogView(BaseAdminBlogView, UpdateView):
+    template_name = 'admin_blog/update.html'
+    form_class = UpdateBlogForm
+    pk_url_kwarg = 'slug'
+
+    def get_object(self, **kwargs):
+        try:
+            return get_object_or_404(Blog, slug = self.kwargs[self.pk_url_kwarg])
+        except Http404:
+            pass
+
+    def get_success_url(self):
+        return reverse_lazy('csc_admin:blog', kwargs={'slug': self.object.slug})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.get_form()
+        context['categories'] = Category.objects.all().order_by('name')
+        return context    
+
+    def post(self, request, *args, **kwargs):
+        title = request.POST.get('title')        
+        image = request.FILES.get('image')        
+        category_list = request.POST.getlist('category')
+        summary = request.POST.get('summary')        
+        author = request.user
+        tags = request.POST.get('tags')
+        
+        try:
+            form = self.get_form()
+            if form.is_valid():
+                content = form.cleaned_data['content']
+                self.object = self.get_object()
+                self.object.title = title
+                self.object.summary = summary
+                self.object.author = author
+                self.object.content = content
+                if image:
+                    self.object.image = image
+                self.object.save()
+
+                if category_list:
+                    self.object.categories.set(category_list)
+                    self.object.save()
+                
+                if tags:
+                    tag_list = tags.split(',')
+                    for tag in tag_list:
+                        tag = tag.strip().capitalize()
+                        if tag not in (' ', ',', ''):
+                            tag_obj = Tag.objects.filter(name = tag)                                                        
+                            if not tag_obj.exists():
+                                tag_obj = Tag.objects.create(name = tag)
+                            else:
+                                tag_obj = tag_obj.first().pk                                
+                            self.object.tags.add(tag_obj)
+                            self.object.save()                                    
+
+                messages.success(request, "Blog Saved")
+                return redirect(self.get_success_url())
+            else:
+                messages.error(request, "Content field cannot be empty.")
+                self.redirect_url = self.success_url
+                return redirect(self.redirect_url)
+        except Exception as e:
+            print(e)
+            return HttpResponse(f"Error 404: {e}")
+
+
+class DeleteBlogView(BaseAdminBlogView, View):
+    success_url = reverse_lazy('csc_admin:blogs')
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = get_object_or_404(Blog, pk = self.kwargs['pk'])
+            self.object.delete()
+            messages.success(self.request, "Successfully deleted blog.")
+            return redirect(self.success_url)
+        
+        except Http404:            
+            pass
+        except Exception as e:
+            print(e)
+            pass
+
+
+# Nuclear
+@method_decorator(csrf_exempt, name="dispatch")
+class RemoveBlogImageView(BaseAdminBlogView, UpdateView):
+    field = ['image']    
+    
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.image = None
+        self.object.save()
+        return JsonResponse({"message": "Successfully removed image."})
+##################################### BLOG END #####################################

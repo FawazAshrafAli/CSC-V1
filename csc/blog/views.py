@@ -6,7 +6,6 @@ class BlogListView(ListView):
     model = Blog
     queryset = Blog.objects.all()
     context_object_name = 'blogs'
-
     template_name = 'blog/list.html'
 
 

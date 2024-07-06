@@ -134,11 +134,11 @@
 
 			<!-- Widget -->
 			<div class="widget margin-top-40">
-				<h3>Tags</h3>
+				<h3>SERVICE LINKS</h3>
 				<ul class="option-set">
-                    <li><a href="#filter">Tags 01</a></li>
-                    <li><a href="#filter">Tags 01</a></li>
-                    <li><a href="#filter">Tags 01</a></li>
+					{% for service in services|slice:4 %}
+                    <li><a href="{% url 'services:detail' service.pk %}">{{service.name}}</a></li>
+					{% endfor %}                    
                 </ul>
 			</div>
 			<!-- Widget / End-->
