@@ -5,7 +5,7 @@
 
 <!-- Basic Page Needs
 ================================================== -->
-<title>List of Common Service Centres (CSC) in India</title>
+<title>{% block title_prefix %}{% endblock title_prefix %} - List of Common Service Centres (CSC) in India</title>
 
 <meta name="description" content="List of Common Service Centres (CSC) in India" />
 
@@ -366,7 +366,7 @@
 						<li itemprop="name"><a itemprop="url" class="{% block about_us_nav %}{% endblock about_us_nav %}" href="{% url 'about_us:view' %}">About Us</a>
 							<ul>
 								<li itemprop="name"><a itemprop="url" href="profile">Profile</a></li>
-								<li itemprop="name"><a itemprop="url" href="blog">Blog</a></li>								 
+								<li itemprop="name"><a itemprop="url" href="{% url 'blog:list' %}">Blog</a></li>
 							</ul>
 						</li>
 
@@ -568,7 +568,7 @@
 				<ul class="footer-links">
 					<li><a href="#">FAQ</a></li>
 <li><a href="#">Profile</a></li>
-<li><a href="#">Blog</a></li>
+<li><a href="{% url 'blog:list' %}">Blog</a></li>
 <li><a href="#">Contact</a></li>
 <li><a href="#">Privacy Policy</a></li>
 <li><a href="#">Terms & Conditions</a></li>
