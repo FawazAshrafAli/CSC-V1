@@ -81,9 +81,9 @@
             <h5>Are you sure?</h5>                        
         </div>
         <br>
-        <form method="GET" action="{% url 'csc_admin:delete_service' blog.pk %}">
+        <form method="GET" action="{% url 'csc_admin:delete_blog' blog.pk %}">
             <button type="submit" id="confirm-deletion-btn">Delete</button>
-            <button id="cancel-deletion-btn">Cancel</button>
+            <button type="button" id="cancel-deletion-btn">Cancel</button>
         </form>
     </div>
     <!-- Delete Confirmation Box Start-->
@@ -204,7 +204,8 @@
 
         $('#delete-toggle-btn').click(() => {
             $('#delete-confirmation-box').show();
-            $('#delete-toggle-btn').hide()
+            $('#delete-toggle-btn').hide();
+            $('#update-toggle-btn').hide();
         });
 
         $('#cancel-deletion-btn').click(() => {

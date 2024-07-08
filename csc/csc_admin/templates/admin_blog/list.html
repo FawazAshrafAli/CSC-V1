@@ -8,8 +8,111 @@
 {% endblock styles %}
 
 {% block content %}
-<div class="dashboard-content">
+<style>
+	#publish-confirmation-box {
+		z-index: 1;
+	
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+	
+		padding: 15px;
+		min-width: 360px;
+		
+		background-color: #fff;
+		box-shadow: 0 0 5px #777;
+	}
+	
+	#publish-confirmation-box div h4 span {
+		color: red;
+	}
+	
+	#blog-name {
+		color: black;
+	}
+	
+	#publish-confirmation-box form {
+		display: flex;
+		justify-content: space-between;
+	}
+	
+	#confirm-publish-btn {
+		color: #fff;
+		text-transform: uppercase;
+		border: none;
+		background: linear-gradient(to bottom, darkgreen, green, darkgreen)
+	}
+	
+	#confirm-publish-btn:hover {
+		background: linear-gradient(to bottom, lime, green, darkgreen)
+	}
+	
+	#cancel-publish-btn {
+		color: #fff;
+		text-transform: uppercase;
+		border: none;
+		background: linear-gradient(to bottom, darkblue, blue, darkblue)
+	}
+	
+	#cancel-publish-btn:hover {
+		background: linear-gradient(to bottom, steelblue, blue, darkblue)
+	}
+</style>
 
+<style>
+	#draft-confirmation-box {
+		z-index: 1;
+	
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+	
+		padding: 15px;
+		min-width: 360px;
+		
+		background-color: #fff;
+		box-shadow: 0 0 5px #777;
+	}
+	
+	#draft-confirmation-box div h4 span {
+		color: red;
+	}
+	
+	#blog-name {
+		color: black;
+	}
+	
+	#draft-confirmation-box form {
+		display: flex;
+		justify-content: space-between;
+	}
+	
+	#confirm-draft-btn {
+		color: #fff;
+		text-transform: uppercase;		
+		border: none;
+		background: linear-gradient(to bottom, coral, orangered, coral)
+	}
+	
+	#confirm-draft-btn:hover {
+		background: linear-gradient(to bottom, orange, orangered, coral)
+	}
+	
+	#cancel-draft-btn {
+		color: #fff;
+		text-transform: uppercase;
+		border: none;
+		background: linear-gradient(to bottom, darkblue, blue, darkblue)
+	}
+	
+	#cancel-draft-btn:hover {
+		background: linear-gradient(to bottom, steelblue, blue, darkblue)
+	}
+</style>
+
+<div class="dashboard-content">
 	<!-- Titlebar -->
 	<div id="titlebar">
 		<div class="row">
@@ -24,15 +127,7 @@
 				</nav>
 			</div>
 		</div>
-		{% if messages %}
-		<div id="message-div">
-			<ul class="messages">
-				{% for message in messages %}
-				<li {% if message.tags %} class="{{message.tags}}" {% endif %}>{{message}}</li>
-				{% endfor %}
-			</ul>
-		</div>
-		{% endif %}
+		{% include "admin_components/message.html" %}
 	</div>
 
 	<!-- Delete Confirmation Box Start-->
@@ -44,10 +139,38 @@
         <br>
         <form method="GET" action="#">
             <button type="submit" id="confirm-deletion-btn">Delete</button>
-            <button type="button" id="cancel-deletion-btn">Cancel</button>
+            <button class="cancel-btn" type="button" id="cancel-deletion-btn">Cancel</button>
         </form>
     </div>
     <!-- Delete Confirmation Box Start-->
+
+	<!-- Publish Confirmation Box Start-->
+    <div id="publish-confirmation-box" style="display: none;">
+        <div class="modal-content">            
+            <h4>Publishing Blog <span id="publishing-blog-name" style="color: black"></span> . . .</h4>
+            <h5>Are you sure?</h5>                        
+        </div>
+        <br>
+        <form method="POST" action="#">
+            <button type="button" id="confirm-publish-btn" onclick="changeBlogStatus();">Publish</button>
+            <button class="cancel-btn" type="button" id="cancel-publish-btn">Cancel</button>
+        </form>
+    </div>
+    <!-- Publish Confirmation Box Start-->
+
+	<!-- Draft Confirmation Box Start-->
+    <div id="draft-confirmation-box" style="display: none;">
+        <div class="modal-content">            
+            <h4>Keep Blog <span id="drafting-blog-name" style="color: black"></span> as draft . . .</h4>
+            <h5>Are you sure?</h5>
+        </div>
+        <br>
+        <form method="POST" action="#">
+            <button type="button" id="confirm-draft-btn" onclick="changeBlogStatus()">Keep as Draft</button>
+            <button class="cancel-btn" type="button" id="cancel-draft-btn">Cancel</button>
+        </form>
+    </div>
+    <!-- Draft Confirmation Box Start-->
 
 	<div class="row">
 		
@@ -57,9 +180,12 @@
 				<h4>Blogs</h4>
 				<ul>
 					{% for blog in blogs %}
-					<li>
+					<li>				
 						<div class="list-box-listing">
-							<div class="list-box-listing-img"><a href="#"><img src={% if blog.image %} {{blog.image.url}} {% else %} "images/listing-item-01.jpg" {% endif %} alt=""></a></div>
+							<div class="list-box-listing-img" style="display: flex; flex-direction: column;">
+								<a href="#"><img src={% if blog.image %} {{blog.image.url}} {% else %} "images/listing-item-01.jpg" {% endif %} alt=""></a>
+								<button id="blog-status-btn-{{blog.slug}}" style="{% if blog.status == 'Published' %} background-color:green; {% else %} background-color: darkred; {% endif %} color: #fff; border: 0;">{{blog.status}}</button>
+							</div>
 							<div class="list-box-listing-content">
 								<div class="inner">
 									<h3><a href="{% url 'csc_admin:blog' blog.slug %}">{{blog.title}}</a></h3>
@@ -68,8 +194,11 @@
 							</div>
 						</div>
 						<div class="buttons-to-right">
+							
+							<a href="#" id="toggle-change-blog-status-btn-{{blog.slug}}" class="button gray" {% if blog.status == 'Published' %} onclick="(e) => e.preventDefault(); toggleSetDraft(`{{blog.slug}}`, `{{blog.title}}`);"><i class="fas fa-file-alt"></i> Keep as Draft {% else %} onclick="(e) => e.preventDefault(); togglePublishBlog(`{{blog.slug}}`, `{{blog.title}}`);"><i class="fas fa-paper-plane"></i> Publish Blog {% endif %}</a>
+														
 							<a href="{% url 'csc_admin:update_blog' blog.slug %}" class="button gray"><i class="sl sl-icon-note"></i> Edit</a>
-							<a href="#" class="button gray" onclick="(e) => e.preventDefault(); toggleBlogDeletion({{blog.pk}}, `{{blog.title}}`);"><i class="sl sl-icon-close"></i> Delete</a>
+							<a href="#" class="button gray" onclick="(e) => e.preventDefault(); toggleBlogDeletion(`{{blog.slug}}`, `{{blog.title}}`);"><i class="sl sl-icon-close"></i> Delete</a>
 						</div>
 					</li>
 					{% endfor %}
@@ -89,14 +218,74 @@
 
 {% block scripts %}
 <script>
-	function toggleBlogDeletion(blogId, blogName) {
-		$('#delete-confirmation-box form').prop('action', `/admin/delete_blog/${blogId}`);
-		$('#blog-name').html(`'${blogName}'`);
+	function hideBoxes() {
+		$('#delete-confirmation-box').hide();
+		$('#publish-confirmation-box').hide();		
+		$('#draft-confirmation-box').hide();
+	};
+
+	function toggleBlogDeletion(blogSlug, blogTitle) {		
+		$('#delete-confirmation-box form').prop('action', `/admin/delete_blog/${blogSlug}`);
+		$('#blog-name').html(`'${blogTitle}'`);
+		hideBoxes();
 		$('#delete-confirmation-box').show();
-	}	
+	};	
+
+	function togglePublishBlog(blogSlug, blogTitle) {
+		localStorage.setItem('blogSlug', blogSlug);
+		localStorage.setItem('blogTitle', blogTitle);
+		$('#publish-confirmation-box form').prop('action', `/admin/publish_blog/${blogSlug}`);
+		$('#publishing-blog-name').html(`'${blogTitle}'`);
+		hideBoxes();
+		$('#publish-confirmation-box').show();
+	};	
+
+	function toggleSetDraft(blogSlug, blogTitle) {
+		localStorage.setItem('blogSlug', blogSlug);
+		localStorage.setItem('blogTitle', blogTitle);
+		$('#draft-confirmation-box form').prop('action', `/admin/draft_blog/${blogSlug}`);
+		$('#drafting-blog-name').html(`'${blogTitle}'`);
+		hideBoxes();
+		$('#draft-confirmation-box').show();
+	};	
 	
-	$('#cancel-deletion-btn').click(() => {
-		$('#delete-confirmation-box').hide();		
-	})
+	$('.cancel-btn').click(() => hideBoxes());
+
+	function changeBlogStatus() {
+		var blogSlug = localStorage.getItem('blogSlug');
+		var blogTitle = localStorage.getItem('blogTitle');
+		$.ajax({
+			type: 'POST',
+			url: `/admin/change_blog_status/${blogSlug}`,
+			dataType: 'json',
+			success: (data) => {
+				if (data.status) {
+					hideBoxes();				
+					if (data.status == 'Published') {
+						$(`#blog-status-btn-${blogSlug}`).html(data.status).css('background-color', 'green');
+						$(`#toggle-change-blog-status-btn-${blogSlug}`).html(`<i class="fas fa-file-alt"></i> Keep as Draft`);
+						
+						$(`#toggle-change-blog-status-btn-${blogSlug}`).off('click').on('click', function(e) {
+							e.preventDefault();
+							toggleSetDraft(blogSlug, blogTitle);
+						});
+					} else if (data.status == 'Draft') {
+						$(`#blog-status-btn-${blogSlug}`).html(data.status).css('background-color', 'darkred');
+						$(`#toggle-change-blog-status-btn-${blogSlug}`).html(`<i class="fas fa-paper-plane"></i> Publish Blog`);
+						
+						$(`#toggle-change-blog-status-btn-${blogSlug}`).off('click').on('click', function(e) {
+							e.preventDefault();
+							togglePublishBlog(blogSlug, blogTitle);
+						});
+					}
+				};
+				localStorage.removeItem('blogSlug');
+				localStorage.removeItem('blogTitle');
+			},
+			error: () => {
+				console.error("Error: ", error);
+			},
+		});
+	};
 </script>
 {% endblock scripts %}

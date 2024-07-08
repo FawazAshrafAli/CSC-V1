@@ -6,6 +6,7 @@ from .views import (
 
     BlogListView, BlogDetailView, CreateBlogView,
     UpdateBlogView, DeleteBlogView, RemoveBlogImageView,
+    ChangeBlogStatusView,
     )
 
 app_name = "csc_admin"
@@ -24,6 +25,8 @@ urlpatterns = [
     path('blog/<str:slug>', BlogDetailView.as_view(), name="blog"),
     path('create_blog/', CreateBlogView.as_view(), name="create_blog"),
     path('update_blog/<str:slug>', UpdateBlogView.as_view(), name="update_blog"),
-    path('delete_blog/<pk>', DeleteBlogView.as_view(), name="delete_blog"),
-    path("remove_blog_image/<pk>", RemoveBlogImageView.as_view(), name="remove_blog_image"),
+    path('delete_blog/<str:slug>', DeleteBlogView.as_view(), name="delete_blog"),
+    path("remove_blog_image/<pk>", RemoveBlogImageView.as_view(), name="remove_blog_image"),    
+    path("change_blog_status/<str:slug>", ChangeBlogStatusView.as_view(), name="change_blog_status"),    
+
     ]

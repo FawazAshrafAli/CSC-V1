@@ -5,7 +5,7 @@ from django.utils.text import slugify
 
 class Blog(models.Model):
     image = models.ImageField(upload_to='blog_images/', null=True, blank=True)  # If you want a featured image
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, unique=True)
     slug = models.SlugField(unique=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     content = RichTextField()
@@ -17,9 +17,8 @@ class Blog(models.Model):
     categories = models.ManyToManyField('Category', related_name='blog_posts')
     tags = models.ManyToManyField('Tag', related_name='blog_posts')
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
+    def save(self, *args, **kwargs):        
+        self.slug = slugify(self.title)
         super().save(*args, **kwargs)
 
     @property
