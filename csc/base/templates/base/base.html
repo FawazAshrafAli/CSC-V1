@@ -7,9 +7,11 @@
 ================================================== -->
 <title>{% block title_prefix %}{% endblock title_prefix %} - List of Common Service Centres (CSC) in India</title>
 
-<meta name="description" content="List of Common Service Centres (CSC) in India" />
+<!-- <meta name="description" content="List of Common Service Centres (CSC) in India" /> -->
+<meta name="description" content="{% block meta_description %}{% endblock meta_description %}" />
 
-<meta name="keywords" content="CSC Centers in India, Common Service Centres, List of CSC Centers, Find CSC Centers">
+<!-- <meta name="keywords" content="CSC Centers in India, Common Service Centres, List of CSC Centers, Find CSC Centers"> -->
+<meta name="keywords" content="{% block meta_keywords %}{% endblock meta_keywords %}" />
 
 <meta name="author" content="CSCIndia.info" />
 
@@ -30,206 +32,10 @@
 
 <meta property="og:url" content="https://cscindia.info/" />
 
+<!-- <link rel="canonical" href="https://cscindia.info/" /> -->
+<link rel="canonical" href="{% block meta_canonical %}{% endblock meta_canonical %}" />
+
 {% block meta_tags %}{% endblock meta_tags %}
-
-<link rel="canonical" href="https://cscindia.info/" />
-
-<script type="application/ld+json">
-{
-  "@context": "http://schema.org",
-  "@type": "WebSite",
-  "url": "https://cscindia.info",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://cscindia.info/jobs?q={search_term_string}&from=googlesl",
-    "query-input": "required name=search_term_string"
-  }
-}
-</script>
-
-
-
-<script type="application/ld+json">
-	{
-	  "@context": "https://schema.org",
-	  "@type": "FAQPage",
-	  "mainEntity": [
-		{
-		  "@type": "Question",
-		  "name": "What is a trademark?",
-		  "acceptedAnswer": {
-			"@type": "Answer",
-			"text": "A trademark is a distinctive marker that distinguishes products or services from competitors. It can include symbols, designs, expressions, or identifiable features associated with a specific brand."
-		  }
-		},
-		{
-		  "@type": "Question",
-		  "name": "Why should I register my trademark?",
-		  "acceptedAnswer": {
-			"@type": "Answer",
-			"text": "Trademark registration protects your rights to use the mark and provides legal recourse against infringement. It remains valid for ten years, with the option to renew indefinitely."
-		  }
-		},
-		{
-		  "@type": "Question",
-		  "name": "What is the process for trademark filing in India?",
-		  "acceptedAnswer": {
-			"@type": "Answer",
-			"text": "<ul class='p-l-15 ul_f_f list-icon list-icon-check list-icon-colored text-justify'><li>Trademark search</li><li>Class Selection and Document Preparation</li><li>Trademark Application Filing</li><li>Vienna Codification Process</li><li>Trademark Examination</li><li>Trademark Journal Publication</li><li>Trademark Objection/Opposition (if applicable)</li><li>Trademark Hearing</li><li>Trademark Registration</li></ul>"
-		  }
-		},
-		 
-		{
-		  "@type": "Question",
-		  "name": "How do I get started with IndiaFilings for trademark registration?",
-		  "acceptedAnswer": {
-			"@type": "Answer",
-			"text": "You can contact our experts and initiate the process by providing basic information about your desired trademark and industry. IndiaFilings experts will guide you throughout the registration process."
-		  }
-		}
-	  ]
-	}
-	</script>
-
-<script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "WebPage",
-      "mainEntity": {
-        "@type": "CreativeWork",
-        "name": "Keyphrases",
-        "about": [
-          {
-            "@type": "Thing",
-            "name": "Keyword 1"
-          },
-          {
-            "@type": "Thing",
-            "name": "Keyword 2"
-          },
-          {
-            "@type": "Thing",
-            "name": "Keyword 3"
-          }
-          // Add more keywords as needed
-        ]
-      }
-    }
-</script>
-
-<script type="application/ld+json">
-{
-"@context": "http://schema.org",
-"@type": "CollectionPage",
-"name": "Tags Page",
-"description": "A page listing various tags for categorizing content.",
-"url": "https://www.example.com/tags",
-"mainEntity": {
-"@type": "ItemList",
-"itemListElement": [
-{
-"@type": "ListItem",
-"position": 1,
-"url": "https://www.example.com/tags/technology",
-"name": "Technology"
-},
-{
-"@type": "ListItem",
-"position": 2,
-"url": "https://www.example.com/tags/science",
-"name": "Science"
-},
-{
-"@type": "ListItem",
-"position": 3,
-"url": "https://www.example.com/tags/travel",
-"name": "Travel"
-},
-{
-"@type": "ListItem",
-"position": 4,
-"url": "https://www.example.com/tags/food",
-"name": "Food"
-}
-// Add more tags as needed
-]
-}
-}
-</script>
-
-
-
-<script type="application/ld+json">
-	{
-	  "@context": "http://schema.org",
-	  "@type": "ItemList",
-	  "name": "List of Blog Articles",
-	  "itemListElement": [
-		{
-		  "@type": "ListItem",
-		  "position": 1,
-		  "item": {
-			"@type": "BlogPosting",
-			"headline": "Title of Blog Post 1",
-			"image": "URL of Featured Image 1",
-			"datePublished": "2022-01-01",
-			"dateModified": "2022-01-01",
-			"author": {
-			  "@type": "Person",
-			  "name": "Author's Name 1"
-			},
-			"publisher": {
-			  "@type": "Organization",
-			  "name": "Your Organization Name",
-			  "logo": {
-				"@type": "ImageObject",
-				"url": "URL of Organization's Logo"
-			  }
-			},
-			"mainEntityOfPage": {
-			  "@type": "WebPage",
-			  "@id": "URL of Blog Post 1"
-			},
-			"articleBody": "Summary or snippet of Blog Post 1",
-			"keywords": "Keywords related to Blog Post 1",
-			"url": "URL of Blog Post 1"
-		  }
-		},
-		{
-		  "@type": "ListItem",
-		  "position": 2,
-		  "item": {
-			"@type": "BlogPosting",
-			"headline": "Title of Blog Post 2",
-			"image": "URL of Featured Image 2",
-			"datePublished": "2022-01-01",
-			"dateModified": "2022-01-01",
-			"author": {
-			  "@type": "Person",
-			  "name": "Author's Name 2"
-			},
-			"publisher": {
-			  "@type": "Organization",
-			  "name": "Your Organization Name",
-			  "logo": {
-				"@type": "ImageObject",
-				"url": "URL of Organization's Logo"
-			  }
-			},
-			"mainEntityOfPage": {
-			  "@type": "WebPage",
-			  "@id": "URL of Blog Post 2"
-			},
-			"articleBody": "Summary or snippet of Blog Post 2",
-			"keywords": "Keywords related to Blog Post 2",
-			"url": "URL of Blog Post 2"
-		  }
-		}
-	  ]
-	}
-</script>
-
-
 <script type="application/ld+json">
   {
     "@context": "http://schema.org",
@@ -693,5 +499,6 @@ $('.msps-slider').slick({
 
 </script>
 
+{% block scripts %}{% endblock scripts %}
 </body>
 </html>

@@ -35,7 +35,6 @@
 	<div class="blog-page">
 	<div class="row">
 
-
 		<!-- Post Content -->
 		<div class="col-lg-9 col-md-8 padding-right-30">
 
@@ -122,7 +121,7 @@
 				<ul class="widget-tabs">
 
 					<!-- Post #1 -->
-					 {% for blog in blogs %}
+					 {% for blog in ideal_blogs %}
 					<li>
 						<div class="widget-content">
 								<div class="widget-thumb">
@@ -162,7 +161,7 @@
 				<h3>Tags</h3>
 				<ul class="option-set">
                     {% for tag in tags %}
-					<li><a href="#filter">{{tag.name}}</a></li>
+					<li><a href="{% url 'blog:tag_filtered_blogs' tag.slug %}">{{tag.name}}</a></li>
 					{% endfor %}
                 </ul>
 			</div>

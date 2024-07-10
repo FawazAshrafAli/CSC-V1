@@ -1,3 +1,4 @@
+from django.db.models.query import QuerySet
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.decorators.cache import never_cache
@@ -8,6 +9,7 @@ from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
+from django.utils import timezone
 
 from .forms import (
     CreateServiceForm, UpdateServiceForm, CreateBlogForm,
@@ -367,8 +369,10 @@ class ChangeBlogStatusView(BaseAdminBlogView, UpdateView):
         self.object = self.get_object()
         if self.object.status == "Published":
             self.object.status = "Draft"
+            self.object.published_at = None
         elif self.object.status == "Draft":
             self.object.status = "Published"
+            self.object.published_at = timezone.now()
         self.object.save()
         return JsonResponse({"message": "Successfully published blog.", "status": self.object.status})
 ##################################### BLOG END #####################################

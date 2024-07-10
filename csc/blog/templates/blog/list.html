@@ -3,9 +3,145 @@
 
 {% block title_prefix %} Blogs {% endblock title_prefix %}
 
+{% block meta_description %}
+Discover insightful blogs about Common Service Centers (CSC) in India, their services, benefits, and success stories. Stay informed and updated with our latest posts.
+{% endblock meta_description %}
+
+{% block meta_keywords %}
+CSC Centers in India, Common Service Centre Blogs, CSC Blogs, CSC Services, CSC Success Stories
+{% endblock meta_keywords %}
+
+{% block meta_canonical %}
+https://{{ request.get_host }}{{ request.path }}
+{% endblock meta_canonical %}
+
 {% block meta_tags %}{% endblock meta_tags %}
 
-{% block schema_markup %}{% endblock schema_markup %}
+{% block schema_markup %}
+<script type="application/ld+json">
+{
+	"@context": "http://schema.org",
+	"@type": "WebSite",
+	"url": "https://cscindia.info",
+	"potentialAction": {
+	"@type": "SearchAction",
+	"target": "https://{{request.get_host}}/?q={q}",
+	"query-input": "required name=q"
+	}
+}
+</script>
+
+<script type="application/ld+json">
+	{
+		"@context": "http://schema.org",
+		"@type": "WebPage",
+		"mainEntity": {
+		"@type": "CreativeWork",
+		"name": "Keyphrases",
+		"about": [
+			{% for category in categories|slice:'4' %}
+			{
+			"@type": "Thing",
+			"name": "{{category.name}}"
+			},
+			{% endfor %}
+			// Add more keywords as needed
+		]
+		}
+	}
+</script>
+
+<script type="application/ld+json">
+{
+	"@context": "http://schema.org",
+	"@type": "CollectionPage",
+	"name": "Tags Page",
+	"description": "A page listing various tags for categorizing content.",
+	"url": "https://{{request.get_host}}/blog/tags",
+	"mainEntity": {
+		"@type": "ItemList",
+		"itemListElement": [
+		{% for tag in tags %}
+		{
+			"@type": "ListItem",
+			"position": {{forloop.counter}},
+			"url": "http://{{request.get_host}}/blog/tags/{{tag.slug}}",
+			"name": "{{tag.name}}"
+		},
+		{% endfor %}
+		// Add more tags as needed
+		]
+	}
+}
+</script>
+
+
+
+<script type="application/ld+json">
+	{
+		"@context": "http://schema.org",
+		"@type": "ItemList",
+		"name": "List of Blog Articles",
+		"itemListElement": [
+		{% for blog in blogs|slice:"4" %}
+		{
+			"@type": "ListItem",
+			"position": {{forloop.counter}},
+			"item": {
+			"@type": "BlogPosting",
+			"headline": "{{blog.title}}",
+			"image": "{% if blog.image %} {{blog.image.url}} {% endif %}",
+			"datePublished": "{% if blog.published_at %} {{blog.published_at|date:'Y-m-d'}} {% endif %}",
+			"dateModified": "{{blog.updated_at|date:'Y-m-d'}}",
+			"author": {
+				"@type": "Person",
+				"name": "{{blog.author.username}}"
+			},
+			"publisher": {
+				"@type": "Organization",
+				"name": "CSC Locator",
+				"logo": {
+					"@type": "ImageObject",
+					"url": "/static/images/logo.png"
+				}
+			},
+			"mainEntityOfPage": {
+				"@type": "WebPage",
+				"@id": "https://{{request.get_host}}/blog/{{blog.slug}}"
+			},
+			"articleBody": "{{blog.summary}}",
+			"keywords": "{{blog.get_tags}}",
+			"url": "https://{{request.get_host}}/blog/blog.slug"
+			}
+		},
+		{% endfor %}		
+		]
+	}
+</script>
+
+
+
+<script type="application/ld+json">
+	{
+		"@context": "http://schema.org",
+		"@type": "BreadcrumbList",
+		"itemListElement": [
+		{
+			"@type": "ListItem",
+			"position": 1,
+			"name": "Home",
+			"item": "https://{{request.get_host}}"
+		},
+		{
+			"@type": "ListItem",
+			"position": 2,
+			"name": "Blog",
+			"item": "https://{{request.get_host}}/blog"
+		},		
+		]
+	}
+	</script> 
+{% endblock schema_markup %}
 
 {% block content %}
 <!-- Titlebar
@@ -20,7 +156,7 @@
 				<!-- Breadcrumbs -->
 				<nav id="breadcrumbs">
 					<ul>
-						<li><a href="#">Home</a></li>
+						<li><a href="{% url 'home:view' %}">Home</a></li>
 						<li>Blog</li>
 					</ul>
 				</nav>
@@ -34,29 +170,39 @@
 <!-- Content
 ================================================== -->
 <div class="container">
+	{% if tag_name %}
+	{% if blogs %}
+	<h3>Blogs tagged with "{{ tag_name }}"</h3>
+	{% else %}
+	<h3>Oops ! There is no blogs tagged with "{{ tag_name }}"</h3>
+	{% endif %}
+	<br>
+	{% endif %}
 
 	<!-- Blog Posts -->
 	<div class="blog-page">
 		<div class="row">
 			<div class="col-lg-9 col-md-8 padding-right-30">
 				<!-- Blog Post -->
-                 {% for blog in blogs %}
-				<div class="blog-post">				
-					<!-- Img -->
-					<a href="{% url 'blog:detail' blog.slug %}" class="post-img">
-						<img src={% if blog.image %} {{blog.image.url}} {% else %} "{% static 'images/blog-post-01.jpg' %}" {% endif %} alt="">
-					</a>				
-					<!-- Content -->
-					<div class="post-content">
-						<h3><a href="{% url 'blog:detail' blog.slug %}">{{blog.title}} </a></h3>
-						<ul class="post-meta">
-							<li>{{blog.created_at|date:"F d, Y"}}</li>					
-						</ul>
-						<p>{{blog.summary}}</p>
-						<a href="{% url 'blog:detail' blog.slug %}" class="read-more">Read More <i class="fa fa-angle-right"></i></a>
+				<div id="list-blogs"> 
+					{% for blog in blogs %}
+					<div class="blog-post">				
+						<!-- Img -->
+						<a href="{% url 'blog:detail' blog.slug %}" class="post-img">
+							<img src={% if blog.image %} {{blog.image.url}} {% else %} "{% static 'images/blog-post-01.jpg' %}" {% endif %} alt="">
+						</a>				
+						<!-- Content -->
+						<div class="post-content">
+							<h3><a href="{% url 'blog:detail' blog.slug %}">{{blog.title}} </a></h3>
+							<ul class="post-meta">
+								<li>{{blog.created_at|date:"F d, Y"}}</li>					
+							</ul>
+							<p>{{blog.summary}}</p>
+							<a href="{% url 'blog:detail' blog.slug %}" class="read-more">Read More <i class="fa fa-angle-right"></i></a>
+						</div>
 					</div>
+					{% endfor %}				
 				</div>
-                {% endfor %}				
 				<!-- Pagination -->
 				<div class="clearfix"></div>
 				<div class="row">
@@ -83,9 +229,9 @@
 					<!-- Widget -->
 					<div class="widget">
 						<h3 class="margin-top-0 margin-bottom-25">Search Blog</h3>
-						<div class="search-blog-input">
-							<div class="input"><input class="search-field" type="text" placeholder="Type and hit enter" value=""/></div>
-						</div>
+						<form method="#" id="blog-search-form" class="search-blog-input">
+							<div class="input"><input class="search-field" type="text" placeholder="Type and hit enter" name="q" id="search-input-value" value="{{query}}"/></div>		
+						</form>
 						<div class="clearfix"></div>
 					</div>
 					<!-- Widget / End -->
@@ -94,7 +240,7 @@
 						<h3>Popular Posts</h3>
 						<ul class="widget-tabs">
 							<!-- Post #1 -->
-                             {% for blog in blogs|slice:'3' %}
+                             {% for blog in ideal_blogs|slice:'3' %}
 							<li>
 								<div class="widget-content">
 									<div class="widget-thumb">
@@ -126,7 +272,7 @@
 						<h3>Tags</h3>
 						<ul class="option-set">
 							{% for tag in tags %}
-							<li><a href="#filter">{{tag.name}}</a></li>
+							<li><a href="{% url 'blog:tag_filtered_blogs' tag.slug %}">{{tag.name}}</a></li>
 							{% endfor %}		
 						</ul>
 					</div>
@@ -141,3 +287,61 @@
 	</div>
 </div>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+	$(document).ready(function() {
+		function searchBlog(e) {
+			if (e) {
+				e.preventDefault();
+			}
+			const query = $('#search-input-value').val();
+			// const url = `/blog/search/?q=` + encodeURIComponent(query);
+			const url = `/blog/?q=` + query;
+
+			history.pushState(null, '', url);
+			$.ajax({
+				type: 'get',
+				url: `/blog/search/?=${query}`,
+				data: {'q': query},
+				dataType: 'json',
+				success: (response) => {
+					console.log("Worked");
+					console.log(response)
+					$('#list-blogs').html(`<h2>Search results for "${query}" </h2><br>`);
+
+					if (Array.isArray(response.data)) {						
+						response.data.forEach((blog) => {							
+							html = `<div class="blog-post">				
+								<!-- Img -->
+								<a href="/blog/detail/${blog.slug}" class="post-img">
+									<img src=${blog.image ? blog.image : '/static/images/blog-post-01.jpg'} alt="Blog Image">
+								</a>				
+								<!-- Content -->
+								<div class="post-content">
+									<h3><a href="/blog/detail/${blog.slug}">${blog.title}</a></h3>
+									<ul class="post-meta">
+										<li>${blog.created_at}</li>
+									</ul>
+									<p>${blog.summary}</p>
+									<a href="/blog/detail/${blog.slug}" class="read-more">Read More <i class="fa fa-angle-right"></i></a>
+								</div>
+							</div>`;
+
+							$('#list-blogs').append(html);
+						});
+					};
+				},
+				error: (jqXHR, testStatus, errorThrown) => {
+					console.error("Error: ", testStatus, errorThrown);
+				}
+			});
+		};
+
+		$('#blog-search-form').on('submit', (e) => searchBlog(e));
+
+		// window.onload = () => searchBlog();
+	});
+
+</script>
+{% endblock scripts %}
