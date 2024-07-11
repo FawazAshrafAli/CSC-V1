@@ -6,7 +6,11 @@ from .views import (
 
     BlogListView, BlogDetailView, CreateBlogView,
     UpdateBlogView, DeleteBlogView, RemoveBlogImageView,
-    ChangeBlogStatusView,
+    ChangeBlogStatusView, 
+
+    AddCscCenter, GetDistrictView, GetBlockView,
+    ListCscCenter,
+    get_all_states, get_all_districts, get_all_blocks,
     )
 
 app_name = "csc_admin"
@@ -29,4 +33,12 @@ urlpatterns = [
     path("remove_blog_image/<pk>", RemoveBlogImageView.as_view(), name="remove_blog_image"),    
     path("change_blog_status/<str:slug>", ChangeBlogStatusView.as_view(), name="change_blog_status"),    
 
+    path('csc_centers/', ListCscCenter.as_view(), name = "csc_centers"),
+    path('add_csc/', AddCscCenter.as_view(), name = "add_csc"),
+    path('get_districts/', GetDistrictView.as_view(), name="get_districts"),
+    path('get_blocks/', GetBlockView.as_view(), name="get_blocks"),
+
+    path('get_all_states/', get_all_states, name="get_all_states"),
+    path('get_all_districts/', get_all_districts, name="get_all_districts"),
+    path('get_all_blocks/', get_all_blocks, name="get_all_blocks"),
     ]

@@ -45,6 +45,24 @@ class Blog(models.Model):
                 category_string += categories[i].name
         return category_string
 
+    @property
+    def previous_blog(self):
+        blogs = Blog.objects.all().order_by('-created_at')
+        current_blog_index = list(blogs).index(self)
+        if current_blog_index > 0:
+            return blogs[current_blog_index - 1]
+        
+        return None
+    
+    @property
+    def next_blog(self):
+        blogs = Blog.objects.all().order_by('-created_at')
+        current_blog_index = list(blogs).index(self)
+        if current_blog_index < len(blogs) - 1:
+            return blogs[current_blog_index + 1]
+        
+        return None
+            
             
 
     class Meta:

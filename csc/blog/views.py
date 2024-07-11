@@ -5,6 +5,7 @@ from django.http import Http404, JsonResponse
 from django.db.models import Q
 import random
 
+from services.models import Service
 from .models import Blog, Category, Tag
 
 class BaseBlogView(View):
@@ -14,6 +15,7 @@ class BaseBlogView(View):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
         context['ideal_blogs'] = Blog.objects.all()
+        context['services'] = Service.objects.all()
 
         tag_list = list(Tag.objects.all())
 
@@ -82,6 +84,3 @@ class SearchBlogView(BlogListView, ListView):
             })
         print(serialized_data)
         return JsonResponse({'data': serialized_data})
-
-
-

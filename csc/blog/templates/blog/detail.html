@@ -1,7 +1,113 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block services_nav %} current {% endblock services_nav %}
+{% block title_prefix %} {{blog.title}} {% endblock title_prefix %}
+
+{% block meta_description %}
+Explore detailed insights and updates on Common Service Centres (CSC) in India. Stay informed about initiatives, services, and developments impacting CSCs across the country.
+{% endblock meta_description %}
+
+{% block meta_keywords %}
+CSC blog, Common Service Centres blog, CSC updates, CSC initiatives, CSC news
+{% endblock meta_keywords %}
+
+{% block meta_canonical %}
+https://{{ request.get_host }}{{ request.path }}
+{% endblock meta_canonical %}
+
+{% block meta_tags %}{% endblock meta_tags %}
+
+{% block schema_markup %}
+<script type="application/ld+json">
+	{
+		"@context": "http://schema.org",
+		"@type": "WebSite",
+		"url": "https://cscindia.info",
+		"potentialAction": {
+		"@type": "SearchAction",
+		"target": "https://{{request.get_host}}/?q={q}",
+		"query-input": "required name=q"
+		}
+	}
+</script>
+
+<script type="application/ld+json">
+	{
+		"@context": "http://schema.org",
+		"@type": "WebPage",
+		"mainEntity": {
+		"@type": "CreativeWork",
+		"name": "Keyphrases",
+		"about": [
+			{% for category in categories|slice:'4' %}
+			{
+			"@type": "Thing",
+			"name": "{{category.name}}"
+			},
+			{% endfor %}
+			// Add more keywords as needed
+		]
+		}
+	}
+</script>
+
+<script type="application/ld+json">
+	{
+		"@context": "http://schema.org",
+		"@type": "BreadcrumbList",
+		"itemListElement": [
+		{
+			"@type": "ListItem",
+			"position": 1,
+			"name": "Home",
+			"item": "https://{{request.get_host}}"
+		},
+		{
+			"@type": "ListItem",
+			"position": 2,
+			"name": "Blog",
+			"item": "https://{{request.get_host}}/blog"
+		},
+		{
+			"@type": "ListItem",
+			"position": 3,
+			"name": "{{blog.title}}",
+			"item": "https://{{request.get_host}}{{request.path}}"
+		},		
+		]
+	}
+</script>
+
+<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "BlogPosting",
+		"headline": "{{blog.title}}",
+		"image": [
+		"{% if blog.image %} {{blog.image.url}} {% endif %}"
+		],
+		"datePublished": "{{blog.published_at|date:'Y-m-d'}}",
+		"dateModified": "{{blog.updated_at|date:'Y-m-d'}}",
+		"author": {
+		"@type": "Person",
+		"name": "{{blog.author.username}}"
+		},
+		"publisher": {
+		"@type": "Organization",
+		"name": "CSC Locator",
+		"logo": {
+			"@type": "ImageObject",
+			"url": "/static/images/logo.png"
+		}
+		},
+		"description": "{{blog.summary}}",
+		"mainEntityOfPage": {
+		"@type": "WebPage",
+		"@id": "https://{{request.get_host}}{{request.path}}"
+		}
+	}
+</script>
+{% endblock schema_markup %}
 
 {% block content %}
 <!-- Titlebar
@@ -16,11 +122,11 @@
 				<!-- Breadcrumbs -->
 				<nav id="breadcrumbs">
 					<ul>
-						<li><a href="#">Home</a></li>
-						<li>Blog</li>
+						<li><a href="{% url 'home:view' %}">Home</a></li>
+						<li><a href="{% url 'blog:list' %}">Blog</a></li>
+						<li>{{blog.title}}</li>
 					</ul>
 				</nav>
-
 			</div>
 		</div>
 	</div>
@@ -30,104 +136,79 @@
 <!-- Content
 ================================================== -->
 <div class="container">
-
 	<!-- Blog Posts -->
 	<div class="blog-page">
 	<div class="row">
-
 		<!-- Post Content -->
 		<div class="col-lg-9 col-md-8 padding-right-30">
-
-
 			<!-- Blog Post -->
-			<div class="blog-post single-post">
-				
+			<div class="blog-post single-post" id="blog-list">
 				<!-- Img -->
 				<img class="post-img" src={% if blog.image %} {{blog.image.url}} {% else %} "{% static 'images/blog-post-02.jpg' %}" {% endif %} alt="">
-
-				
 				<!-- Content -->
 				<div class="post-content">
-
 					<h3>{{ blog.title }}</h3>
-
 					<ul class="post-meta">
 						<li>{{blog.created_at|date:"F d, Y"}}</li>						
 					</ul>
-
-					<div>{{blog.content|safe}}</div>
-					<br>
-
-
+				<div>{{blog.content|safe}}</div>
+				<br>
 				<!-- AddToAny BEGIN -->
-<div class="a2a_kit a2a_kit_size_32 a2a_default_style" data-a2a-url="https://cscindia.info/">
-	<a class="a2a_dd" href="https://www.addtoany.com/share"></a>
-	<a class="a2a_button_facebook"></a>
-	<a class="a2a_button_x"></a>
-	<a class="a2a_button_pinterest"></a>
-	<a class="a2a_button_threads"></a>
-	<a class="a2a_button_linkedin"></a>
-	<a class="a2a_button_reddit"></a>
-	</div>
-	<script async src="https://static.addtoany.com/menu/page.js"></script>
-	<!-- AddToAny END -->
-
-			 
-					<div class="clearfix"></div>
-
+				<div class="a2a_kit a2a_kit_size_32 a2a_default_style" data-a2a-url="https://cscindia.info/">
+					<a class="a2a_dd" href="https://www.addtoany.com/share"></a>
+					<a class="a2a_button_facebook"></a>
+					<a class="a2a_button_x"></a>
+					<a class="a2a_button_pinterest"></a>
+					<a class="a2a_button_threads"></a>
+					<a class="a2a_button_linkedin"></a>
+					<a class="a2a_button_reddit"></a>
 				</div>
+				<script async src="https://static.addtoany.com/menu/page.js"></script>
+				<!-- AddToAny END -->
+				<div class="clearfix"></div>
 			</div>
-			<!-- Blog Post / End -->
-
-
-			<!-- Post Navigation -->
-			<ul id="posts-nav" class="margin-top-0 margin-bottom-45">
-				<li class="next-post">
-					<a href="#"><span>Next Post</span>
-					The Best Cofee Shops In Sydney Neighborhoods</a>
-				</li>
-				<li class="prev-post">
-					<a href="#"><span>Previous Post</span>
-					Hotels for All Budgets</a>
-				</li>
-			</ul>
-
-    
-  
+		</div>
+		<!-- Blog Post / End -->
+		<!-- Post Navigation -->
+		<ul id="posts-nav" class="margin-top-0 margin-bottom-45">
+			{% if blog.next_blog %}
+			<li class="next-post">
+				<a href="{% url 'blog:detail' blog.next_blog.slug %}"><span>Next Blog</span>
+					{{blog.next_blog.title}}</a>
+			</li>
+			{% endif %}
+			{% if blog.previous_blog %}
+			<li class="prev-post">
+				<a href="{% url 'blog:detail' blog.previous_blog.slug %}"><span>Previous Blog</span>
+					{{blog.previous_blog.title}}</a>
+			</li>
+			{% endif %}
+		</ul>
 	</div>
 	<!-- Content / End -->
-
-
-
 	<!-- Widgets -->
 	<div class="col-lg-3 col-md-4">
 		<div class="sidebar right">
-
 			<!-- Widget -->
 			<div class="widget">
 				<h3 class="margin-top-0 margin-bottom-25">Search Blog</h3>
-				<div class="search-blog-input">
-					<div class="input"><input class="search-field" type="text" placeholder="Type and hit enter" value=""/></div>
-				</div>
+				<form method="#" id="blog-search-form" class="search-blog-input">
+					<div class="input"><input class="search-field" type="text" placeholder="Type and hit enter" name="q" id="search-input-value" value="{{query}}"/></div>		
+				</form>
 				<div class="clearfix"></div>
 			</div>
 			<!-- Widget / End -->
-
-
 			<!-- Widget -->
 			<div class="widget margin-top-40">
-
 				<h3>Popular Posts</h3>
 				<ul class="widget-tabs">
-
 					<!-- Post #1 -->
 					 {% for blog in ideal_blogs %}
 					<li>
 						<div class="widget-content">
-								<div class="widget-thumb">
+							<div class="widget-thumb">
 								<a href="pages-blog-post.html"><img src={% if blog.image %} {{blog.image.url}} {% else %} "{% static 'images/blog-widget-03.jpg' %}" {% endif %} alt=""></a>
 							</div>
-							
 							<div class="widget-text">
 								<h5><a href="pages-blog-post.html">{{blog.title}} </a></h5>
 								<span>{{blog.created_at|date:"F d, Y"}}</span>
@@ -136,26 +217,19 @@
 						</div>
 					</li>
 					{% endfor %}
-
 				</ul>
-
 			</div>
 			<!-- Widget / End-->
-
-
-
-<!-- Widget -->
-<div class="widget margin-top-40">
-    <h3>Categories</h3>
-	<ul class="list-4 color">
-		{% for category in categories|slice:'4' %}
-		<li>{{category}}</li>
-		{% endfor %}
-	</ul>
-</div>
-<!-- Widget / End -->
-
-
+			<!-- Widget -->
+			<div class="widget margin-top-40">
+				<h3>Categories</h3>
+				<ul class="list-4 color">
+					{% for category in categories|slice:'4' %}
+					<li>{{category}}</li>
+					{% endfor %}
+				</ul>
+			</div>
+			<!-- Widget / End -->
 			<!-- Widget -->
 			<div class="widget margin-top-40">
 				<h3>Tags</h3>
@@ -166,15 +240,19 @@
                 </ul>
 			</div>
 			<!-- Widget / End-->
-
 			<div class="clearfix"></div>
 			<div class="margin-bottom-40"></div>
 		</div>
 	</div>
-	</div>
-	<!-- Sidebar / End -->
+</div>
+<!-- Sidebar / End -->
 
 
 </div>
 </div>
 {% endblock content %}
+
+{% block scripts %}
+<!-- Blog Search -->
+<script src={% static 'w3/blog/js/searchBlog.js' %}></script>
+{% endblock scripts %}

@@ -1,10 +1,9 @@
-from django.db.models.query import QuerySet
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 from django.views.generic import View, TemplateView, CreateView, DetailView, UpdateView, ListView
-from django.http import HttpRequest, JsonResponse, Http404
+from django.http import JsonResponse, Http404
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -16,6 +15,7 @@ from .forms import (
     UpdateBlogForm
     )
 
+from csc_center.models import CscCenter, State, District, Block
 from services.models import Service
 from blog.models import Blog, Category, Tag
 
@@ -376,3 +376,65 @@ class ChangeBlogStatusView(BaseAdminBlogView, UpdateView):
         self.object.save()
         return JsonResponse({"message": "Successfully published blog.", "status": self.object.status})
 ##################################### BLOG END #####################################
+
+##################################### CSC CENTER START #####################################
+
+@method_decorator(never_cache, name="dispatch")
+class BaseAdminCscCenterView(BaseAdminView, View):
+    model = CscCenter
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'states': State.objects.all().order_by('state'),
+            'districts': District.objects.all().order_by('district'),
+            'blocks': Block.objects.all().order_by('block'),
+            })
+        return context
+
+
+class ListCscCenter(BaseAdminCscCenterView, ListView):
+    template_name = "admin_csc_center/list.html"
+
+
+class AddCscCenter(BaseAdminCscCenterView, CreateView):
+    template_name = 'admin_csc_center/create.html'
+    success_url = reverse_lazy('csc_admin:add_csc')
+    fields = "__all__"
+
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['states'] = State.objects.all()
+        return context
+
+
+# Nuclear
+class GetDistrictView(View):
+    def get(self, request, *args, **kwargs):
+        state_id = request.GET.get('state_id')
+        districts = list(District.objects.filter(state__pk=state_id).values())
+        return JsonResponse({"districts": districts}, safe=False)
+    
+
+class GetBlockView(View):
+    def get(self, request, *args, **kwargs):
+        district_id = request.GET.get('district_id')
+        state_id = request.GET.get('state_id')
+        blocks = list(Block.objects.filter(district__id = district_id, state__id = state_id).values())
+        return JsonResponse({"blocks": blocks}, safe=False)
+    
+
+# Json
+def get_all_states(request):
+    states = list(State.objects.all().order_by('state').values())
+    return JsonResponse({"states": states}, safe=False)
+
+def get_all_districts(request):
+    districts = list(District.objects.all().order_by('district').values())
+    return JsonResponse({"districts": districts}, safe=False)
+
+def get_all_blocks(request):
+    blocks = list(Block.objects.all().order_by('block').values())
+    return JsonResponse({"blocks": blocks}, safe=False)
+##################################### CSC CENTER END #####################################

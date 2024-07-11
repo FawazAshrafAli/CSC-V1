@@ -136,11 +136,11 @@ https://{{ request.get_host }}{{ request.path }}
 			"@type": "ListItem",
 			"position": 2,
 			"name": "Blog",
-			"item": "https://{{request.get_host}}/blog"
+			"item": "https://{{request.get_host}}{{request.path}}"
 		},		
 		]
 	}
-	</script> 
+</script> 
 {% endblock schema_markup %}
 
 {% block content %}
@@ -289,59 +289,6 @@ https://{{ request.get_host }}{{ request.path }}
 {% endblock content %}
 
 {% block scripts %}
-<script>
-	$(document).ready(function() {
-		function searchBlog(e) {
-			if (e) {
-				e.preventDefault();
-			}
-			const query = $('#search-input-value').val();
-			// const url = `/blog/search/?q=` + encodeURIComponent(query);
-			const url = `/blog/?q=` + query;
-
-			history.pushState(null, '', url);
-			$.ajax({
-				type: 'get',
-				url: `/blog/search/?=${query}`,
-				data: {'q': query},
-				dataType: 'json',
-				success: (response) => {
-					console.log("Worked");
-					console.log(response)
-					$('#list-blogs').html(`<h2>Search results for "${query}" </h2><br>`);
-
-					if (Array.isArray(response.data)) {						
-						response.data.forEach((blog) => {							
-							html = `<div class="blog-post">				
-								<!-- Img -->
-								<a href="/blog/detail/${blog.slug}" class="post-img">
-									<img src=${blog.image ? blog.image : '/static/images/blog-post-01.jpg'} alt="Blog Image">
-								</a>				
-								<!-- Content -->
-								<div class="post-content">
-									<h3><a href="/blog/detail/${blog.slug}">${blog.title}</a></h3>
-									<ul class="post-meta">
-										<li>${blog.created_at}</li>
-									</ul>
-									<p>${blog.summary}</p>
-									<a href="/blog/detail/${blog.slug}" class="read-more">Read More <i class="fa fa-angle-right"></i></a>
-								</div>
-							</div>`;
-
-							$('#list-blogs').append(html);
-						});
-					};
-				},
-				error: (jqXHR, testStatus, errorThrown) => {
-					console.error("Error: ", testStatus, errorThrown);
-				}
-			});
-		};
-
-		$('#blog-search-form').on('submit', (e) => searchBlog(e));
-
-		// window.onload = () => searchBlog();
-	});
-
-</script>
+<!-- Blog Search -->
+<script src={% static 'w3/blog/js/searchBlog.js' %}></script>
 {% endblock scripts %}
