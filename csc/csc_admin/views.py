@@ -437,4 +437,16 @@ def get_all_districts(request):
 def get_all_blocks(request):
     blocks = list(Block.objects.all().order_by('block').values())
     return JsonResponse({"blocks": blocks}, safe=False)
+
+
+# Geographic Views
+@method_decorator(csrf_exempt, name="dispatch")
+class CreateStateView(BaseAdminCscCenterView, View):
+    def post(self, request, *args, **kwargs):
+        state = request.POST.get('state')
+        if not State.objects.filter(state = state).exists():
+            State.objects.create(state = state)
+            return JsonResponse({"status": "success"}, safe=False)
+        else:
+            return JsonResponse({"error": "State already exists"}, safe=False)
 ##################################### CSC CENTER END #####################################

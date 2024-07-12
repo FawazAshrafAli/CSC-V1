@@ -26,6 +26,7 @@
 	<div class="row">
 		<style>
             #pop-up-box {
+                display: none;
                 position:fixed;
                 left: 50%;
                 top: 50%;
@@ -33,7 +34,7 @@
                 z-index: 999;                
                 background: #f7f7f7;
                 box-shadow: 0 0 5px;
-                min-width: 320px;
+                min-width: 390px;
             }
 
             #pop-up-box-heading {
@@ -64,7 +65,7 @@
                 padding-bottom: 5px;
             }
 
-            #pop-up-form select {                
+            #pop-up-dropdown {                
                 min-height: 150px;                
             }
 
@@ -147,25 +148,10 @@
 
         <!-- Pop Up Box Start -->
         <div id="pop-up-box">
-            <h3 id="pop-up-box-heading">States</h3>
+            <h3 id="pop-up-box-heading" ></h3>
             <button class="close-btn" aria-label="Close" title="Close">&times;</button>
-            <form id="pop-up-form">
-                <select id="pop-up-dropdown" size=5>
-                    
-                </select>
-                <div id="pop-up-functions">
-                    <div id="pop-up-btns">
-                        <button id="pop-up-add-toggle" type="button">Add</button>
-                        <button id="pop-up-edit-toggle" type="button">Edit</button>
-                        <button id="pop-up-delete-toggle" type="button">Delete</button>
-                    </div>                    
-                    <!-- <input type="text" name="name" placeholder="Name of State">
-                    <div id="pop-up-add-btn-div">
-                        <button id="pop-up-add-btn" type="button">Add State</button>
-                        <button id="pop-up-cancel-btn" type="button">Cancel</button>
-                    </div> -->
-                </div>                
-            </form>
+            <small style="padding-left: 10px;"><span id="pop-up-msg" >Message</span></small>
+            <form id="pop-up-form"> </form>
         </div>
         <!-- Pop Up Box Start -->
 
@@ -241,9 +227,21 @@
 {% block scripts %}
 <script>
     $(document).ready(() => {
-        $('#toggle-state-pop-up').on('click', function (e) {
-            e.preventDefault();
-            $('#pop-up-box-heading').html('States');
+
+        // Close pop up box
+        $('.close-btn').click(() => {
+            $('#pop-up-box').hide();
+        });
+
+        $(document).on('keydown', (event) => {
+            if (event.key === 'Escape') {
+                $('#pop-up-box').hide();
+            };
+        });
+
+        // To populate select with state data on toggling state btn
+        function getStates(e) {
+            e.preventDefault();            
             
             $.ajax({
                 type:'get',
@@ -252,22 +250,44 @@
                 success: data => {                    
                     if (data.states && Array.isArray(data.states)) {
                         $('#pop-up-dropdown').html('');
+                        if ($('#state-dropdown-input')) {
+                            $('#state-dropdown-input').html('<option value="" hidden disabled selected>Select State</option')
+                        };
                         data.states.forEach(state => {
                             let html = `<option value="${state.id}">${state.state}</option>`;
                             $('#pop-up-dropdown').append(html);
+                            if ($('#state-dropdown-input')) {
+                                $('#state-dropdown-input').append(html);
+                            };
                         });
                     } else {
                         $('#pop-up-dropdown').html('');
+                        if ($('#state-dropdown-input')) {
+                            $('#state-dropdown-input').html('')
+                        };
                     };
                 },
                 error: (jqXHR, textStatus, errorThrow) => {
                     console.error("Error: ", textStatus, errorThrow);
                 }
             });
+        };
+
+        $('#toggle-state-pop-up').click(() => {
+            getStates(event);
+            popUpDefaultView();
+            $('#pop-up-edit-toggle').hide();
+            $('#pop-up-delete-toggle').hide();
+            $('#pop-up-box-heading').html('States');
+            $('#pop-up-box').show();
         });
 
-        $('#toggle-district-pop-up').on('click', function (e) {
+        // To populate select with district data on toggling district btn
+        function getDistricts(e) {
             e.preventDefault();
+            popUpDefaultView();
+            $('#pop-up-edit-toggle').hide();
+            $('#pop-up-delete-toggle').hide();
             $('#pop-up-box-heading').html('Districts');
             
             $.ajax({
@@ -289,10 +309,19 @@
                     console.error("Error: ", textStatus, errorThrow);
                 }
             });
+        }
+        
+        $('#toggle-district-pop-up').click(() => {
+            getDistricts(event);
+            $('#pop-up-box').show();
         });
 
-        $('#toggle-block-pop-up').on('click', function (e) {
+        // To populate select with block data on toggling block btn
+        function getBlocks(e) {
             e.preventDefault();
+            popUpDefaultView();
+            $('#pop-up-edit-toggle').hide();
+            $('#pop-up-delete-toggle').hide();
             $('#pop-up-box-heading').html('Blocks');
 
             $.ajax({
@@ -314,12 +343,120 @@
                     console.error("Error: ", textStatus, errorThrow);
                 }
             });
+        };
+        
+        $('#toggle-block-pop-up').click(() => {
+            getBlocks(event);
+            $('#pop-up-box').show();
         });
 
-        $('#pop-up-form').on('change', function() {
-            $('#pop-up-edit-toggle').show();
-            $('#pop-up-delete-toggle').show();
+        // Return to the default pop up box
+        function popUpDefaultView() {
+            $('#pop-up-form').html(
+                `<select id="pop-up-dropdown" size=5>
+                    
+                </select>
+                <div id="pop-up-functions">
+                    <div id="pop-up-btns">
+                        <button id="pop-up-add-toggle" type="button">Add</button>
+                        <button id="pop-up-edit-toggle" type="button">Edit</button>
+                        <button id="pop-up-delete-toggle" type="button">Delete</button>
+                    </div>                    
+                </div>`
+            );
+        };
+
+        $(document).on('click', '#pop-up-add-toggle', function () {
+            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            $('#pop-up-form').prop('action', `/admin/add_${currentItem.toLowerCase()}`).prop('method', 'post');
+            $('#pop-up-form').html('')
+            $('#pop-up-form').html(
+                `${(currentItem == 'District' || currentItem == 'Block') ? `<select id="state-dropdown-input"></select>` : '' }
+
+                ${currentItem == 'Block' ? `<select id="district-dropdown-input"><option value="" hidden disabled selected>Select district</option></select>` : '' }
+
+                ${currentItem == 'Block' ? `<textarea name="${currentItem.toLowerCase()}s" placeholder="Name of ${currentItem}s"></textarea>`
+                : `<input type="text" name="${currentItem.toLowerCase()}" id="${currentItem.toLowerCase()}-input" placeholder="Name of ${currentItem}">`}                
+                <div id="pop-up-add-btn-div">
+                    <button id="pop-up-add-btn" type="button">Add ${currentItem.toUpperCase()}</button>
+                    <button id="pop-up-cancel-btn" type="button">Cancel</button>
+                </div>`
+            );
+            if ((currentItem == 'District' || currentItem == 'Block')) {
+                getStates(event);
+            }
         });
+
+        // Return to the default item fetched form
+        $(document).on('click', '#pop-up-cancel-btn', function () {
+            popUpDefaultView();
+            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            if (currentItem == "State") {
+                getStates(event);
+            } else if (currentItem == "District") {
+                getDistricts(event);
+            } else if (currentItem == "Block") {
+                getBlocks(event);
+            };
+        });
+
+        // To show editing and deleting toggle button on option select
+        function showEditAndDelete () {
+            for (var i=0; i < $('#pop-up-form select')[0].options.length; i++) {
+                if ($('#pop-up-form select')[0].options[i].selected == true) {
+                    $('#pop-up-edit-toggle').show();
+                    $('#pop-up-delete-toggle').show();
+                };
+            };
+        };
+
+        $(document).on('change', '#pop-up-form select', showEditAndDelete);
+
+        // Ajax Form Submission
+        function submitPopUpForm(requestType, requestUrl, data, successCallback) {
+            $.ajax({
+                type: requestType,
+                url: requestUrl,
+                data: data,
+                dataType: 'json',
+                success: response => {
+
+                    if (response.error) {
+                        if (successCallback) successCallback (false);
+                    };
+
+                    if (response.status == 'success') {
+                        if (successCallback) successCallback (true);
+                    } else {
+                        if (successCallback) successCallback (false);
+                    }
+
+                    return false
+                },
+                error: (jqXHR, textStatus, errorThrow) => {
+                    console.error('Error: ', textStatus, errorThrow);
+                    if (successCallback) successCallback(false);
+                },
+            });
+        };
+
+        // Form submission
+        $(document).on('click', '#pop-up-add-btn', () => {
+            console.log('Clicked');
+            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            if (currentItem == 'State') {
+                const state = $('#state-input').val();
+                console.log(state);
+                result = submitPopUpForm('post', '/admin/add_state/', {'state': state}, result => {
+                    if (result) {
+                        $('#state-input').val('');
+                        $('#pop-up-msg').html('Added New State').css('color', 'green');
+                    };
+                });
+            };
+        });
+
+        popUpDefaultView();
     });
 </script>
 {% endblock scripts %}
