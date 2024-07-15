@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.utils import timezone
+import re
 
 from .forms import (
     CreateServiceForm, UpdateServiceForm, CreateBlogForm,
@@ -58,7 +59,6 @@ class CreateServiceView(BaseAdminView, CreateView):
                 self.service.description = description
                 self.service.save()
 
-            print("Created")
             messages.success(request, 'Successfully created new service.')
             return redirect(self.success_url)
         else:
@@ -443,10 +443,105 @@ def get_all_blocks(request):
 @method_decorator(csrf_exempt, name="dispatch")
 class CreateStateView(BaseAdminCscCenterView, View):
     def post(self, request, *args, **kwargs):
-        state = request.POST.get('state')
+        state = request.POST.get('state').capitalize()
+
+        if not state:
+            return JsonResponse({"error": "State is required"}, status=400)
+        
         if not State.objects.filter(state = state).exists():
             State.objects.create(state = state)
             return JsonResponse({"status": "success"}, safe=False)
         else:
             return JsonResponse({"error": "State already exists"}, safe=False)
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class CreateDistrictView(BaseAdminCscCenterView, View):
+    def post(self, request, *args, **kwargs):
+        state = request.POST.get('state')
+        districts = request.POST.get('districts')
+        
+        if not state:
+            return JsonResponse({"error": "State is required"}, safe=False)
+        
+        try:
+            state = State.objects.get(pk = state)
+        except Http404:
+            return JsonResponse({"error": "State does not exist"}, safe=False)
+        
+        if not districts:
+            return JsonResponse({"error": "District is required"}, safe=False)
+
+        district_list = districts.split(",")        
+        filtered_district_list = []
+        for district in district_list:
+            if re.match(r'^[a-zA-Z0-9 ]+$', district) and district.strip():
+                filtered_district_list.append(district)
+
+        filtered_list_length = len(filtered_district_list)
+
+        created_count = 0
+        for district in filtered_district_list:
+            district = district.strip().capitalize()
+            if not District.objects.filter(state = state, district = district).exists():
+                District.objects.create(state = state, district = district)
+                created_count += 1
+
+        if created_count > 0:
+            return JsonResponse({"status": "success"}, safe=False)
+        else:
+            if filtered_list_length > 1:
+                return JsonResponse({"error": f"Districts already exists for the state '{state}'"}, safe=False)
+            else:
+                return JsonResponse({"error": f"District already exists for the state '{state}'"}, safe=False)
+        
+
+@method_decorator(csrf_exempt, name="dispatch")
+class CreateBlockView(BaseAdminCscCenterView, View):
+    def post(self, request, *args, **kwargs):
+        state = request.POST.get('state')
+        district = request.POST.get('district')
+        blocks = request.POST.get('blocks')
+        
+        if not state:
+            return JsonResponse({"error": "State is required"}, safe=False)
+        
+        try:
+            state = State.objects.get(pk = state)
+        except Http404:
+            return JsonResponse({"error": "State does not exist"}, safe=False)
+        
+        if not district:
+            return JsonResponse({"error": "District is required"}, safe=False)
+        
+        try:
+            district = District.objects.get(pk = district)
+        except Http404:
+            return JsonResponse({"error": "District does not exist"}, safe=False)
+
+        if not blocks:
+            return JsonResponse({"error": "Block is required"}, safe=False)
+
+        block_list = blocks.split(",")        
+        filtered_block_list = []
+        for block in block_list:
+            if re.match(r'^[a-zA-Z0-9 ]+$', block) and block.strip():
+                filtered_block_list.append(block)
+
+        filtered_list_length = len(filtered_block_list)
+
+        created_count = 0
+        for block in filtered_block_list:
+            block = block.strip().capitalize()
+            if not Block.objects.filter(state = state, district = district, block = block).exists():
+                Block.objects.create(state = state, district = district, block = block)
+                created_count += 1
+
+        if created_count > 0:
+            return JsonResponse({"status": "success"}, safe=False)
+        else:
+            if filtered_list_length > 1:
+                return JsonResponse({"error": f"Blocks already exists for the district '{district}' of state '{state}'"}, safe=False)
+            else:
+                return JsonResponse({"error": f"Block already exists for the district '{district}' of state '{state}'"}, safe=False)
 ##################################### CSC CENTER END #####################################

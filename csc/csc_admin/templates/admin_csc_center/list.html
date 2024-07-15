@@ -65,6 +65,12 @@
                 padding-bottom: 5px;
             }
 
+            #pop-up-msg {
+                display: none;
+                padding-left: 10px;
+                font-size: small;
+            }
+
             #pop-up-dropdown {                
                 min-height: 150px;                
             }
@@ -150,7 +156,7 @@
         <div id="pop-up-box">
             <h3 id="pop-up-box-heading" ></h3>
             <button class="close-btn" aria-label="Close" title="Close">&times;</button>
-            <small style="padding-left: 10px;"><span id="pop-up-msg" >Message</span></small>
+            <span id="pop-up-msg" ></span>
             <form id="pop-up-form"> </form>
         </div>
         <!-- Pop Up Box Start -->
@@ -225,7 +231,9 @@
 {% endblock content %}
 
 {% block scripts %}
+<script src="{% static 'w3/admin_csc_center/js/populateDistricts.js' %}"></script>
 <script>
+
     $(document).ready(() => {
 
         // Close pop up box
@@ -366,6 +374,7 @@
             );
         };
 
+        // Toggle add item.
         $(document).on('click', '#pop-up-add-toggle', function () {
             const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
             $('#pop-up-form').prop('action', `/admin/add_${currentItem.toLowerCase()}`).prop('method', 'post');
@@ -375,7 +384,7 @@
 
                 ${currentItem == 'Block' ? `<select id="district-dropdown-input"><option value="" hidden disabled selected>Select district</option></select>` : '' }
 
-                ${currentItem == 'Block' ? `<textarea name="${currentItem.toLowerCase()}s" placeholder="Name of ${currentItem}s"></textarea>`
+                ${(currentItem == 'District' || currentItem == 'Block') ? `<textarea name="${currentItem.toLowerCase()}s" id="${currentItem.toLowerCase()}s-textarea"  placeholder="Name of ${currentItem}s"></textarea>`
                 : `<input type="text" name="${currentItem.toLowerCase()}" id="${currentItem.toLowerCase()}-input" placeholder="Name of ${currentItem}">`}                
                 <div id="pop-up-add-btn-div">
                     <button id="pop-up-add-btn" type="button">Add ${currentItem.toUpperCase()}</button>
@@ -383,8 +392,12 @@
                 </div>`
             );
             if ((currentItem == 'District' || currentItem == 'Block')) {
-                getStates(event);
+                getStates(event);                
             }
+        });
+
+        $(document).on('change', '#state-dropdown-input', function () {
+            populateDistricts($(this).val());
         });
 
         // Return to the default item fetched form
@@ -420,40 +433,100 @@
                 data: data,
                 dataType: 'json',
                 success: response => {
-
                     if (response.error) {
-                        if (successCallback) successCallback (false);
-                    };
-
-                    if (response.status == 'success') {
-                        if (successCallback) successCallback (true);
+                        if (successCallback) successCallback(false, response.error);
+                    } else if (response.status === 'success') {
+                        if (successCallback) successCallback(true, null);
                     } else {
-                        if (successCallback) successCallback (false);
+                        if (successCallback) successCallback(false, 'Unknown error');
                     }
-
-                    return false
                 },
-                error: (jqXHR, textStatus, errorThrow) => {
-                    console.error('Error: ', textStatus, errorThrow);
-                    if (successCallback) successCallback(false);
-                },
+                error: (jqXHR, textStatus, errorThrown) => {
+                    console.error('Error:', textStatus, errorThrown);
+                    if (successCallback) successCallback(false, textStatus);
+                }
             });
         };
 
-        // Form submission
+        // Create item Form submission
         $(document).on('click', '#pop-up-add-btn', () => {
-            console.log('Clicked');
             const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
-            if (currentItem == 'State') {
-                const state = $('#state-input').val();
-                console.log(state);
-                result = submitPopUpForm('post', '/admin/add_state/', {'state': state}, result => {
-                    if (result) {
+            let data;
+            if (currentItem === 'State') {
+                const state = $('#state-input').val().trim();
+                data = {'state': state}
+
+            } else if (currentItem === 'District') {
+                const state = $('#state-dropdown-input').val().trim();
+                const districts = $('#districts-textarea').val().trim();
+                data = {
+                    'state': state,
+                    'districts': districts
+                };
+
+            } else if (currentItem === 'Block') {
+                const state = $('#state-dropdown-input').val().trim();
+                const district = $('#district-dropdown-input').val().trim();
+                const blocks = $('#blocks-textarea').val().trim();
+                data = {
+                    'state': state,
+                    'district': district,
+                    'blocks': blocks
+                };
+            }
+
+            submitPopUpForm('post', `/admin/add_${currentItem.toLowerCase()}/`, data, (result, error) => {
+                if (result) {
+                    $('#pop-up-msg').show()
+                    $('#pop-up-msg').html(`Added New ${currentItem}`).css('color', 'green')
+                    if (currentItem === 'State') {
                         $('#state-input').val('');
-                        $('#pop-up-msg').html('Added New State').css('color', 'green');
-                    };
-                });
-            };
+
+                    } else if (currentItem === 'District') {
+                        $('#state-dropdown-input option').first().prop('selected', true);
+                        $('#districts-textarea').val('');
+
+                    } else if (currentItem === 'Block') {
+                        $('#state-dropdown-input option').first().prop('selected', true);
+                        $('#district-dropdown-input option').first().prop('selected', true);
+                        $('#blocks-textarea').val('');                        
+                    }
+                } else {
+                    $('#pop-up-msg').html(error).css('color', 'red');
+                };
+                // Pop up form submission msg timeout
+                setTimeout(() => 
+                {                       
+                    $('#pop-up-msg').hide();
+                }, 6000);
+            });            
+        });
+
+        // Toggle Edit Item
+        $(document).on('click', '#pop-up-edit-toggle', function () {
+            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);            
+            $('#pop-up-form').prop('action', `/admin/edit_${currentItem.toLowerCase()}`).prop('method', 'post');
+            $('#pop-up-form').html('')
+            $('#pop-up-form').html(
+                `${(currentItem == 'District' || currentItem == 'Block') ? `<select id="state-dropdown-input"></select>` : '' }
+
+                ${currentItem == 'Block' ? `<select id="district-dropdown-input"><option value="" hidden disabled selected>Select district</option></select>` : '' }
+
+                ${currentItem == 'Block' ? `<textarea name="${currentItem.toLowerCase()}s" id="${currentItem.toLowerCase()}s-textarea"  placeholder="Name of ${currentItem}s"></textarea>`
+                : `<input type="text" name="${currentItem.toLowerCase()}" id="${currentItem.toLowerCase()}-input" placeholder="Name of ${currentItem}">`}                
+                <div id="pop-up-add-btn-div">
+                    <button id="pop-up-add-btn" type="button">Edit ${currentItem.toUpperCase()}</button>
+                    <button id="pop-up-cancel-btn" type="button">Cancel</button>
+                </div>`
+            );
+            if ((currentItem == 'District' || currentItem == 'Block')) {
+                getStates(event);                
+            }
+
+            if ($('#pop-up-dropdown').val()) {
+                const currentValue = $('#pop-up-dropdown').val();
+                $(`#${currentItem.toLowerCase()}-input`).val(currentValue);
+            }
         });
 
         popUpDefaultView();

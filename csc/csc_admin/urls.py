@@ -11,7 +11,7 @@ from .views import (
     AddCscCenter, GetDistrictView, GetBlockView,
     ListCscCenter,
     get_all_states, get_all_districts, get_all_blocks,
-    CreateStateView,
+    CreateStateView, CreateDistrictView, CreateBlockView,
     )
 
 app_name = "csc_admin"
@@ -44,4 +44,6 @@ urlpatterns = [
     path('get_all_blocks/', get_all_blocks, name="get_all_blocks"),
 
     path('add_state/', CreateStateView.as_view(), name="add_state"),
+    path('add_district/', CreateDistrictView.as_view(), name="add_district"),
+    path('add_block/', CreateBlockView.as_view(), name="add_block"),
     ]
