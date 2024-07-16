@@ -243,7 +243,7 @@ class CreateBlogView(BaseAdminBlogView, CreateView):
                 if tags:
                     tag_list = tags.split(',')
                     for tag in tag_list:
-                        tag = tag.strip().capitalize()
+                        tag = tag.strip().title()
                         if tag not in (' ', ','):
                             tag_obj = Tag.objects.filter(name = tag)                                                        
                             if not tag_obj.exists():
@@ -311,7 +311,7 @@ class UpdateBlogView(BaseAdminBlogView, UpdateView):
                 if tags:
                     tag_list = tags.split(',')
                     for tag in tag_list:
-                        tag = tag.strip().capitalize()
+                        tag = tag.strip().title()
                         if tag not in (' ', ',', ''):
                             tag_obj = Tag.objects.filter(name = tag)                                                        
                             if not tag_obj.exists():
@@ -438,18 +438,63 @@ def get_all_blocks(request):
     blocks = list(Block.objects.all().order_by('block').values())
     return JsonResponse({"blocks": blocks}, safe=False)
 
+class GetDistrictDetailsView(BaseAdminCscCenterView, View):
+    def get(self, request, *args, **kwargs):
+        try:
+            district = get_object_or_404(District, pk = self.kwargs['pk'])
+        except Http404:
+            return JsonResponse({"error": "District not found"}, safe=False)
+        
+        return JsonResponse({"district": district.district, "state": district.state.state, "state_id": district.state.pk})
+    
+
+class GetBlockDetailsView(BaseAdminCscCenterView, View):
+    def get(self, request, *args, **kwargs):
+        try:
+            block = get_object_or_404(Block, pk = self.kwargs['pk'])
+        except Http404:
+            return JsonResponse({"error": "Block not found"}, safe=False)
+        
+        return JsonResponse({
+            "block": block.block,
+            "state": block.state.state,
+            "state_id": block.state.pk,
+            "district": block.district.district,
+            "district_id": block.district.pk
+            })
 
 # Geographic Views
 @method_decorator(csrf_exempt, name="dispatch")
 class CreateStateView(BaseAdminCscCenterView, View):
     def post(self, request, *args, **kwargs):
-        state = request.POST.get('state').capitalize()
+        state = request.POST.get('state').title()
 
         if not state:
             return JsonResponse({"error": "State is required"}, status=400)
         
         if not State.objects.filter(state = state).exists():
             State.objects.create(state = state)
+            return JsonResponse({"status": "success"}, safe=False)
+        else:
+            return JsonResponse({"error": "State already exists"}, safe=False)
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class EditStateView(BaseAdminCscCenterView, UpdateView):
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = get_object_or_404(State, pk = self.kwargs['pk'])
+        except Http404:
+            return JsonResponse({"error": "State does not exist"}, status=400)
+        
+        state = request.POST.get('state').title()
+
+        if not state:
+            return JsonResponse({"error": "State is required"}, status=400)        
+
+        if not State.objects.filter(state = state).exists():
+            self.object.state = state
+            self.object.save()
             return JsonResponse({"status": "success"}, safe=False)
         else:
             return JsonResponse({"error": "State already exists"}, safe=False)
@@ -482,7 +527,7 @@ class CreateDistrictView(BaseAdminCscCenterView, View):
 
         created_count = 0
         for district in filtered_district_list:
-            district = district.strip().capitalize()
+            district = district.strip().title()
             if not District.objects.filter(state = state, district = district).exists():
                 District.objects.create(state = state, district = district)
                 created_count += 1
@@ -494,6 +539,37 @@ class CreateDistrictView(BaseAdminCscCenterView, View):
                 return JsonResponse({"error": f"Districts already exists for the state '{state}'"}, safe=False)
             else:
                 return JsonResponse({"error": f"District already exists for the state '{state}'"}, safe=False)
+            
+
+@method_decorator(csrf_exempt, name="dispatch")
+class EditDistrictView(BaseAdminCscCenterView, View):
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = get_object_or_404(District, pk = kwargs['pk'])
+        except Http404:
+            return JsonResponse({"error": "District does not exist"}, safe=False)
+
+        state = request.POST.get('state')
+        district = request.POST.get('district').title().strip()
+        
+        if not state:
+            return JsonResponse({"error": "State is required"}, safe=False)
+        
+        if not district:
+            return JsonResponse({"error": "District is required"}, safe=False)
+        
+        try:
+            state = get_object_or_404(State, pk = state)
+        except Http404:
+            return JsonResponse({"error": "State does not exist"}, safe=False)        
+        
+        if not District.objects.filter(state = state, district = district).exists():
+            self.object.state = state
+            self.object.district = district
+            self.object.save()
+            return JsonResponse({"status": "success"}, safe=False)        
+        else:            
+            return JsonResponse({"error": f"District already exists for the state '{state}'"}, safe=False)
         
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -507,7 +583,7 @@ class CreateBlockView(BaseAdminCscCenterView, View):
             return JsonResponse({"error": "State is required"}, safe=False)
         
         try:
-            state = State.objects.get(pk = state)
+            state = get_object_or_404(State, pk = state)
         except Http404:
             return JsonResponse({"error": "State does not exist"}, safe=False)
         
@@ -515,7 +591,7 @@ class CreateBlockView(BaseAdminCscCenterView, View):
             return JsonResponse({"error": "District is required"}, safe=False)
         
         try:
-            district = District.objects.get(pk = district)
+            district = get_object_or_404(District, pk = district)
         except Http404:
             return JsonResponse({"error": "District does not exist"}, safe=False)
 
@@ -532,7 +608,7 @@ class CreateBlockView(BaseAdminCscCenterView, View):
 
         created_count = 0
         for block in filtered_block_list:
-            block = block.strip().capitalize()
+            block = block.strip().title()
             if not Block.objects.filter(state = state, district = district, block = block).exists():
                 Block.objects.create(state = state, district = district, block = block)
                 created_count += 1
@@ -544,4 +620,58 @@ class CreateBlockView(BaseAdminCscCenterView, View):
                 return JsonResponse({"error": f"Blocks already exists for the district '{district}' of state '{state}'"}, safe=False)
             else:
                 return JsonResponse({"error": f"Block already exists for the district '{district}' of state '{state}'"}, safe=False)
+            
+
+@method_decorator(csrf_exempt, name="dispatch")
+class EditBlockView(BaseAdminCscCenterView, View):
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = get_object_or_404(Block, pk = kwargs['pk'])
+        except Http404:
+            return JsonResponse({"error": "Block does not exist"}, safe=False)
+
+        state = request.POST.get('state')
+        district = request.POST.get('district')
+        block = request.POST.get('block').title().strip()
+        
+        if not state:
+            return JsonResponse({"error": "State is required"}, safe=False)
+        
+        if not district:
+            return JsonResponse({"error": "District is required"}, safe=False)
+        
+        if not block:
+            return JsonResponse({"error": "Block is required"}, safe=False)
+        
+        try:
+            state = get_object_or_404(State, pk = state)
+        except Http404:
+            return JsonResponse({"error": "State does not exist"}, safe=False)
+
+        try:
+            district = get_object_or_404(District, pk = district)
+        except Http404:
+            return JsonResponse({"error": "District does not exist"}, safe=False)
+
+        if not Block.objects.filter(state = state, district = district, block = block).exists():
+            self.object.state = state
+            self.object.district = district
+            self.object.block = block
+            self.object.save()
+            return JsonResponse({"status": "success"}, safe=False)
+
+        else:            
+            return JsonResponse({"error": f"Block already exists for the district '{district}' of state '{state}'"}, safe=False)
+        
+
+class DeleteStateView(BaseAdminCscCenterView, View):
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = get_object_or_404(Block, pk = kwargs['pk'])
+        except Http404:
+            return JsonResponse({"error": "Block does not exist"}, safe=False)
+
+        self.object.delete()
+        return JsonResponse({"status": "success"}, safe=False)
+
 ##################################### CSC CENTER END #####################################
