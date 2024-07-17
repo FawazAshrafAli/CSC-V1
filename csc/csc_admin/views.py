@@ -667,11 +667,32 @@ class EditBlockView(BaseAdminCscCenterView, View):
 class DeleteStateView(BaseAdminCscCenterView, View):
     def get(self, request, *args, **kwargs):
         try:
+            self.object = get_object_or_404(State, pk = kwargs['pk'])
+        except Http404:
+            return JsonResponse({"error": "Block does not exist"}, safe=False)
+
+        self.object.delete()
+        return JsonResponse({"status": "success"}, safe=False)
+    
+
+class DeleteDistrictView(BaseAdminCscCenterView, View):
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = get_object_or_404(District, pk = kwargs['pk'])
+        except Http404:
+            return JsonResponse({"error": "District does not exist"}, safe=False)
+
+        self.object.delete()
+        return JsonResponse({"status": "success"}, safe=False)
+
+
+class DeleteBlockView(BaseAdminCscCenterView, View):
+    def get(self, request, *args, **kwargs):
+        try:
             self.object = get_object_or_404(Block, pk = kwargs['pk'])
         except Http404:
             return JsonResponse({"error": "Block does not exist"}, safe=False)
 
         self.object.delete()
         return JsonResponse({"status": "success"}, safe=False)
-
 ##################################### CSC CENTER END #####################################

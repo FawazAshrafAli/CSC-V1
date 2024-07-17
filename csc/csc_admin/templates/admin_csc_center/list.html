@@ -459,7 +459,7 @@
         $(document).on('change', '#pop-up-form select', showEditAndDelete);
 
         // Ajax Form Submission
-        function submitPopUpForm(requestType, requestUrl, data, successCallback) {
+        function submitPopUpForm(requestType, requestUrl, data=undefined, successCallback) {
             $.ajax({
                 type: requestType,
                 url: requestUrl,
@@ -667,28 +667,8 @@
             const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
             let data;
             let itemId = localStorage.getItem('dropdownValue');            
-            if (currentItem === 'State') {
-                const state = localStorage.getItem('dropdownValue');
-                data = {}
-
-            } else if (currentItem === 'District') {
-                const state = $('#state-dropdown-input').val().trim();
-                const district = $('#district-input').val().trim();
-                data = {
-                    'state': state,
-                    'district': district
-                };
-
-            } else if (currentItem === 'Block') {
-                const state = $('#state-dropdown-input').val().trim();
-                const district = $('#district-dropdown-input').val().trim();
-                const block = $('#block-input').val().trim();
-                data = {
-                    'state': state,
-                    'district': district,
-                    'block': block
-                };
-            }
+            
+            
             submitPopUpForm('get', `/admin/delete_${currentItem.toLowerCase()}/${itemId}`, data, (result, error) => {
                 if (result) {
                     $('#pop-up-cancel-btn').click()
