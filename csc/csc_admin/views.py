@@ -16,7 +16,7 @@ from .forms import (
     UpdateBlogForm
     )
 
-from csc_center.models import CscCenter, State, District, Block
+from csc_center.models import CscCenter, State, District, Block, CscKeyword, CscNameType
 from services.models import Service
 from blog.models import Blog, Category, Tag
 
@@ -438,6 +438,14 @@ def get_all_blocks(request):
     blocks = list(Block.objects.all().order_by('block').values())
     return JsonResponse({"blocks": blocks}, safe=False)
 
+def get_name_types(request):
+    name_types = list(CscNameType.objects.all().order_by('type').values())
+    return JsonResponse({"name_types": name_types}, safe=False)
+
+def get_csc_keywords(request):
+    keywords = list(CscKeyword.objects.all().order_by('keyword').values())
+    return JsonResponse({"keywords": keywords}, safe=False)
+
 class GetDistrictDetailsView(BaseAdminCscCenterView, View):
     def get(self, request, *args, **kwargs):
         try:
@@ -480,7 +488,7 @@ class CreateStateView(BaseAdminCscCenterView, View):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class EditStateView(BaseAdminCscCenterView, UpdateView):
+class EditStateView(BaseAdminCscCenterView, View):
     def post(self, request, *args, **kwargs):
         try:
             self.object = get_object_or_404(State, pk = self.kwargs['pk'])
@@ -492,12 +500,24 @@ class EditStateView(BaseAdminCscCenterView, UpdateView):
         if not state:
             return JsonResponse({"error": "State is required"}, status=400)        
 
-        if not State.objects.filter(state = state).exists():
+        existing_state = State.objects.filter(state = state)
+        if not existing_state.exists() or existing_state.first().pk == self.object.pk:        
             self.object.state = state
             self.object.save()
             return JsonResponse({"status": "success"}, safe=False)
         else:
             return JsonResponse({"error": "State already exists"}, safe=False)
+
+
+class DeleteStateView(BaseAdminCscCenterView, View):
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = get_object_or_404(State, pk = kwargs['pk'])
+        except Http404:
+            return JsonResponse({"error": "Block does not exist"}, safe=False)
+
+        self.object.delete()
+        return JsonResponse({"status": "success"}, safe=False)    
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -563,7 +583,8 @@ class EditDistrictView(BaseAdminCscCenterView, View):
         except Http404:
             return JsonResponse({"error": "State does not exist"}, safe=False)        
         
-        if not District.objects.filter(state = state, district = district).exists():
+        existing_district = District.objects.filter(state = state, district = district)
+        if not existing_district.exists() or existing_district.first().pk == self.object.pk:            
             self.object.state = state
             self.object.district = district
             self.object.save()
@@ -571,6 +592,17 @@ class EditDistrictView(BaseAdminCscCenterView, View):
         else:            
             return JsonResponse({"error": f"District already exists for the state '{state}'"}, safe=False)
         
+
+class DeleteDistrictView(BaseAdminCscCenterView, View):
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = get_object_or_404(District, pk = kwargs['pk'])
+        except Http404:
+            return JsonResponse({"error": "District does not exist"}, safe=False)
+
+        self.object.delete()
+        return JsonResponse({"status": "success"}, safe=False)
+
 
 @method_decorator(csrf_exempt, name="dispatch")
 class CreateBlockView(BaseAdminCscCenterView, View):
@@ -653,7 +685,8 @@ class EditBlockView(BaseAdminCscCenterView, View):
         except Http404:
             return JsonResponse({"error": "District does not exist"}, safe=False)
 
-        if not Block.objects.filter(state = state, district = district, block = block).exists():
+        existing_block = Block.objects.filter(state = state, district = district, block = block)
+        if not existing_block.exists() or existing_block.first().pk == self.object.pk:    
             self.object.state = state
             self.object.district = district
             self.object.block = block
@@ -664,10 +697,10 @@ class EditBlockView(BaseAdminCscCenterView, View):
             return JsonResponse({"error": f"Block already exists for the district '{district}' of state '{state}'"}, safe=False)
         
 
-class DeleteStateView(BaseAdminCscCenterView, View):
+class DeleteBlockView(BaseAdminCscCenterView, View):
     def get(self, request, *args, **kwargs):
         try:
-            self.object = get_object_or_404(State, pk = kwargs['pk'])
+            self.object = get_object_or_404(Block, pk = kwargs['pk'])
         except Http404:
             return JsonResponse({"error": "Block does not exist"}, safe=False)
 
@@ -675,23 +708,98 @@ class DeleteStateView(BaseAdminCscCenterView, View):
         return JsonResponse({"status": "success"}, safe=False)
     
 
-class DeleteDistrictView(BaseAdminCscCenterView, View):
+# CSC modules
+@method_decorator(csrf_exempt, name="dispatch")
+class CreateKeywordView(BaseAdminCscCenterView, View):
+    def post(self, request, *args, **kwargs):
+        keyword = request.POST.get('keyword')
+
+        if not keyword:
+            return JsonResponse({"error": "Keyword is required"}, status=400)
+        
+        if not CscKeyword.objects.filter(keyword = keyword).exists():
+            CscKeyword.objects.create(keyword = keyword)
+            return JsonResponse({"status": "success"}, safe=False)
+        else:
+            return JsonResponse({"error": "Keyword already exists"}, safe=False)
+        
+
+@method_decorator(csrf_exempt, name="dispatch")
+class EditKeywordView(BaseAdminCscCenterView, View):
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = get_object_or_404(CscKeyword, slug = self.kwargs['slug'])
+        except Http404:
+            return JsonResponse({"error": "Keyword does not exist"}, status=400)
+        
+        keyword = request.POST.get('keyword')
+
+        if not keyword:
+            return JsonResponse({"error": "Keyword is required"}, status=400)        
+
+        existing_keyword = CscKeyword.objects.filter(keyword = keyword)
+        if not existing_keyword.exists() or existing_keyword.first().slug == self.object.slug:
+            self.object.keyword = keyword
+            self.object.save()
+            return JsonResponse({"status": "success"}, safe=False)
+        else:
+            return JsonResponse({"error": "Keyword already exists"}, safe=False)
+
+
+class DeleteKeywordView(BaseAdminCscCenterView, View):
     def get(self, request, *args, **kwargs):
         try:
-            self.object = get_object_or_404(District, pk = kwargs['pk'])
+            self.object = get_object_or_404(CscKeyword, slug = kwargs['slug'])
         except Http404:
-            return JsonResponse({"error": "District does not exist"}, safe=False)
+            return JsonResponse({"error": "Keyword does not exist"}, safe=False)
 
         self.object.delete()
         return JsonResponse({"status": "success"}, safe=False)
+    
 
+@method_decorator(csrf_exempt, name="dispatch")
+class CreateCscNameTypeView(BaseAdminCscCenterView, View):
+    def post(self, request, *args, **kwargs):
+        name_type = request.POST.get('name_type')
 
-class DeleteBlockView(BaseAdminCscCenterView, View):
+        if not name_type:
+            return JsonResponse({"error": "Name Type is required"}, status=400)
+        
+        if not CscNameType.objects.filter(type = name_type).exists():
+            CscNameType.objects.create(type = name_type)
+            return JsonResponse({"status": "success"}, safe=False)
+        else:
+            return JsonResponse({"error": "Name Type already exists"}, safe=False)
+        
+
+@method_decorator(csrf_exempt, name="dispatch")
+class EditCscNameTypeView(BaseAdminCscCenterView, View):
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = get_object_or_404(CscNameType, slug = self.kwargs['slug'])
+        except Http404:
+            return JsonResponse({"error": "Name Type does not exist"}, status=400)
+        
+        name_type = request.POST.get('name_type')
+
+        if not name_type:
+            return JsonResponse({"error": "Name Type is required"}, status=400)        
+
+        existing_name_type = CscNameType.objects.filter(type = name_type)
+        if not existing_name_type.exists() or existing_name_type.first().slug == self.object.slug:
+            self.object.type = name_type
+            self.object.save()
+            return JsonResponse({"status": "success"}, safe=False)
+        else:
+            return JsonResponse({"error": "Name type already exists"}, safe=False)
+        
+
+class DeleteCscNameTypeView(BaseAdminCscCenterView, View):
     def get(self, request, *args, **kwargs):
         try:
-            self.object = get_object_or_404(Block, pk = kwargs['pk'])
+            self.object = get_object_or_404(CscNameType, slug = kwargs['slug'])
         except Http404:
-            return JsonResponse({"error": "Block does not exist"}, safe=False)
+            return JsonResponse({"error": "Name type does not exist"}, safe=False)
 
         self.object.delete()
         return JsonResponse({"status": "success"}, safe=False)

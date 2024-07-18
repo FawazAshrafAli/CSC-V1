@@ -232,8 +232,8 @@
                 <div class="widget margin-top-40">
                     <h4>CSC Details</h4>
                     <ul class="list-4 color">
-                        <li><a href="#">CSC Name Type</a></li>
-                        <li><a href="#">Keywords</a></li>
+                        <li><a href="#" id="toggle-name-type-pop-up">Name Type</a></li>
+                        <li><a href="#" id="toggle-keyword-pop-up">Keywords</a></li>
                     </ul>
                 </div>
                 <!-- Widget / End -->
@@ -391,6 +391,74 @@
             $('#pop-up-box').show();
         });
 
+        // To populate select with name type data on toggling block btn
+        function getNameTypes(e) {
+            e.preventDefault();
+            popUpDefaultView();
+            $('#pop-up-edit-toggle').hide();
+            $('#pop-up-delete-toggle').hide();
+            $('#pop-up-box-heading').html('Name Types');
+
+            $.ajax({
+                type:'get',
+                url:'/admin/get_name_types/',
+                dataType:'json',
+                success: data => {                    
+                    if (data.name_types && Array.isArray(data.name_types)) {
+                        $('#pop-up-dropdown').html('');
+                        data.name_types.forEach(name_type => {
+                            let html = `<option value="${name_type.slug}">${name_type.type}</option>`;
+                            $('#pop-up-dropdown').append(html);
+                        });
+                    } else {
+                        $('#pop-up-dropdown').html('');
+                    };
+                },
+                error: (jqXHR, textStatus, errorThrow) => {
+                    console.error("Error: ", textStatus, errorThrow);
+                }
+            });
+        };
+
+        $('#toggle-name-type-pop-up').click(() => {
+            getNameTypes(event);
+            $('#pop-up-box').show();
+        });
+
+        // To populate select with keyword data on toggling block btn
+        function getKeywords(e) {
+            e.preventDefault();
+            popUpDefaultView();
+            $('#pop-up-edit-toggle').hide();
+            $('#pop-up-delete-toggle').hide();
+            $('#pop-up-box-heading').html('Keywords');
+
+            $.ajax({
+                type:'get',
+                url:'/admin/get_csc_keywords/',
+                dataType:'json',
+                success: data => {                    
+                    if (data.keywords && Array.isArray(data.keywords)) {
+                        $('#pop-up-dropdown').html('');
+                        data.keywords.forEach(keyword => {
+                            let html = `<option value="${keyword.slug}">${keyword.keyword}</option>`;
+                            $('#pop-up-dropdown').append(html);
+                        });
+                    } else {
+                        $('#pop-up-dropdown').html('');
+                    };
+                },
+                error: (jqXHR, textStatus, errorThrow) => {
+                    console.error("Error: ", textStatus, errorThrow);
+                }
+            });
+        };
+
+        $('#toggle-keyword-pop-up').click(() => {
+            getKeywords(event);
+            $('#pop-up-box').show();
+        });
+
         // Return to the default pop up box
         function popUpDefaultView() {
             $('#pop-up-form').html(
@@ -410,15 +478,25 @@
         // Toggle add item.
         $(document).on('click', '#pop-up-add-toggle', function () {
             const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
-            $('#pop-up-form').prop('action', `/admin/add_${currentItem.toLowerCase()}`).prop('method', 'post');
+            let basePlacehodler;
+            let baseInputIdPrefix;
+            if (currentItem === 'Name Type') {
+                endpoint = `add_name_type`;
+                basePlacehodler = `Name Type`;
+                baseInputIdPrefix = `name-type`;
+            } else {
+                endpoint = `add_${currentItem.toLowerCase()}`
+                basePlacehodler = `Name of ${currentItem}`
+                baseInputIdPrefix = currentItem.toLowerCase()
+            }            
             $('#pop-up-form').html('')
             $('#pop-up-form').html(
                 `${(currentItem == 'District' || currentItem == 'Block') ? `<select id="state-dropdown-input"></select>` : '' }
 
                 ${currentItem == 'Block' ? `<select id="district-dropdown-input"><option value="" hidden disabled selected>Select district</option></select>` : '' }
 
-                ${(currentItem == 'District' || currentItem == 'Block') ? `<textarea name="${currentItem.toLowerCase()}s" id="${currentItem.toLowerCase()}s-textarea"  placeholder="Name of ${currentItem}s"></textarea>`
-                : `<input type="text" name="${currentItem.toLowerCase()}" id="${currentItem.toLowerCase()}-input" placeholder="Name of ${currentItem}">`}                
+                ${(currentItem == 'District' || currentItem == 'Block') ? `<textarea name="${currentItem.toLowerCase()}s" id="${baseInputIdPrefix}s-textarea"  placeholder="${basePlacehodler}s"></textarea>`
+                : `<input type="text" name="${currentItem.toLowerCase()}" id="${baseInputIdPrefix}-input" placeholder="${basePlacehodler}">`}                
                 <div id="pop-up-add-btn-div">
                     <button id="pop-up-add-btn" type="button">Add ${currentItem.toUpperCase()}</button>
                     <button id="pop-up-cancel-btn" type="button">Cancel</button>
@@ -437,13 +515,17 @@
         $(document).on('click', '#pop-up-cancel-btn', function () {
             popUpDefaultView();
             const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
-            if (currentItem == "State") {
+            if (currentItem === "State") {
                 getStates(event);
-            } else if (currentItem == "District") {
+            } else if (currentItem === "District") {
                 getDistricts(event);
-            } else if (currentItem == "Block") {
+            } else if (currentItem === "Block") {
                 getBlocks(event);
-            };
+            } else if (currentItem === 'Name Type') {
+                getNameTypes(event);
+            } else if (currentItem === "Keyword") {
+                getKeywords(event);
+            }
         });
 
         // To show editing and deleting toggle button on option select
@@ -485,6 +567,8 @@
         $(document).on('click', '#pop-up-add-btn', () => {
             const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
             let data;
+            let endpoint;
+            endpoint = `add_${currentItem.toLowerCase()}`;
             if (currentItem === 'State') {
                 const state = $('#state-input').val().trim();
                 data = {'state': state}
@@ -506,10 +590,18 @@
                     'district': district,
                     'blocks': blocks
                 };
+            } else if (currentItem === 'Name Type') {
+                endpoint = `add_name_type`;
+                const name_type = $('#name-type-input').val().trim();
+                data = {'name_type': name_type}
+            } else if (currentItem === 'Keyword') {
+                const keyword = $('#keyword-input').val().trim();
+                data = {'keyword': keyword}
+
             }
 
-            submitPopUpForm('post', `/admin/add_${currentItem.toLowerCase()}/`, data, (result, error) => {
-                if (result) {
+            submitPopUpForm('post', `/admin/${endpoint}/`, data, (result, error) => {
+                if (result) {                    
                     $('#pop-up-msg').show()
                     $('#pop-up-msg').html(`Added New ${currentItem}`).css('color', 'green')
                     if (currentItem === 'State') {
@@ -523,14 +615,27 @@
                         $('#state-dropdown-input option').first().prop('selected', true);
                         $('#district-dropdown-input option').first().prop('selected', true);
                         $('#blocks-textarea').val('');                        
+
+                    } else if (currentItem === 'Name Type') {
+                        $('#name-type-input').val('');
+
+                    } else if (currentItem === 'Keyword') {
+                        $('#keyword-input').val('');
+
                     }
                 } else {
+                    $('#pop-up-msg').show()
                     $('#pop-up-msg').html(error).css('color', 'red');
                 };
+                if (error) {
+                    $('#pop-up-msg').show()
+                    $('#pop-up-msg').html(error).css('color', 'red');
+                }              
                 // Pop up form submission msg timeout
                 setTimeout(() => 
                 {                       
                     $('#pop-up-msg').hide();
+                    $('#main-pop-up-msg').hide();
                 }, 6000);
             });            
         });
@@ -542,8 +647,19 @@
 
             localStorage.setItem('dropdownValue', dropdownValue);            
 
-            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);            
-            $('#pop-up-form').prop('action', `/admin/edit_${currentItem.toLowerCase()}`).prop('method', 'post');
+            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+
+            let basePlacehodler;
+            let baseInputIdPrefix;
+
+            if (currentItem === 'Name Type')  {
+                basePlacehodler = `Name Type`;
+                baseInputIdPrefix = `name-type`;
+            } else {
+                basePlacehodler = `Name of ${currentItem}`;
+                baseInputIdPrefix = currentItem.toLowerCase();
+            }
+
             $('#pop-up-form').html(`<h4>Edit ${currentItem}</h4>`);
             $('#pop-up-form').append(
                 `${(currentItem == 'District' || currentItem == 'Block') ? `<select id="state-dropdown-input" ></select>` : '' }
@@ -551,7 +667,7 @@
                 ${currentItem == 'Block' ? `<select id="district-dropdown-input"><option value="" hidden disabled selected>Select district</option></select>` : '' }
 
                  
-                <input type="text" name="${currentItem.toLowerCase()}" id="${currentItem.toLowerCase()}-input" value="${dropdownSelectedText}" placeholder="Name of ${currentItem}">
+                <input type="text" id="${baseInputIdPrefix}-input" value="${dropdownSelectedText}" placeholder="${basePlacehodler}">
                 <div id="pop-up-add-btn-div">
                     <button id="pop-up-edit-btn" type="button">Save ${currentItem.toUpperCase()}</button>
                     <button id="pop-up-cancel-btn" type="button">Cancel</button>
@@ -604,6 +720,7 @@
         $(document).on('click', '#pop-up-edit-btn', () => {
             const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
             let data;
+            let endpoint = `edit_${currentItem.toLowerCase()}`;
             let itemId = localStorage.getItem('dropdownValue');            
             if (currentItem === 'State') {
                 const state = $('#state-input').val();
@@ -626,18 +743,33 @@
                     'district': district,
                     'block': block
                 };
+            } else if (currentItem === 'Name Type') {
+                endpoint = 'edit_name_type'
+                const name_type = $('#name-type-input').val();
+                data = {'name_type': name_type}
+            
+            } else if (currentItem === 'Keyword') {
+                const keyword = $('#keyword-input').val();
+                data = {'keyword': keyword}
+
             }
-            submitPopUpForm('post', `/admin/edit_${currentItem.toLowerCase()}/${itemId}`, data, (result, error) => {
-                if (result) {
+            submitPopUpForm('post', `/admin/${endpoint}/${itemId}`, data, (result, error) => {
+                if (result) {                    
                     $('#pop-up-cancel-btn').click()
                     $('#pop-up-form').prepend(`<h5 id="main-pop-up-msg"></h5>`)
                     $('#main-pop-up-msg').html(`Updated ${currentItem}`).css('color', 'green')                    
                 } else {
+                    $('#pop-up-msg').show()
                     $('#pop-up-msg').html(error).css('color', 'red');
                 };
+                if (error) {
+                    $('#pop-up-msg').show()
+                    $('#pop-up-msg').html(error).css('color', 'red');
+                }
                 // Pop up form submission msg timeout
                 setTimeout(() => 
                 {                       
+                    $('#pop-up-msg').hide();
                     $('#main-pop-up-msg').hide();
                 }, 6000);
             });
@@ -650,8 +782,7 @@
 
             localStorage.setItem('dropdownValue', dropdownValue);            
 
-            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);            
-            $('#pop-up-form').prop('action', `/admin/delete_${currentItem.toLowerCase()}`).prop('method', 'get');
+            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
             $('#pop-up-form').html(`<h4>Deleting ${currentItem} <span style="color:red">'${dropdownSelectedText}'</span></h4>`);
             $('#pop-up-form').append(
                 `<h5>Are you sure?</h5><br>
@@ -667,19 +798,28 @@
             const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
             let data;
             let itemId = localStorage.getItem('dropdownValue');            
-            
-            
-            submitPopUpForm('get', `/admin/delete_${currentItem.toLowerCase()}/${itemId}`, data, (result, error) => {
+            let endpoint = `delete_${currentItem.toLowerCase()}`;
+            if (currentItem === 'Name Type') {
+                endpoint = 'delete_name_type'
+            }
+
+            submitPopUpForm('get', `/admin/${endpoint}/${itemId}`, data, (result, error) => {
                 if (result) {
                     $('#pop-up-cancel-btn').click()
                     $('#pop-up-form').prepend(`<h5 id="main-pop-up-msg"></h5>`)
                     $('#main-pop-up-msg').html(`Deleted ${currentItem}`).css('color', 'green')                    
                 } else {
+                    $('#pop-up-msg').show()
                     $('#pop-up-msg').html(error).css('color', 'red');
                 };
+                if (error) {
+                    $('#pop-up-msg').show()
+                    $('#pop-up-msg').html(error).css('color', 'red');
+                }
                 // Pop up form submission msg timeout
                 setTimeout(() => 
                 {                       
+                    $('#pop-up-msg').hide();
                     $('#main-pop-up-msg').hide();
                 }, 6000);
             });

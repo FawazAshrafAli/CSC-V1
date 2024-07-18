@@ -12,10 +12,13 @@ from .views import (
     ListCscCenter,
 
     get_all_states, get_all_districts, get_all_blocks,
+    get_csc_keywords, get_name_types,
     GetDistrictDetailsView, GetBlockDetailsView,
     CreateStateView, CreateDistrictView, CreateBlockView,
     EditStateView, EditDistrictView, EditBlockView,
-    DeleteStateView, DeleteDistrictView, DeleteBlockView
+    DeleteStateView, DeleteDistrictView, DeleteBlockView,
+    CreateKeywordView, EditKeywordView, DeleteKeywordView,
+    CreateCscNameTypeView, EditCscNameTypeView, DeleteCscNameTypeView,
     )
 
 app_name = "csc_admin"
@@ -46,6 +49,8 @@ urlpatterns = [
     path('get_all_states/', get_all_states, name="get_all_states"),
     path('get_all_districts/', get_all_districts, name="get_all_districts"),
     path('get_all_blocks/', get_all_blocks, name="get_all_blocks"),
+    path('get_csc_keywords/', get_csc_keywords, name="get_csc_keywords"),
+    path('get_name_types/', get_name_types, name="get_name_types"),
 
     path('get_district_detail/<int:pk>', GetDistrictDetailsView.as_view(), name="get_district_detail"),
     path('get_block_detail/<int:pk>', GetBlockDetailsView.as_view(), name="get_block_detail"),
@@ -62,5 +67,13 @@ urlpatterns = [
     path('add_block/', CreateBlockView.as_view(), name="add_block"),
     path('edit_block/<int:pk>', EditBlockView.as_view(), name="edit_block"),
     path('delete_block/<int:pk>', DeleteBlockView.as_view(), name="delete_block"),
+
+    path('add_keyword/', CreateKeywordView.as_view(), name="add_keyword"),
+    path('edit_keyword/<str:slug>', EditKeywordView.as_view(), name="edit_keyword"),
+    path('delete_keyword/<str:slug>', DeleteKeywordView.as_view(), name="delete_keyword"),
+
+    path('add_name_type/', CreateCscNameTypeView.as_view(), name="add_name_type"),
+    path('edit_name_type/<str:slug>', EditCscNameTypeView.as_view(), name="edit_name_type"),
+    path('delete_name_type/<str:slug>', DeleteCscNameTypeView.as_view(), name="delete_name_type"),
     # Pop up box urls end
     ]

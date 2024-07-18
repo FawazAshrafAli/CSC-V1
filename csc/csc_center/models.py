@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 from services.models import Service
 from products.models import Product
 
@@ -40,13 +41,38 @@ class Block(models.Model):
     def __str__(self):
         return self.block
 
-class CscCenterType(models.Model):
-    pass
+class CscNameType(models.Model):
+    type = models.CharField(max_length=150, unique=True)
+    slug = models.SlugField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.type)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = 'csc_name_type'
+        ordering = ["type"]
+
+    def __str__(self):
+        return self.type
 
 
-class CscKeywords(models.Model):
-    pass
+class CscKeyword(models.Model):
+    keyword = models.CharField(max_length=150, unique=True)
+    slug = models.SlugField(null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.keyword)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = 'csc_keywords'
+        ordering = ["keyword"]
+
+    def __str__(self):
+        return self.keyword
 
 class SocialMediaLink(models.Model):
     csc_center_id = models.ForeignKey('CscCenter', on_delete=models.CASCADE)
@@ -58,8 +84,8 @@ class SocialMediaLink(models.Model):
 
 class CscCenter(models.Model):
     name = models.CharField(max_length=150, unique=True)
-    type = models.ForeignKey(CscCenterType, on_delete=models.CASCADE)
-    keywords = models.ManyToManyField(CscKeywords)
+    type = models.ForeignKey(CscNameType, on_delete=models.CASCADE)
+    keywords = models.ManyToManyField(CscKeyword)
     state = models.ForeignKey(State, on_delete=models.CASCADE)
     district = models.ForeignKey(District, on_delete=models.CASCADE)
     block = models.ForeignKey(Block, on_delete=models.CASCADE)
