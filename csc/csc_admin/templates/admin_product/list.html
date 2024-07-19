@@ -1,0 +1,821 @@
+{% extends "admin_base/base.html" %}
+{% load static %}
+
+{% block title_prefix %}Products{% endblock title_prefix %}
+
+{% block content %}
+
+<div class="dashboard-content">
+	<!-- Titlebar -->
+	<div id="titlebar">
+		<div class="row">
+			<div class="col-md-12">
+				<h2>Products</h2>
+				<!-- Breadcrumbs -->
+				<nav id="breadcrumbs">
+					<ul>
+						<li><a href="{% include "admin_components/home_link.html" %}">Home</a></li>						
+						<li>Products</li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+		{% include "admin_components/message.html" %}
+	</div>
+
+	<div class="row">
+		<style>
+            #pop-up-box {
+                display: none;
+                position:fixed;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 999;                
+                background: #f7f7f7;
+                box-shadow: 0 0 5px;
+                min-width: 390px;
+            }
+
+            #pop-up-box-heading {
+                background-color: #fff;
+                padding: 10px;
+                margin: 0 0 10px 0;
+            }
+
+            .close-btn {
+                position: absolute;
+                top: 5px; 
+                right: 5px;
+                font-size: 24px;
+                color: red;
+                background-color: #fff;
+                border: none;
+                box-shadow: 0 0 1px #777;
+                padding: 0 7px;        
+            }
+
+            .close-btn:hover {
+                color: #fff;
+                background-color: rgba(255, 0, 0, 0.485);
+            }
+
+            #pop-up-form {
+                padding: 0 10px;
+                padding-bottom: 5px;
+            }
+
+            #pop-up-msg {
+                display: none;
+                padding-left: 10px;
+                font-size: small;
+            }
+
+            #pop-up-dropdown {                
+                min-height: 150px;                
+            }
+
+            #pop-up-btns {
+                float: right;
+                padding-bottom: 5px;
+            }
+
+            #pop-up-add-toggle {
+                color: #fff;
+                width: 75px;
+                text-transform: uppercase;
+                background: linear-gradient(to bottom, darkgreen, green, darkgreen);
+                box-shadow: 0 0 5px #777;
+                border: none;
+            }
+
+            #pop-up-add-toggle:hover {
+                background: linear-gradient(to bottom, lime, green, darkgreen);
+            }
+
+            #pop-up-edit-toggle {
+                display: none;
+                color: #fff;
+                width: 75px;
+                text-transform: uppercase;
+                background: linear-gradient(to bottom, coral, orange, coral);
+                box-shadow: 0 0 5px #777;
+                border: none;
+            }
+
+            #pop-up-edit-toggle:hover {
+                background: linear-gradient(to bottom, yellow, orange, coral);
+            }
+
+            #pop-up-delete-toggle {
+                display: none;
+                color: #fff;
+                width: 75px;
+                text-transform: uppercase;
+                background: linear-gradient(to bottom, darkred, red, darkred);
+                box-shadow: 0 0 5px #777;
+                border: none;
+            }
+
+            #pop-up-delete-toggle:hover {
+                background: linear-gradient(to bottom, orange, red, darkred);
+            }
+
+            #pop-up-add-btn-div {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            #pop-up-add-btn {
+                color: #fff;
+                text-transform: uppercase;
+                background: linear-gradient(to bottom, darkgreen, green, darkgreen);
+                border: none;
+                margin-bottom: 5px;
+            }            
+
+            #pop-up-add-btn:hover {
+                background: linear-gradient(to bottom, lime, green, darkgreen);
+            }
+
+            #pop-up-edit-btn {
+                color: #fff;
+                text-transform: uppercase;
+                background: linear-gradient(to bottom, coral, orange, coral);
+                border: none;
+                margin-bottom: 5px;
+            }
+
+            #pop-up-edit-btn:hover {
+                background: linear-gradient(to bottom, yellow, orange, coral);
+            }
+
+            #pop-up-delete-btn {
+                color: #fff;
+                text-transform: uppercase;
+                background: linear-gradient(to bottom, darkred, red, darkred);
+                border: none;
+                margin-bottom: 5px;
+            }
+
+            #pop-up-delete-btn:hover {
+                background: linear-gradient(to bottom, orange, red, darkred);
+            }
+
+            #pop-up-cancel-btn {
+                color: #fff;
+                text-transform: uppercase;
+                background: linear-gradient(to bottom, darkblue, blue, darkblue);
+                border: none;
+                margin-bottom: 5px;
+            }
+
+            #pop-up-cancel-btn:hover {
+                background: linear-gradient(to bottom, steelblue, blue, darkblue);
+            }
+        </style>
+
+        <!-- Pop Up Box Start -->
+        <div id="pop-up-box">
+            <h3 id="pop-up-box-heading" ></h3>
+            <button class="close-btn" aria-label="Close" title="Close">&times;</button>
+            <span id="pop-up-msg" ></span>
+            <form id="pop-up-form"> </form>
+        </div>
+        <!-- Pop Up Box Start -->
+
+		<div class="col-lg-9 col-md-8 padding-right-30">
+            <div class="dashboard-list-box margin-top-0">
+				<h4>Products</h4>
+				<ul>
+					{% for product in products %}
+					<li>				
+						<div class="list-box-listing">
+							<div class="list-box-listing-img" style="display: flex; flex-direction: column;">
+								<a href="#"><img src={% if product.image %} {{product.image.url}} {% else %} "images/listing-item-01.jpg" {% endif %} alt=""></a>
+								<button id="product-status-btn-{{product.slug}}" style="{% if product.status == 'Published' %} background-color:green; {% else %} background-color: darkred; {% endif %} color: #fff; border: 0;">{{product.status}}</button>
+							</div>
+							<div class="list-box-listing-content">
+								<div class="inner">
+									<h3><a href="#">{{product.name}}</a></h3>
+									<p>{{product.description|slice:':100'}}...</p>
+                                    <h5>Quantity: {% if product.quantity < 10 %} <span style="color: red">{{product.quantity}}</span> {% else %} {{product.quantity}} {% endif %}</h5>
+                                    <h5>Price: {{product.price}}</h5>
+								</div>
+							</div>
+						</div>
+						<div class="buttons-to-right">
+							<a href="{% url 'csc_admin:update_blog' product.slug %}" class="button gray"><i class="sl sl-icon-note"></i> Edit</a>
+							<a href="#" class="button gray" onclick="(e) => e.preventDefault(); toggleBlogDeletion(`{{product.slug}}`, `{{product.title}}`);"><i class="sl sl-icon-close"></i> Delete</a>
+						</div>
+					</li>
+					{% endfor %}
+				</ul>
+			</div>
+        </div>
+        <!-- Blog Posts / End -->
+        <!-- Widgets -->
+        <div class="col-lg-3 col-md-4">
+            <div class="sidebar right">                
+                <!-- Widget -->
+                <div class="widget margin-top-40">
+                    <h4>Product Components</h4>
+                    <ul class="list-4 color">
+                        <li><a href="#">Product Category</a></li>                        
+                    </ul>
+                </div>
+        
+                <!-- Widget / End -->
+                <!-- Widget / End-->
+                <div class="clearfix"></div>
+                <div class="margin-bottom-40"></div>
+            </div>
+        </div>
+    </div>
+
+
+		<!-- Copyrights -->
+		<div class="col-md-12">
+			<div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
+		</div>
+	</div>
+
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script src="{% static 'w3/admin_csc_center/js/populateDistricts.js' %}"></script>
+<script>
+
+    $(document).ready(() => {
+
+        // Close pop up box
+        $('.close-btn').click(() => {
+            $('#pop-up-box').hide();
+        });
+
+        $(document).on('keydown', (event) => {
+            if (event.key === 'Escape') {
+                $('#pop-up-box').hide();
+            };
+        });
+
+        // To populate select with state data on toggling state btn
+        function getStates(e) {
+            e.preventDefault();            
+            
+            $.ajax({
+                type:'get',
+                url:'/admin/get_all_states/',
+                dataType:'json',
+                success: data => {                    
+                    if (data.states && Array.isArray(data.states)) {
+                        $('#pop-up-dropdown').html('');
+                        if ($('#state-dropdown-input')) {
+                            $('#state-dropdown-input').html('<option value="" hidden disabled selected>Select State</option')
+                        };
+                        data.states.forEach(state => {
+                            let html = `<option value="${state.id}">${state.state}</option>`;
+                            $('#pop-up-dropdown').append(html);
+                            if ($('#state-dropdown-input')) {
+                                $('#state-dropdown-input').append(html);
+                            };
+                        });
+                    } else {
+                        $('#pop-up-dropdown').html('');
+                        if ($('#state-dropdown-input')) {
+                            $('#state-dropdown-input').html('')
+                        };
+                    };
+                },
+                error: (jqXHR, textStatus, errorThrow) => {
+                    console.error("Error: ", textStatus, errorThrow);
+                }
+            });
+        };
+
+        $('#toggle-state-pop-up').click(() => {
+            getStates(event);
+            popUpDefaultView();
+            $('#pop-up-edit-toggle').hide();
+            $('#pop-up-delete-toggle').hide();
+            $('#pop-up-box-heading').html('States');
+            $('#pop-up-box').show();
+        });
+
+        // To populate select with district data on toggling district btn
+        function getDistricts(e) {
+            e.preventDefault();
+            
+            $.ajax({
+                type:'get',
+                url:'/admin/get_all_districts/',
+                dataType:'json',
+                success: data => {                    
+                    if (data.districts && Array.isArray(data.districts)) {
+                        $('#pop-up-dropdown').html('');
+                        if ($('#district-dropdown-input')) {
+                            $('#district-dropdown-input').html('<option value="" hidden disabled selected>Select District</option')
+                        }
+                        data.districts.forEach(district => {
+                            let html = `<option value="${district.id}">${district.district}</option>`;
+                            $('#pop-up-dropdown').append(html);
+                            if ($('#district-dropdown-input')) {
+                                $('#district-dropdown-input').append(html);
+                            }
+                        });
+                    } else {
+                        $('#pop-up-dropdown').html('');
+                        if ($('#district-dropdown-input')) {
+                            $('#district-dropdown-input').html('')
+                        }
+                    };
+                },
+                error: (jqXHR, textStatus, errorThrow) => {
+                    console.error("Error: ", textStatus, errorThrow);
+                }
+            });
+        }
+        
+        $('#toggle-district-pop-up').click(() => {
+            getDistricts(event);
+            popUpDefaultView();
+            $('#pop-up-edit-toggle').hide();
+            $('#pop-up-delete-toggle').hide();
+            $('#pop-up-box-heading').html('Districts');
+            $('#pop-up-box').show();
+        });
+
+        // To populate select with block data on toggling block btn
+        function getBlocks(e) {
+            e.preventDefault();
+            popUpDefaultView();
+            $('#pop-up-edit-toggle').hide();
+            $('#pop-up-delete-toggle').hide();
+            $('#pop-up-box-heading').html('Blocks');
+
+            $.ajax({
+                type:'get',
+                url:'/admin/get_all_blocks/',
+                dataType:'json',
+                success: data => {                    
+                    if (data.blocks && Array.isArray(data.blocks)) {
+                        $('#pop-up-dropdown').html('');
+                        data.blocks.forEach(block => {
+                            let html = `<option value="${block.id}">${block.block}</option>`;
+                            $('#pop-up-dropdown').append(html);
+                        });
+                    } else {
+                        $('#pop-up-dropdown').html('');
+                    };
+                },
+                error: (jqXHR, textStatus, errorThrow) => {
+                    console.error("Error: ", textStatus, errorThrow);
+                }
+            });
+        };
+        
+        $('#toggle-block-pop-up').click(() => {
+            getBlocks(event);
+            $('#pop-up-box').show();
+        });
+
+        // To populate select with name type data on toggling block btn
+        function getNameTypes(e) {
+            e.preventDefault();
+            popUpDefaultView();
+            $('#pop-up-edit-toggle').hide();
+            $('#pop-up-delete-toggle').hide();
+            $('#pop-up-box-heading').html('Name Types');
+
+            $.ajax({
+                type:'get',
+                url:'/admin/get_name_types/',
+                dataType:'json',
+                success: data => {                    
+                    if (data.name_types && Array.isArray(data.name_types)) {
+                        $('#pop-up-dropdown').html('');
+                        data.name_types.forEach(name_type => {
+                            let html = `<option value="${name_type.slug}">${name_type.type}</option>`;
+                            $('#pop-up-dropdown').append(html);
+                        });
+                    } else {
+                        $('#pop-up-dropdown').html('');
+                    };
+                },
+                error: (jqXHR, textStatus, errorThrow) => {
+                    console.error("Error: ", textStatus, errorThrow);
+                }
+            });
+        };
+
+        $('#toggle-name-type-pop-up').click(() => {
+            getNameTypes(event);
+            $('#pop-up-box').show();
+        });
+
+        // To populate select with keyword data on toggling block btn
+        function getKeywords(e) {
+            e.preventDefault();
+            popUpDefaultView();
+            $('#pop-up-edit-toggle').hide();
+            $('#pop-up-delete-toggle').hide();
+            $('#pop-up-box-heading').html('Keywords');
+
+            $.ajax({
+                type:'get',
+                url:'/admin/get_csc_keywords/',
+                dataType:'json',
+                success: data => {                    
+                    if (data.keywords && Array.isArray(data.keywords)) {
+                        $('#pop-up-dropdown').html('');
+                        data.keywords.forEach(keyword => {
+                            let html = `<option value="${keyword.slug}">${keyword.keyword}</option>`;
+                            $('#pop-up-dropdown').append(html);
+                        });
+                    } else {
+                        $('#pop-up-dropdown').html('');
+                    };
+                },
+                error: (jqXHR, textStatus, errorThrow) => {
+                    console.error("Error: ", textStatus, errorThrow);
+                }
+            });
+        };
+
+        $('#toggle-keyword-pop-up').click(() => {
+            getKeywords(event);
+            $('#pop-up-box').show();
+        });
+
+        // Return to the default pop up box
+        function popUpDefaultView() {
+            $('#pop-up-form').html(
+                `<select id="pop-up-dropdown" size=5>
+                    
+                </select>
+                <div id="pop-up-functions">
+                    <div id="pop-up-btns">
+                        <button id="pop-up-add-toggle" type="button">Add</button>
+                        <button id="pop-up-edit-toggle" type="button">Edit</button>
+                        <button id="pop-up-delete-toggle" type="button">Delete</button>
+                    </div>                    
+                </div>`
+            );
+        };
+
+        // Toggle add item.
+        $(document).on('click', '#pop-up-add-toggle', function () {
+            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            let basePlacehodler;
+            let baseInputIdPrefix;
+            if (currentItem === 'Name Type') {
+                endpoint = `add_name_type`;
+                basePlacehodler = `Name Type`;
+                baseInputIdPrefix = `name-type`;
+            } else {
+                endpoint = `add_${currentItem.toLowerCase()}`
+                basePlacehodler = `Name of ${currentItem}`
+                baseInputIdPrefix = currentItem.toLowerCase()
+            }            
+            $('#pop-up-form').html('')
+            $('#pop-up-form').html(
+                `${(currentItem == 'District' || currentItem == 'Block') ? `<select id="state-dropdown-input"></select>` : '' }
+
+                ${currentItem == 'Block' ? `<select id="district-dropdown-input"><option value="" hidden disabled selected>Select district</option></select>` : '' }
+
+                ${(currentItem == 'District' || currentItem == 'Block') ? `<textarea name="${currentItem.toLowerCase()}s" id="${baseInputIdPrefix}s-textarea"  placeholder="${basePlacehodler}s"></textarea>`
+                : `<input type="text" name="${currentItem.toLowerCase()}" id="${baseInputIdPrefix}-input" placeholder="${basePlacehodler}">`}                
+                <div id="pop-up-add-btn-div">
+                    <button id="pop-up-add-btn" type="button">Add ${currentItem.toUpperCase()}</button>
+                    <button id="pop-up-cancel-btn" type="button">Cancel</button>
+                </div>`
+            );
+            if ((currentItem == 'District' || currentItem == 'Block')) {
+                getStates(event);                
+            }
+        });
+
+        $(document).on('change', '#state-dropdown-input', function () {
+            populateDistricts($(this).val());
+        });
+
+        // Return to the default item fetched form
+        $(document).on('click', '#pop-up-cancel-btn', function () {
+            popUpDefaultView();
+            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            if (currentItem === "State") {
+                getStates(event);
+            } else if (currentItem === "District") {
+                getDistricts(event);
+            } else if (currentItem === "Block") {
+                getBlocks(event);
+            } else if (currentItem === 'Name Type') {
+                getNameTypes(event);
+            } else if (currentItem === "Keyword") {
+                getKeywords(event);
+            }
+        });
+
+        // To show editing and deleting toggle button on option select
+        function showEditAndDelete () {
+            for (var i=0; i < $('#pop-up-form select')[0].options.length; i++) {
+                if ($('#pop-up-form select')[0].options[i].selected == true) {
+                    $('#pop-up-edit-toggle').show();
+                    $('#pop-up-delete-toggle').show();
+                };
+            };
+        };
+
+        $(document).on('change', '#pop-up-form select', showEditAndDelete);
+
+        // Ajax Form Submission
+        function submitPopUpForm(requestType, requestUrl, data=undefined, successCallback) {
+            $.ajax({
+                type: requestType,
+                url: requestUrl,
+                data: data,
+                dataType: 'json',
+                success: response => {
+                    if (response.error) {
+                        if (successCallback) successCallback(false, response.error);
+                    } else if (response.status === 'success') {
+                        if (successCallback) successCallback(true, null);
+                    } else {
+                        if (successCallback) successCallback(false, 'Unknown error');
+                    }
+                },
+                error: (jqXHR, textStatus, errorThrown) => {
+                    console.error('Error:', textStatus, errorThrown);
+                    if (successCallback) successCallback(false, textStatus);
+                }
+            });
+        };
+
+        // Create item Form submission
+        $(document).on('click', '#pop-up-add-btn', () => {
+            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            let data;
+            let endpoint;
+            endpoint = `add_${currentItem.toLowerCase()}`;
+            if (currentItem === 'State') {
+                const state = $('#state-input').val().trim();
+                data = {'state': state}
+
+            } else if (currentItem === 'District') {
+                const state = $('#state-dropdown-input').val().trim();
+                const districts = $('#districts-textarea').val().trim();
+                data = {
+                    'state': state,
+                    'districts': districts
+                };
+
+            } else if (currentItem === 'Block') {
+                const state = $('#state-dropdown-input').val().trim();
+                const district = $('#district-dropdown-input').val().trim();
+                const blocks = $('#blocks-textarea').val().trim();
+                data = {
+                    'state': state,
+                    'district': district,
+                    'blocks': blocks
+                };
+            } else if (currentItem === 'Name Type') {
+                endpoint = `add_name_type`;
+                const name_type = $('#name-type-input').val().trim();
+                data = {'name_type': name_type}
+            } else if (currentItem === 'Keyword') {
+                const keyword = $('#keyword-input').val().trim();
+                data = {'keyword': keyword}
+
+            }
+
+            submitPopUpForm('post', `/admin/${endpoint}/`, data, (result, error) => {
+                if (result) {                    
+                    $('#pop-up-msg').show()
+                    $('#pop-up-msg').html(`Added New ${currentItem}`).css('color', 'green')
+                    if (currentItem === 'State') {
+                        $('#state-input').val('');
+
+                    } else if (currentItem === 'District') {
+                        $('#state-dropdown-input option').first().prop('selected', true);
+                        $('#districts-textarea').val('');
+
+                    } else if (currentItem === 'Block') {
+                        $('#state-dropdown-input option').first().prop('selected', true);
+                        $('#district-dropdown-input option').first().prop('selected', true);
+                        $('#blocks-textarea').val('');                        
+
+                    } else if (currentItem === 'Name Type') {
+                        $('#name-type-input').val('');
+
+                    } else if (currentItem === 'Keyword') {
+                        $('#keyword-input').val('');
+
+                    }
+                } else {
+                    $('#pop-up-msg').show()
+                    $('#pop-up-msg').html(error).css('color', 'red');
+                };
+                if (error) {
+                    $('#pop-up-msg').show()
+                    $('#pop-up-msg').html(error).css('color', 'red');
+                }              
+                // Pop up form submission msg timeout
+                setTimeout(() => 
+                {                       
+                    $('#pop-up-msg').hide();
+                    $('#main-pop-up-msg').hide();
+                }, 6000);
+            });            
+        });
+
+        // Toggle Edit Item
+        $(document).on('click', '#pop-up-edit-toggle', function () {
+            const dropdownValue = $('#pop-up-dropdown').val();
+            const dropdownSelectedText = $('#pop-up-dropdown option:selected').text()
+
+            localStorage.setItem('dropdownValue', dropdownValue);            
+
+            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+
+            let basePlacehodler;
+            let baseInputIdPrefix;
+
+            if (currentItem === 'Name Type')  {
+                basePlacehodler = `Name Type`;
+                baseInputIdPrefix = `name-type`;
+            } else {
+                basePlacehodler = `Name of ${currentItem}`;
+                baseInputIdPrefix = currentItem.toLowerCase();
+            }
+
+            $('#pop-up-form').html(`<h4>Edit ${currentItem}</h4>`);
+            $('#pop-up-form').append(
+                `${(currentItem == 'District' || currentItem == 'Block') ? `<select id="state-dropdown-input" ></select>` : '' }
+
+                ${currentItem == 'Block' ? `<select id="district-dropdown-input"><option value="" hidden disabled selected>Select district</option></select>` : '' }
+
+                 
+                <input type="text" id="${baseInputIdPrefix}-input" value="${dropdownSelectedText}" placeholder="${basePlacehodler}">
+                <div id="pop-up-add-btn-div">
+                    <button id="pop-up-edit-btn" type="button">Save ${currentItem.toUpperCase()}</button>
+                    <button id="pop-up-cancel-btn" type="button">Cancel</button>
+                </div>`
+            );
+            if (currentItem === 'District' || currentItem === 'Block') {
+                getStates(event);
+
+                if (currentItem === 'Block') {
+                    getDistricts(event);
+                }
+                
+                $.ajax({
+                    type: 'get',
+                    url: `/admin/get_${currentItem.toLowerCase()}_detail/${dropdownValue}`,
+                    dataType: 'json',
+                    success: response => {
+                        const stateDropdownInput = $('#state-dropdown-input');
+                        const stateDropdownOptions = stateDropdownInput.find('option');
+
+                        if (response.state_id) {                            
+                            stateDropdownOptions.each((index, option) => {
+                                if (option.value == response.state_id) {
+                                    $(option).prop('selected', true);
+                                }
+                            });
+                        }
+
+                        if (currentItem === 'Block') {                            
+                            const districtDropdownInput = $('#district-dropdown-input');
+                            const districtDropdownOptions = districtDropdownInput.find('option');                            
+
+                            if (response.district_id) {                                
+                                districtDropdownOptions.each((index, option) => {                                                                        
+                                    if (option.value == response.district_id) {
+                                        $(option).prop('selected', true);
+                                    }
+                                });
+                            } 
+                        }
+                    },
+                    error: error => {
+                        console.error("Error: ", error);
+                    }
+                });
+            };
+        });
+
+        // Edit item Form submission
+        $(document).on('click', '#pop-up-edit-btn', () => {
+            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            let data;
+            let endpoint = `edit_${currentItem.toLowerCase()}`;
+            let itemId = localStorage.getItem('dropdownValue');            
+            if (currentItem === 'State') {
+                const state = $('#state-input').val();
+                data = {'state': state}
+
+            } else if (currentItem === 'District') {
+                const state = $('#state-dropdown-input').val().trim();
+                const district = $('#district-input').val().trim();
+                data = {
+                    'state': state,
+                    'district': district
+                };
+
+            } else if (currentItem === 'Block') {
+                const state = $('#state-dropdown-input').val().trim();
+                const district = $('#district-dropdown-input').val().trim();
+                const block = $('#block-input').val().trim();
+                data = {
+                    'state': state,
+                    'district': district,
+                    'block': block
+                };
+            } else if (currentItem === 'Name Type') {
+                endpoint = 'edit_name_type'
+                const name_type = $('#name-type-input').val();
+                data = {'name_type': name_type}
+            
+            } else if (currentItem === 'Keyword') {
+                const keyword = $('#keyword-input').val();
+                data = {'keyword': keyword}
+
+            }
+            submitPopUpForm('post', `/admin/${endpoint}/${itemId}`, data, (result, error) => {
+                if (result) {                    
+                    $('#pop-up-cancel-btn').click()
+                    $('#pop-up-form').prepend(`<h5 id="main-pop-up-msg"></h5>`)
+                    $('#main-pop-up-msg').html(`Updated ${currentItem}`).css('color', 'green')                    
+                } else {
+                    $('#pop-up-msg').show()
+                    $('#pop-up-msg').html(error).css('color', 'red');
+                };
+                if (error) {
+                    $('#pop-up-msg').show()
+                    $('#pop-up-msg').html(error).css('color', 'red');
+                }
+                // Pop up form submission msg timeout
+                setTimeout(() => 
+                {                       
+                    $('#pop-up-msg').hide();
+                    $('#main-pop-up-msg').hide();
+                }, 6000);
+            });
+        });
+
+        // Toggle Delete Item
+        $(document).on('click', '#pop-up-delete-toggle', function () {
+            const dropdownValue = $('#pop-up-dropdown').val();
+            const dropdownSelectedText = $('#pop-up-dropdown option:selected').text()
+
+            localStorage.setItem('dropdownValue', dropdownValue);            
+
+            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            $('#pop-up-form').html(`<h4>Deleting ${currentItem} <span style="color:red">'${dropdownSelectedText}'</span></h4>`);
+            $('#pop-up-form').append(
+                `<h5>Are you sure?</h5><br>
+                <div id="pop-up-add-btn-div">
+                    <button id="pop-up-delete-btn" type="button">Delete ${currentItem.toUpperCase()}</button>
+                    <button id="pop-up-cancel-btn" type="button">Cancel</button>
+                </div>`
+            );
+        });
+
+        // Delete item Form submission
+        $(document).on('click', '#pop-up-delete-btn', () => {
+            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            let data;
+            let itemId = localStorage.getItem('dropdownValue');            
+            let endpoint = `delete_${currentItem.toLowerCase()}`;
+            if (currentItem === 'Name Type') {
+                endpoint = 'delete_name_type'
+            }
+
+            submitPopUpForm('get', `/admin/${endpoint}/${itemId}`, data, (result, error) => {
+                if (result) {
+                    $('#pop-up-cancel-btn').click()
+                    $('#pop-up-form').prepend(`<h5 id="main-pop-up-msg"></h5>`)
+                    $('#main-pop-up-msg').html(`Deleted ${currentItem}`).css('color', 'green')                    
+                } else {
+                    $('#pop-up-msg').show()
+                    $('#pop-up-msg').html(error).css('color', 'red');
+                };
+                if (error) {
+                    $('#pop-up-msg').show()
+                    $('#pop-up-msg').html(error).css('color', 'red');
+                }
+                // Pop up form submission msg timeout
+                setTimeout(() => 
+                {                       
+                    $('#pop-up-msg').hide();
+                    $('#main-pop-up-msg').hide();
+                }, 6000);
+            });
+        });
+
+        popUpDefaultView();
+    });
+</script>
+{% endblock scripts %}

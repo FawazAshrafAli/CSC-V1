@@ -1,6 +1,8 @@
 {% extends "admin_base/base.html" %}
 {% load static %}
 
+{% block title_prefix %}Add CSC Center{% endblock title_prefix %}
+
 {% block content %}
 <div class="dashboard-content">
     <div id="titlebar">
@@ -13,7 +15,7 @@
                     <!-- Breadcrumbs -->
                     <nav id="breadcrumbs">
                         <ul>
-                            <li><a href="#">Home</a></li>
+                            <li><a href="{% url 'home:view' %}">Home</a></li>
                             <li>Add CSC Centers</li>
                         </ul>
                     </nav>
@@ -30,273 +32,183 @@
     
     <!-- Container -->
     <div class="container">
-    
-            <div class="row">
-                <div class="col-lg-12">                    
-    
-                    <div id="add-listing" class="separated-form">
-    
-                        <!-- Section -->
-                        <div class="add-listing-section">
-    
-                            <!-- Headline -->
-                            <div class="add-listing-headline">
-                                <h3><i class="sl sl-icon-doc"></i> Basic Informations</h3>
-                            </div>
-    
-                            <!-- Title -->
-                            <div class="row with-forms">
-                                <div class="col-md-6">
+        <div class="row">
+            <div class="col-lg-12">                    
+                <div id="add-listing" class="separated-form">
+                    <!-- Section -->
+                    <div class="add-listing-section">
+                        <!-- Headline -->
+                        <div class="add-listing-headline">
+                            <h3><i class="sl sl-icon-doc"></i> Basic Informations</h3>
+                        </div>
+                        <!-- Title -->
+                        <div class="row with-forms">
+                            <div class="col-md-6">
                                 <h5>CSC Name <i class="tip" data-tip-content="Name of your CSC"></i></h5>
-                                    <input class="search-field" type="text" value="" placeholder="Name of your CSC"/>
-                                 </div>
-                                 
-                                 <div class="col-md-6">
-                                    <h5>CSC Name Type <i class="tip" data-tip-content="CSC Name Type"></i></h5>
-                                    <select class="chosen-select" data-placeholder="Common Service Centre (CSC)">
-                                        <option label="CSC Name Type"></option>
-                                        <option>Common Service Centre (CSC)</option>	
-                                        <option>Digital Seva (CSC)</option>
-                                        <option>Digital Seva Kendra (CSC)</option>
-                                        <option>Janasevana (CSC)</option>
-                                        <option>Janasevana Common Service Centre (CSC)</option>
-                                        <option>Jana Seva (CSC)</option>
-                                        <option>Jana Seva Kendra (CSC)</option>
-                                        <option>Jana Seva Common Service Centre (CSC)</option>
-                                        <option>Jana Seva Kendra Common Service Centre (CSC)</option>
-                                        <option>Digital Seva (CSC)</option>
-                                        <option>Digital Seva Kendra (CSC)</option>
-                                        <option>Digital Seva Common Service Centre (CSC)</option>
-                                        <option>Digital Seva Kendra Common Service Centre (CSC) </option>
-                                        <option>Online Services (CSC)</option>
-                                    </select>
-                  
-                                </div>
-                                <h5 class="margin-top-30 margin-bottom-10">ABCD <span>Common Service Centre (CSC)</span> Location Name</h5>
-                                
+                                <input class="search-field" type="text" value="" placeholder="Name of your CSC"/>
                             </div>
-    
+                            <div class="col-md-6">
+                                <h5>CSC Name Type <i class="tip" data-tip-content="CSC Name Type"></i></h5>
+                                <select class="chosen-select" data-placeholder="Common Service Centre (CSC)">
+                                    <option label="CSC Name Type"></option>
+                                    {% for name_type in name_types %}
+                                    <option value="{{name_type.slug}}">{{name_type.type}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <h5 class="margin-top-30 margin-bottom-10">ABCD <span>Common Service Centre (CSC)</span> Location Name</h5>
+                        </div>
+                        <!-- Row -->
+                        <div class="row with-forms">
+                            <!-- Type -->
+                            <div class="col-md-12">
+                                <h5>Keywords <i class="tip" data-tip-content="Maximum of 15 keywords related with your business"></i></h5>
+                                <select data-placeholder="Select Keywords" class="chosen-select" multiple>
+                                    {% for keyword in keywords %}
+                                    <option value="{{keyword.slug}}">{{keyword.keyword}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                        </div>
+                        <!-- Row / End -->
+                    </div>
+                    <!-- Section / End -->
+                    <!-- Section -->
+                    <div class="add-listing-section margin-top-45">
+                        <!-- Headline -->
+                        <div class="add-listing-headline">
+                            <h3><i class="sl sl-icon-location"></i> Address/Location</h3>
+                        </div>
+                        <div class="submit-section">
+                            <div class="row with-forms">
+                                <!-- State -->
+                                <div class="col-md-4">
+                                    <h5>State</h5>
+                                    <select class="chosen-select" id="state-dropdown" data-placeholder="Select State" required>
+                                        <option label="Select State"></option>
+                                        {% for state in states %}
+                                        <option value="{{state.pk}}">{{state.state}}</option>
+                                        {% endfor %}                                            
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5>District</h5>
+                                    <select class="chosen-select" id="district-dropdown" data-placeholder="Select District">
+                                        <option label="Select District"></option>                                       
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5>Block</h5>
+                                    <select class="chosen-select" id="block-dropdown" data-placeholder="Select Block">
+                                        <option label="Select Block"></option>                                            
+                                    </select>
+                                </div>
+                            </div>
                             <!-- Row -->
                             <div class="row with-forms">
-    
-             
-    
-                                <!-- Type -->
-                                <div class="col-md-12">
-                                    <h5>Keywords <i class="tip" data-tip-content="Maximum of 15 keywords related with your business"></i></h5>
-                     <select data-placeholder="Select Keywords" class="chosen-select" multiple>
-                    <option>Common Service Centre</option>
-                    <option>CSC</option>
-                    <option>Digital Seva Kendra (CSC)</option>
-                    <option>Digital Seva (CSC)</option>
-                    <option>Janasevana (CSC)</option>
-                    <option>Jana Seva (CSC)</option>
-                    <option>Digital Seva (CSC)</option>
-                    <option>Jana Seva Kendra (CSC)</option>
-                    <option>Online Services (CSC)</option>
-                </select>
+                                <!-- City -->
+                                <div class="col-md-6">
+                                    <h5>Location</h5>
+                                    <input type="text" placeholder="Enter Location">
                                 </div>
-    
+                                <!-- Address -->
+                                <div class="col-md-6">
+                                    <h5>Zip-Code</h5>
+                                    <input type="text" placeholder="Enter Pincode">
+                                </div>
+                                <!-- Zip-Code -->
+                                <div class="col-md-6">
+                                <h5>Landmark / Building Name</h5>
+                                    <input type="text" placeholder="e.g. 1st Floor, ABCD Building">
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Address</h5>
+                                    <input type="text" placeholder="e.g. 964 School Street">
+                                </div>
                             </div>
                             <!-- Row / End -->
-    
                         </div>
-                        <!-- Section / End -->
-    
-                        <!-- Section -->
-                        <div class="add-listing-section margin-top-45">
-    
-                            <!-- Headline -->
-                            <div class="add-listing-headline">
-                                <h3><i class="sl sl-icon-location"></i> Address/Location</h3>
-                            </div>
-    
-                            <div class="submit-section">
-                            
-                            
-                            <div class="row with-forms">
-                                    
-                                    <!-- State -->
-                                    <div class="col-md-4">
-                                        <h5>State</h5>
-                                        <select class="chosen-select" id="state-dropdown" data-placeholder="Select State" required>
-                                            <option label="Select State"></option>
-                                            {% for state in states %}
-                                            <option value="{{state.pk}}">{{state.state}}</option>
-                                            {% endfor %}                                            
-                                        </select>
-                                    </div>
-                                    
-                                    
-                                    <div class="col-md-4">
-                                        <h5>District</h5>
-                                        <select class="chosen-select" id="district-dropdown" data-placeholder="Select District">
-                                            <option label="Select District"></option>                                          
-                                        </select>
-                                    </div>
-                                    
-                                    
-                                    <div class="col-md-4">
-                                        <h5>Block</h5>
-                                        <select class="chosen-select" id="block-dropdown" data-placeholder="Select Block">
-                                            <option label="Select Block"></option>                                            
-                                        </select>
-                                    </div>
-                                    
-                                    </div>
-    
-                                <!-- Row -->
-                                <div class="row with-forms">
-    
-                                    <!-- City -->
-                                    <div class="col-md-6">
-                                        <h5>Location</h5>
-                                        <select class="chosen-select" data-placeholder="Select Location">
-                                        <option label="Select Location"></option>
-                                            <option>New York</option>
-                                            <option>Los Angeles</option>
-                                            <option>Chicago</option>
-                                            <option>Houston</option>
-                                            <option>Phoenix</option>
-                                            <option>San Diego</option>
-                                            <option>Austin</option>
-                                        </select>
-                                    </div>
-    
-                                    <!-- Address -->
-                                    <div class="col-md-6">
-                                        <h5>Zip-Code</h5>
-                                        <input type="text" placeholder="Enter Pincode">
-                                    </div>
-                                    
-                                    <!-- Zip-Code -->
-                                    <div class="col-md-6">
-                                    <h5>Landmark / Building Name</h5>
-                                        <input type="text" placeholder="e.g. 1st Floor, ABCD Building">
-                                        
-                                    </div>
-                                    
-                                    <div class="col-md-6">
-                                    <h5>Address</h5>
-                                        <input type="text" placeholder="e.g. 964 School Street">
-                                        
-                                    </div>
-    
-                                </div>
-                                <!-- Row / End -->
-    
-                            </div>
+                    </div>
+                    <!-- Section / End -->
+                    <!-- Section -->
+                    <div class="add-listing-section margin-top-45">
+                        <!-- Headline -->
+                        <div class="add-listing-headline">
+                            <h3><i class="sl sl-icon-picture"></i> Upload</h3>
                         </div>
-                        <!-- Section / End -->
-    
-    
-                        <!-- Section -->
-                        <div class="add-listing-section margin-top-45">
-    
-                            <!-- Headline -->
-                            <div class="add-listing-headline">
-                                <h3><i class="sl sl-icon-picture"></i> Upload</h3>
-                            </div>
-    
-                            <!-- Dropzone -->
-                            <div class="row submit-section">
+                        <!-- Dropzone -->
+                        <div class="row submit-section">
                             <div class="col-md-6">
                             <h5>Upload Logo</h5>
                                 <form action="/file-upload" class="dropzone" ></form>
                             </div>
-                            
-                             <div class="col-md-6">
+                            <div class="col-md-6">
                             <h5>Upload Banner</h5>
                                 <form action="/file-upload" class="dropzone" ></form>
                             </div>
     
-    </div>
                         </div>
-                        <!-- Section / End -->
-    
-    
-                        <!-- Section -->
-                        <div class="add-listing-section margin-top-45">
-    
-                            <!-- Headline -->
-                            <div class="add-listing-headline">
-                                <h3><i class="sl sl-icon-docs"></i> Details</h3>
+                    </div>
+                    <!-- Section / End -->
+                    <!-- Section -->
+                    <div class="add-listing-section margin-top-45">
+                        <!-- Headline -->
+                        <div class="add-listing-headline">
+                            <h3><i class="sl sl-icon-docs"></i> Details</h3>
+                        </div>
+                        <!-- Description -->
+                        <div class="form">
+                            <h5>Description</h5>
+                            <textarea class="WYSIWYG" name="summary" cols="40" rows="3" id="summary" spellcheck="true"></textarea>
+                        </div>
+                        <!-- Row -->
+                        <div class="row with-forms">
+                            <!-- Phone -->
+                            <div class="col-md-4">
+                                <h5>Contact Number</h5>
+                                <input type="text" placeholder="Contact Number">
                             </div>
-    
-                            <!-- Description -->
-                            <div class="form">
-                                <h5>Description</h5>
-                                <textarea class="WYSIWYG" name="summary" cols="40" rows="3" id="summary" spellcheck="true"></textarea>
+                            <!-- Website -->
+                            <div class="col-md-4">
+                                <h5>Mobile Number</h5>
+                                <input type="text" placeholder="Mobile Number">
                             </div>
-    
-                            <!-- Row -->
-                            <div class="row with-forms">
-    
-                                <!-- Phone -->
-                                <div class="col-md-4">
-                                    <h5>Contact Number</h5>
-                                    <input type="text" placeholder="Contact Number">
-                                </div>
-    
-                                <!-- Website -->
-                                <div class="col-md-4">
-                                    <h5>Mobile Number</h5>
-                                    <input type="text" placeholder="Mobile Number">
-                                </div>
-    
-                                <!-- Email Address -->
-                                <div class="col-md-4">
-                                    <h5>WhatsApp Number</h5>
-                                    <input type="text" placeholder="WhatsApp Number">
-                                </div>
-    
+                            <!-- Email Address -->
+                            <div class="col-md-4">
+                                <h5>WhatsApp Number</h5>
+                                <input type="text" placeholder="WhatsApp Number">
                             </div>
-                            <!-- Row / End -->
-    
-    
-                            <!-- Row -->
-                            <div class="row with-forms">
-    
-                                <!-- Phone -->
-                                <div class="col-md-6">
-                                    <h5>E-Mail ID</h5>
-                                    <input type="email" placeholder="E-Mail ID">
-                                </div>
-    
-                                <!-- Website -->
-                                <div class="col-md-6">
-                                    <h5>Website <span>(optional)</span></h5>
-                                    <input type="text" placeholder="www.domainname.com">
-                                </div>
-    
-                             
-                                
-                                
-                  <div class="col-md-12">
-                         <h5>Select Services</h5>
-                     <select data-placeholder="Select Services" class="chosen-select" multiple>
-                    <option>GST Registration</option>
-                    <option>FSSAI Registration</option>
-                    <option>Trademark Registration</option>
-                    <option>ISO Registration</option>
-                    <option>Passport Registration</option>
-                    <option>MSME Registration</option>
-                    <option>Udyam Registration</option>
-                    </select>
-                 </div>
-                 
-              <div class="col-md-12">
-                         <h5>Select Products</h5>
-                     <select data-placeholder="Select Services" class="chosen-select" multiple>
-                    <option>GST Registration</option>
-                    <option>FSSAI Registration</option>
-                    <option>Trademark Registration</option>
-                    <option>ISO Registration</option>
-                    <option>Passport Registration</option>
-                    <option>MSME Registration</option>
-                    <option>Udyam Registration</option>
-                    </select>
-                 </div>
+                        </div>
+                        <!-- Row / End -->
+                        <!-- Row -->
+                        <div class="row with-forms">
+                            <!-- Phone -->
+                            <div class="col-md-6">
+                                <h5>E-Mail ID</h5>
+                                <input type="email" placeholder="E-Mail ID">
+                            </div>
+                            <!-- Website -->
+                            <div class="col-md-6">
+                                <h5>Website <span>(optional)</span></h5>
+                                <input type="text" placeholder="www.domainname.com">
+                            </div>                                
+                        <div class="col-md-12">
+                            <h5>Select Services</h5>
+                            <select data-placeholder="Select Services" class="chosen-select" multiple>
+                                {% for service in services %}
+                                <option value="{{service.slug}}" >{{service.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                        <h5>Select Products</h5>
+                        <select data-placeholder="Select Services" class="chosen-select" multiple>
+                            {% for product in Products %}
+                            <option value="{{product.slug}}" >{{product.name}}</option>                            
+                            {% endfor %}
+                        </select>
+                    </div>
     
     
                             </div>

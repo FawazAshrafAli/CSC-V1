@@ -8,6 +8,8 @@ from .views import (
     UpdateBlogView, DeleteBlogView, RemoveBlogImageView,
     ChangeBlogStatusView, 
 
+    CreateProductView, ProductListView,
+
     AddCscCenter, GetDistrictView, GetBlockView,
     ListCscCenter,
 
@@ -41,8 +43,12 @@ urlpatterns = [
     path("remove_blog_image/<pk>", RemoveBlogImageView.as_view(), name="remove_blog_image"),    
     path("change_blog_status/<str:slug>", ChangeBlogStatusView.as_view(), name="change_blog_status"),    
 
+    path('create_product/', CreateProductView.as_view(), name = "create_product"),
+    path('products/', ProductListView.as_view(), name = "products"),
+
     path('csc_centers/', ListCscCenter.as_view(), name = "csc_centers"),
     path('add_csc/', AddCscCenter.as_view(), name = "add_csc"),
+
     path('get_districts/', GetDistrictView.as_view(), name="get_districts"),
     path('get_blocks/', GetBlockView.as_view(), name="get_blocks"),
 

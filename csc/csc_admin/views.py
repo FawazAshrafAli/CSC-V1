@@ -16,6 +16,7 @@ from .forms import (
     UpdateBlogForm
     )
 
+from products.models import Product, Category as ProductCategory
 from csc_center.models import CscCenter, State, District, Block, CscKeyword, CscNameType
 from services.models import Service
 from blog.models import Blog, Category, Tag
@@ -377,6 +378,54 @@ class ChangeBlogStatusView(BaseAdminBlogView, UpdateView):
         return JsonResponse({"message": "Successfully published blog.", "status": self.object.status})
 ##################################### BLOG END #####################################
 
+##################################### PRODUCT START #####################################
+
+@method_decorator(never_cache, name="dispatch")
+class BaseAdminCscProductView(BaseAdminView, View):
+    model = Product
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['product_categories'] = ProductCategory.objects.all().order_by('name')        
+        return context
+    
+
+class CreateProductView(BaseAdminCscProductView, CreateView):
+    fields = ["image", "name", "description", "price", "category"]
+    template_name = "admin_product/create.html"
+    success_url = reverse_lazy("csc_admin:create_product")
+
+    def post(self, request, *args, **kwargs):
+        name = request.POST.get('name')
+        image = request.FILES.get('image')
+        description = request.POST.get('description')
+        price = request.POST.get('price')
+        category = request.POST.get('category')
+
+        try:
+            category = get_object_or_404(ProductCategory, slug = category)
+        except Http404:
+            messages.error(self.request, "Failed. Invalid category")
+            return redirect('csc_admin:create_product')
+        
+        self.model.objects.create(name = name, image = image, description = description, price = price, category = category)
+        messages.success(self.request, "Created Product")
+        return redirect(self.success_url)
+    
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        for field, errors in form.errors.items():
+            for error in errors:
+                print(f"Error on field '{field}': {error}")                
+        return response
+    
+
+class ProductListView(BaseAdminCscProductView, ListView):
+    template_name = "admin_product/list.html"
+    context_object_name = "products"
+
+##################################### PRODUCT END #####################################
+
 ##################################### CSC CENTER START #####################################
 
 @method_decorator(never_cache, name="dispatch")
@@ -405,6 +454,9 @@ class AddCscCenter(BaseAdminCscCenterView, CreateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['name_types'] = CscNameType.objects.all().order_by('type')
+        context['keywords'] = CscKeyword.objects.all().order_by('keyword')
+        context['products'] = Product.objects.all()
         context['states'] = State.objects.all()
         return context
 

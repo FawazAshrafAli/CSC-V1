@@ -93,7 +93,9 @@
 
 						<li><a href="{% url 'csc_admin:blogs' %}" {% if request.path == '/admin/blogs/' %} class="current" {% endif %}>Blog</a></li>
 
-						<li><a {% if request.path == '/admin/services/' or service_page %} class="current" {% endif %} href="{% include 'admin_components/admin_services_link.html' %}">Services</a></li>											
+						<li><a href="{% url 'csc_admin:services' %}" {% if request.path == '/admin/services/' or service_page %} class="current" {% endif %}>Services</a></li>
+
+						<li><a href="{% url 'csc_admin:products' %}" {% if request.path == '/admin/products/' or product_page %} class="current" {% endif %}>Products</a></li>
 					</ul>
 				</nav>
 				<div class="clearfix"></div>
@@ -165,6 +167,13 @@
 					<ul>
 						<li><a href="{% url 'csc_admin:services' %}">List Services</a></li>
 						<li><a href="{% url 'csc_admin:create_service' %}">Add Service</a></li>						
+					</ul>	
+				</li>
+
+				<li {% if request.path == '/admin/products/' or product_page %} class="active" {% endif %} ><a><i class="fa fa-handshake"></i> Products</a>
+					<ul>
+						<li><a href="{% url 'csc_admin:products' %}">List Products</a></li>
+						<li><a href="{% url 'csc_admin:create_product' %}">Add Product</a></li>						
 					</ul>	
 				</li>
 
