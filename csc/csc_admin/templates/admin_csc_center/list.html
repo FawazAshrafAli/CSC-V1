@@ -14,7 +14,7 @@
 				<!-- Breadcrumbs -->
 				<nav id="breadcrumbs">
 					<ul>
-						<li><a href="{% include "admin_components/home_link.html" %}">Home</a></li>						
+						<li><a href="{% url 'csc_admin:home' %}">Home</a></li>
 						<li>CSC Center</li>
 					</ul>
 				</nav>
@@ -189,25 +189,21 @@
             <div class="dashboard-list-box margin-top-0">
 				<h4>CSC Centers</h4>
 				<ul>
-					{% for blog in blogs %}
+					{% for center in centers %}
 					<li>				
 						<div class="list-box-listing">
 							<div class="list-box-listing-img" style="display: flex; flex-direction: column;">
-								<a href="#"><img src={% if blog.image %} {{blog.image.url}} {% else %} "images/listing-item-01.jpg" {% endif %} alt=""></a>
-								<button id="blog-status-btn-{{blog.slug}}" style="{% if blog.status == 'Published' %} background-color:green; {% else %} background-color: darkred; {% endif %} color: #fff; border: 0;">{{blog.status}}</button>
+								<a href="{{center.get_absolute_url}}"><img src={% if center.logo %} {{center.logo.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %} alt="CSC Logo"></a>								
 							</div>
 							<div class="list-box-listing-content">
 								<div class="inner">
-									<h3><a href="{% url 'csc_admin:blog' blog.slug %}">{{blog.title}}</a></h3>
-									<p>{{blog.summary}}</p>
+									<h3><a href="{{center.get_absolute_url}}">{{center.full_name}}</a></h3>
+									<p>{{center.partial_address}}</p>
 								</div>
 							</div>
 						</div>
-						<div class="buttons-to-right">
-							
-							<a href="#" id="toggle-change-blog-status-btn-{{blog.slug}}" class="button gray" {% if blog.status == 'Published' %} onclick="(e) => e.preventDefault(); toggleSetDraft(`{{blog.slug}}`, `{{blog.title}}`);"><i class="fas fa-file-alt"></i> Keep as Draft {% else %} onclick="(e) => e.preventDefault(); togglePublishBlog(`{{blog.slug}}`, `{{blog.title}}`);"><i class="fas fa-paper-plane"></i> Publish Blog {% endif %}</a>
-														
-							<a href="{% url 'csc_admin:update_blog' blog.slug %}" class="button gray"><i class="sl sl-icon-note"></i> Edit</a>
+						<div class="buttons-to-right">													
+							<a href="{% url 'csc_admin:update_csc' center.slug %}" class="button gray"><i class="sl sl-icon-note"></i> Edit</a>
 							<a href="#" class="button gray" onclick="(e) => e.preventDefault(); toggleBlogDeletion(`{{blog.slug}}`, `{{blog.title}}`);"><i class="sl sl-icon-close"></i> Delete</a>
 						</div>
 					</li>

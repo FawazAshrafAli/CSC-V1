@@ -9,7 +9,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.utils import timezone
+from datetime import datetime
 import re
+import os
+from django.conf import settings
 
 from .forms import (
     CreateServiceForm, UpdateServiceForm, CreateBlogForm,
@@ -17,7 +20,7 @@ from .forms import (
     )
 
 from products.models import Product, Category as ProductCategory
-from csc_center.models import CscCenter, State, District, Block, CscKeyword, CscNameType
+from csc_center.models import CscCenter, State, District, Block, CscKeyword, CscNameType, SocialMediaLink, Image
 from services.models import Service
 from blog.models import Blog, Category, Tag
 
@@ -400,6 +403,7 @@ class CreateProductView(BaseAdminCscProductView, CreateView):
         image = request.FILES.get('image')
         description = request.POST.get('description')
         price = request.POST.get('price')
+        quantity = request.POST.get('quantity')
         category = request.POST.get('category')
 
         try:
@@ -408,7 +412,7 @@ class CreateProductView(BaseAdminCscProductView, CreateView):
             messages.error(self.request, "Failed. Invalid category")
             return redirect('csc_admin:create_product')
         
-        self.model.objects.create(name = name, image = image, description = description, price = price, category = category)
+        self.model.objects.create(name = name, image = image, description = description, price = price, quantity = quantity, category = category)
         messages.success(self.request, "Created Product")
         return redirect(self.success_url)
     
@@ -424,6 +428,70 @@ class ProductListView(BaseAdminCscProductView, ListView):
     template_name = "admin_product/list.html"
     context_object_name = "products"
 
+
+class ProductDetailView(BaseAdminCscProductView, DetailView):
+    template_name = "admin_product/detail.html"
+    context_object_name = "product"
+
+
+class UpdateProductView(BaseAdminCscProductView, UpdateView):
+    fields = ["image", "name", "description", "price", "category", "quantity"]
+    template_name = "admin_product/update.html"
+    
+    def get_success_url(self, *kwargs):
+        return reverse_lazy("csc_admin:product", kwargs = {"slug" : self.object.slug})
+    
+    def post(self, request, *args, **kwargs):
+        name = request.POST.get('name')
+        image = request.FILES.get('image')
+        description = request.POST.get('description')
+        price = request.POST.get('price')
+        quantity = request.POST.get('quantity')
+        category = request.POST.get('category')
+
+        try:
+            category = get_object_or_404(ProductCategory, slug = category)
+        except Http404:
+            messages.error(self.request, "Failed. Invalid category")
+            return redirect('csc_admin:create_product')
+        
+        self.object = self.get_object()
+        if not image:
+            image = self.object.image
+        
+        self.object.name = name
+        self.object.image = image
+        self.object.description = description
+        self.object.price = price
+        self.object.quantity = quantity
+        self.object.category = category
+        self.object.save()
+
+        messages.success(self.request, "Updated Product")
+        return redirect(self.get_success_url())
+
+    def form_invalid(self, form):        
+        response = super().form_invalid(form)        
+
+        for field, errors in form.errors.items():
+            for error in errors:
+                print(f"Error on field '{field}': {error}")
+        return response
+    
+
+class DeleteProductView(BaseAdminCscProductView, View):
+    success_url = reverse_lazy('csc_admin:products')
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = get_object_or_404(self.model, slug = kwargs['slug'])
+        except Http404:
+            messages.error(request, 'Invalid Product')
+            return redirect(reverse_lazy('csc_admin:products'))
+        self.object.delete()
+        messages.success(self.request, "Deleted Product")
+        return redirect(self.success_url)
+
 ##################################### PRODUCT END #####################################
 
 ##################################### CSC CENTER START #####################################
@@ -434,6 +502,7 @@ class BaseAdminCscCenterView(BaseAdminView, View):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['csc_center_page'] = True
         context.update({
             'states': State.objects.all().order_by('state'),
             'districts': District.objects.all().order_by('district'),
@@ -442,15 +511,19 @@ class BaseAdminCscCenterView(BaseAdminView, View):
         return context
 
 
-class ListCscCenter(BaseAdminCscCenterView, ListView):
+class ListCscCenterView(BaseAdminCscCenterView, ListView):
     template_name = "admin_csc_center/list.html"
+    paginate_by = 10
+    paginate_orphans = 5
+    ordering = ['name']
+    context_object_name = 'centers'
+    queryset = CscCenter.objects.all().order_by('name')
 
 
-class AddCscCenter(BaseAdminCscCenterView, CreateView):
+class AddCscCenterView(BaseAdminCscCenterView, CreateView):
     template_name = 'admin_csc_center/create.html'
     success_url = reverse_lazy('csc_admin:add_csc')
     fields = "__all__"
-
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -458,8 +531,181 @@ class AddCscCenter(BaseAdminCscCenterView, CreateView):
         context['keywords'] = CscKeyword.objects.all().order_by('keyword')
         context['products'] = Product.objects.all()
         context['states'] = State.objects.all()
+
+        time_data = []
+        for i in range(1, 25):
+            if i < 13:
+                str_time = f"{i} AM"
+            else:
+                str_time = f"{i-12} PM"            
+            time = datetime.strptime(str_time, "%I %p").strftime("%H:%M")
+            time_data.append({"str_time": str_time, "time": time})
+            context['time_data'] = time_data
+
         return context
 
+    def post(self, request, *args, **kwargs):
+        name = request.POST.get('name')
+        type = request.POST.get('type')
+        keywords = request.POST.getlist('keywords')
+
+        state = request.POST.get('state')
+        district = request.POST.get('district')
+        block = request.POST.get('block')
+        location = request.POST.get('location')
+        zipcode = request.POST.get('zipcode')
+        landmark_or_building_name = request.POST.get('landmark_or_building_name')
+        street = request.POST.get('address')
+        logo = request.FILES.get('logo') # dropzone
+        banner = request.FILES.get('banner') # dropzone
+        description = request.POST.get('description')
+        contact_number = request.POST.get('contact_number')
+        mobile_number = request.POST.get('mobile_number')
+        whatsapp_number = request.POST.get('whatsapp_number')
+        email = request.POST.get('email')
+        website = request.POST.get('website') # optional
+        services = request.POST.getlist('services')
+        products = request.POST.getlist('products')
+
+        mon_opening_time = request.POST.get('mon_opening_time') #timefield
+        tue_opening_time = request.POST.get('tue_opening_time') #timefield
+        wed_opening_time = request.POST.get('wed_opening_time') #timefield
+        thu_opening_time = request.POST.get('thu_opening_time') #timefield
+        fri_opening_time = request.POST.get('fri_opening_time') #timefield
+        sat_opening_time = request.POST.get('sat_opening_time') #timefield
+        sun_opening_time = request.POST.get('sun_opening_time') #timefield
+
+        mon_closing_time = request.POST.get('mon_closing_time') #timefield
+        tue_closing_time = request.POST.get('tue_closing_time') #timefield
+        wed_closing_time = request.POST.get('wed_closing_time') #timefield
+        thu_closing_time = request.POST.get('thu_closing_time') #timefield
+        fri_closing_time = request.POST.get('fri_closing_time') #timefield
+        sat_closing_time = request.POST.get('sat_closing_time') #timefield
+        sun_closing_time = request.POST.get('sun_closing_time') #timefield
+
+        mon_opening_time = mon_opening_time if  mon_opening_time != "" else None
+        tue_opening_time = tue_opening_time if  tue_opening_time != "" else None
+        wed_opening_time = wed_opening_time if  wed_opening_time != "" else None
+        thu_opening_time = thu_opening_time if  thu_opening_time != "" else None
+        fri_opening_time = fri_opening_time if  fri_opening_time != "" else None
+        sat_opening_time = sat_opening_time if  sat_opening_time != "" else None
+        sun_opening_time = sun_opening_time if  sun_opening_time != "" else None
+         
+        mon_closing_time = mon_closing_time if  mon_closing_time != "" else None
+        tue_closing_time = tue_closing_time if  tue_closing_time != "" else None
+        wed_closing_time = wed_closing_time if  wed_closing_time != "" else None
+        thu_closing_time = thu_closing_time if  thu_closing_time != "" else None
+        fri_closing_time = fri_closing_time if  fri_closing_time != "" else None
+        sat_closing_time = sat_closing_time if  sat_closing_time != "" else None
+        sun_closing_time = sun_closing_time if  sun_closing_time != "" else None
+
+        social_medias = request.POST.getlist('social_media') # manytomany
+        social_links = request.POST.getlist('social_links') # manytomany
+
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+
+        try:
+            type = get_object_or_404(CscNameType, slug = type)
+        except Http404:
+            messages.error(request, 'Invalid CSC Name Type')
+            return redirect(reverse_lazy('csc_admin:add_csc'))
+
+        try:
+            state = get_object_or_404(State, pk = state)
+        except Http404:
+            messages.error(request, 'Invalid State')
+            return redirect(reverse_lazy('csc_admin:add_csc'))
+
+        try:
+            district = get_object_or_404(District, pk = district)
+        except Http404:
+            messages.error(request, 'Invalid District')
+            return redirect(reverse_lazy('csc_admin:add_csc'))
+        
+        try:
+            block = get_object_or_404(Block, pk = block)
+        except Http404:
+            messages.error(request, 'Invalid Block')
+            return redirect(reverse_lazy('csc_admin:add_csc'))
+        
+        self.object = CscCenter.objects.create(
+            name = name, type = type, state = state,
+            district = district,block = block,location = location,
+            zipcode = zipcode, landmark_or_building_name = landmark_or_building_name,
+            street = street, logo = logo, banner = banner,
+            description = description, contact_number = contact_number,
+            mobile_number = mobile_number, whatsapp_number = whatsapp_number,
+            email = email, website = website, mon_opening_time = mon_opening_time, 
+            tue_opening_time = tue_opening_time, wed_opening_time = wed_opening_time, 
+            thu_opening_time = thu_opening_time, fri_opening_time = fri_opening_time, 
+            sat_opening_time = sat_opening_time, sun_opening_time = sun_opening_time, 
+            mon_closing_time = mon_closing_time,tue_closing_time = tue_closing_time,
+            wed_closing_time = wed_closing_time,thu_closing_time = thu_closing_time,
+            fri_closing_time = fri_closing_time,sat_closing_time = sat_closing_time,
+            sun_closing_time = sun_closing_time, latitude = latitude,
+            longitude = longitude
+        )
+
+        messages.success(request, "Added CSC center")      
+        
+        # after creation of object
+        self.object.keywords.set(keywords)
+        self.object.services.set(services)
+        self.object.products.set(products)
+        self.object.save()
+
+        social_media_length = len(social_medias)
+        if social_media_length > 0:
+            social_media_list = []
+            for i in range(social_media_length):
+                social_media_link, created = SocialMediaLink.objects.get_or_create(
+                    csc_center_id = self.object,
+                    social_media_name = social_medias[i],
+                    social_media_link = social_links[i]
+                )
+                social_media_list.append(social_media_link)
+            
+            self.object.social_media_links.set(social_media_list)
+            self.object.save()
+        
+        return redirect(self.success_url)
+
+class DetailCscCenterView(BaseAdminCscCenterView, DetailView):
+    template_name = "admin_csc_center/detail.html"
+    context_object_name = 'center'
+
+
+class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
+    template_name = 'admin_csc_center/update.html'
+    success_url = reverse_lazy('csc_admin:add_csc')
+    context_object_name = 'center'
+    fields = "__all__"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['name_types'] = CscNameType.objects.all().order_by('type')
+        context['keywords'] = CscKeyword.objects.all().order_by('keyword')
+        context['products'] = Product.objects.all()
+        context['states'] = State.objects.all()
+        context['social_medias'] = ["Facebook", "Instagram", "Twitter", "YouTube", "LinkedIn", "Pinterest", "Tumblr"]
+        self.object = self.get_object()
+        context['selected_districts'] = District.objects.filter(state = self.object.state)
+        context['selected_blocks'] = Block.objects.filter(district = self.object.district)
+
+        time_data = []
+        for i in range(1, 25):
+            if i < 13:
+                str_time = f"{i} AM"
+            else:
+                str_time = f"{i-12} PM"            
+            time = datetime.strptime(str_time, "%I %p").strftime("%H:%M")
+            print(time)
+            time_data.append({"str_time": str_time, "time": time})
+            context['time_data'] = time_data
+
+        return context
+    
 
 # Nuclear
 class GetDistrictView(View):

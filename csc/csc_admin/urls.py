@@ -8,10 +8,11 @@ from .views import (
     UpdateBlogView, DeleteBlogView, RemoveBlogImageView,
     ChangeBlogStatusView, 
 
-    CreateProductView, ProductListView,
+    CreateProductView, ProductListView, ProductDetailView,
+    UpdateProductView, DeleteProductView,
 
-    AddCscCenter, GetDistrictView, GetBlockView,
-    ListCscCenter,
+    AddCscCenterView, GetDistrictView, GetBlockView,
+    ListCscCenterView, DetailCscCenterView, UpdateCscCenterView,
 
     get_all_states, get_all_districts, get_all_blocks,
     get_csc_keywords, get_name_types,
@@ -21,6 +22,7 @@ from .views import (
     DeleteStateView, DeleteDistrictView, DeleteBlockView,
     CreateKeywordView, EditKeywordView, DeleteKeywordView,
     CreateCscNameTypeView, EditCscNameTypeView, DeleteCscNameTypeView,
+
     )
 
 app_name = "csc_admin"
@@ -45,9 +47,14 @@ urlpatterns = [
 
     path('create_product/', CreateProductView.as_view(), name = "create_product"),
     path('products/', ProductListView.as_view(), name = "products"),
+    path('product/<str:slug>', ProductDetailView.as_view(), name = "product"),
+    path('update_product/<str:slug>', UpdateProductView.as_view(), name = "update_product"),
+    path('delete_product/<str:slug>', DeleteProductView.as_view(), name = "delete_product"),
 
-    path('csc_centers/', ListCscCenter.as_view(), name = "csc_centers"),
-    path('add_csc/', AddCscCenter.as_view(), name = "add_csc"),
+    path('csc_centers/', ListCscCenterView.as_view(), name = "csc_centers"),
+    path('add_csc/', AddCscCenterView.as_view(), name = "add_csc"),
+    path('csc_center/<str:slug>', DetailCscCenterView.as_view(), name = "csc_center"),
+    path('update_csc/<str:slug>', UpdateCscCenterView.as_view(), name = "update_csc"),
 
     path('get_districts/', GetDistrictView.as_view(), name="get_districts"),
     path('get_blocks/', GetBlockView.as_view(), name="get_blocks"),
@@ -81,5 +88,5 @@ urlpatterns = [
     path('add_name_type/', CreateCscNameTypeView.as_view(), name="add_name_type"),
     path('edit_name_type/<str:slug>', EditCscNameTypeView.as_view(), name="edit_name_type"),
     path('delete_name_type/<str:slug>', DeleteCscNameTypeView.as_view(), name="delete_name_type"),
-    # Pop up box urls end
+    # Pop up box urls end    
     ]

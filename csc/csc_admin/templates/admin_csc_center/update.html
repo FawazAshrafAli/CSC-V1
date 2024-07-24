@@ -1,18 +1,33 @@
 {% extends "admin_base/base.html" %}
 {% load static %}
 
-{% block title_prefix %}Add CSC Center{% endblock title_prefix %}
+{% block title_prefix %}Update CSC Center{% endblock title_prefix %}
 
 {% block content %}
 <style>
-    #add-csc-btns-div {
+    #update-csc-btns-div {
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
 
-    #add-csc-btns-div button {
+    #update-csc-btns-div button {
         display: none;
+    }
+
+    #current-csc-logo button, #current-csc-banner button {
+        color: black;
+        background-color: #fff;
+        font-size: 13px;
+        padding: 0px 10px;
+        border: none;
+        box-shadow: 0px 0px 3px #777;
+        border-radius: 5%;
+    }
+
+    #current-csc-logo button:hover, #current-csc-banner button:hover {
+        color: #fff;
+        background-color: darkred;
     }
 </style>
 
@@ -21,12 +36,12 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
-                    <h2><i class="sl sl-icon-plus"></i> Add CSC Centers</h2>
+                    <h2><i class="sl sl-icon-plus"></i> Update CSC Centers</h2>
                     <!-- Breadcrumbs -->
                     <nav id="breadcrumbs">
                         <ul>
                             <li><a href="{% url 'home:view' %}">Home</a></li>
-                            <li>Add CSC Centers</li>
+                            <li>Update CSC Centers</li>
                         </ul>
                     </nav>
                 </div>
@@ -55,7 +70,7 @@
                                 <div class="col-md-6">
                                     <h5>CSC Name <i class="tip" data-tip-content="Name of your CSC"></i></h5>
                                     <input class="search-field" type="text" name="name"
-                                        placeholder="Name of your CSC" required/>
+                                        placeholder="Name of your CSC" value={{center.name}} required/>
                                 </div>
                                 <div class="col-md-6">
                                     <h5>CSC Name Type <i class="tip" data-tip-content="CSC Name Type"></i></h5>
@@ -63,7 +78,7 @@
                                         data-placeholder="Common Service Centre (CSC)" required>
                                         <option label="CSC Name Type"></option>
                                         {% for name_type in name_types %}
-                                        <option value="{{name_type.slug}}">{{name_type.type}}</option>
+                                        <option value="{{name_type.slug}}" {% if name_type.slug == center.type.slug %} selected {% endif %}>{{name_type.type}}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -80,7 +95,7 @@
                                     <select data-placeholder="Select Keywords" name="keywords" class="chosen-select"
                                         multiple required>
                                         {% for keyword in keywords %}
-                                        <option value="{{keyword.pk}}">{{keyword.keyword}}</option>
+                                        <option value="{{keyword.pk}}" {% for keyword_obj in center.keywords.all %} {% if keyword.pk == keyword_obj.pk %} selected {% endif %} {% endfor %}>{{keyword.keyword}}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -103,7 +118,7 @@
                                             data-placeholder="Select State" required>
                                             <option label="Select State"></option>
                                             {% for state in states %}
-                                            <option value="{{state.pk}}">{{state.state}}</option>
+                                            <option value="{{state.pk}}" {% if state.pk == center.state.pk %} selected {% endif %} >{{state.state}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -112,6 +127,9 @@
                                         <select class="chosen-select" name="district" id="district-dropdown"
                                             data-placeholder="Select District" required>
                                             <option label="Select District"></option>
+                                            {% for district in selected_districts %}
+                                            <option value="{{district.pk}}" {% if district.pk == center.district.pk %} selected {% endif %}>{{district.district}}</option>
+                                            {% endfor %}
                                         </select>
                                     </div>
                                     <div class="col-md-4">
@@ -119,6 +137,9 @@
                                         <select class="chosen-select" name="block" id="block-dropdown"
                                             data-placeholder="Select Block" required>
                                             <option label="Select Block"></option>
+                                            {% for block in selected_blocks %}
+                                            <option value="{{block.pk}}" {% if block.pk == center.block.pk %} selected {% endif %}>{{block.block}}</option>
+                                            {% endfor %}
                                         </select>
                                     </div>
                                 </div>
@@ -127,22 +148,22 @@
                                     <!-- City -->
                                     <div class="col-md-6">
                                         <h5>Location</h5>
-                                        <input type="text" name="location" placeholder="Enter Location" required>
+                                        <input type="text" name="location" placeholder="Enter Location" value="{{center.location}}" required>
                                     </div>
                                     <!-- Address -->
                                     <div class="col-md-6">
                                         <h5>Zip-Code</h5>
-                                        <input type="text" name="zipcode" placeholder="Enter Pincode" required>
+                                        <input type="text" name="zipcode" placeholder="Enter Pincode" value="{{center.zipcode}}" required>
                                     </div>
                                     <!-- Zip-Code -->
                                     <div class="col-md-6">
                                         <h5>Landmark / Building Name</h5>
                                         <input type="text" name="landmark_or_building_name"
-                                            placeholder="e.g. 1st Floor, ABCD Building" required>
+                                            placeholder="e.g. 1st Floor, ABCD Building" value="{{center.landmark_or_building_name}}" required>
                                     </div>
                                     <div class="col-md-6">
                                         <h5>Address</h5>
-                                        <input type="text" name="address" placeholder="e.g. 964 School Street" required>
+                                        <input type="text" name="address" placeholder="e.g. 964 School Street" value={{center.street}} required>
                                     </div>
                                 </div>
                                 <!-- Row / End -->
@@ -159,11 +180,13 @@
                             <div class="row submit-section" id="dropzone-uploads">
                                 <div class="col-md-6">
                                     <h5>Upload Logo</h5>
-                                    <input type="file" name="logo" required>
+                                    <input type="file" name="logo" id="csc-logo-input" required>
+                                    <span id="current-csc-logo">{% if center.logo %} current logo: <a href="{{center.logo.url}}" target="_blank" style="color:blue">{{center.logo.name}}</a>&nbsp;&nbsp;<button type="button" onclick="removeCscLogo({{center.pk}})">Clear</button> {% endif %}</span>
                                 </div>
                                 <div class="col-md-6">
                                     <h5>Upload Banner</h5>
-                                    <input type="file" name="banner" required>
+                                    <input type="file" name="banner" id="csc-banner-input" required>
+                                    <span id="current-csc-banner">{% if center.banner %} current banner: <a href="{{center.banner.url}}" target="_blank" style="color:blue">{{center.banner.name}}</a>&nbsp;&nbsp;<button type="button" onclick="removeCscBanner({{center.pk}})">Clear</button> {% endif %}</span>
                                 </div>
                             </div>
                         </div>
@@ -178,24 +201,24 @@
                             <div class="form">
                                 <h5>Description</h5>
                                 <textarea class="WYSIWYG" name="description" cols="40" rows="3" id="summary"
-                                    spellcheck="true"></textarea>
+                                    spellcheck="true">{{center.description}}</textarea>
                             </div>
                             <!-- Row -->
                             <div class="row with-forms">
                                 <!-- Phone -->
                                 <div class="col-md-4">
                                     <h5>Contact Number</h5>
-                                    <input type="text" name="contact_number" placeholder="Contact Number" required>
+                                    <input type="text" name="contact_number" placeholder="Contact Number" value="{{center.contact_number}}" required>
                                 </div>
                                 <!-- Website -->
                                 <div class="col-md-4">
                                     <h5>Mobile Number</h5>
-                                    <input type="text" name="mobile_number" placeholder="Mobile Number" required>
+                                    <input type="text" name="mobile_number" placeholder="Mobile Number" value="{{center.mobile_number}}" required>
                                 </div>
                                 <!-- Email Address -->
                                 <div class="col-md-4">
                                     <h5>WhatsApp Number</h5>
-                                    <input type="text" name="whatsapp_number" placeholder="WhatsApp Number" required>
+                                    <input type="text" name="whatsapp_number" placeholder="WhatsApp Number" value="{{center.whatsapp_number}}" required>
                                 </div>
                             </div>
                             <!-- Row / End -->
@@ -204,19 +227,19 @@
                                 <!-- Phone -->
                                 <div class="col-md-6">
                                     <h5>E-Mail ID</h5>
-                                    <input type="email" name="email" placeholder="E-Mail ID" required>
+                                    <input type="email" name="email" placeholder="E-Mail ID" value="{{center.email}}" required>
                                 </div>
                                 <!-- Website -->
                                 <div class="col-md-6">
                                     <h5>Website <span>(optional)</span></h5>
-                                    <input type="text" name="website" placeholder="www.domainname.com">
+                                    <input type="text" name="website" placeholder="www.domainname.com" value="{{center.website}}" >
                                 </div>
                                 <div class="col-md-12">
                                     <h5>Select Services</h5>
                                     <select data-placeholder="Select Services" name="services" class="chosen-select"
                                         multiple required>
                                         {% for service in services %}
-                                        <option value="{{service.pk}}">{{service.name}}</option>
+                                        <option value="{{service.pk}}" {% for service_obj in center.services.all %} {% if service.pk == service_obj.pk %} selected {% endif %} {% endfor %} >{{service.name}}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -225,7 +248,7 @@
                                     <select data-placeholder="Select Services" name="products" class="chosen-select"
                                         multiple>
                                         {% for product in products %}
-                                        <option value="{{product.pk}}">{{product.name}}</option>
+                                        <option value="{{product.pk}}" {% for product_obj in center.products.all %} {% if product.pk == product_obj.pk %} selected {% endif %} {% endfor %}>{{product.name}}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -249,13 +272,13 @@
                                     <div class="col-md-2">
                                         <h5>Monday</h5>
                                     </div>
-                                    <div class="col-md-5">
+                                    <div class="col-md-5">                
                                         <select class="chosen-select" name="mon_opening_time"
                                             data-placeholder="Opening Time" required>
                                             <option label="Opening Time"></option>
-                                            <option value="">Closed</option>
+                                            <option value="" {% if not center.mon_opening_time %} selected {% endif %}>Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}" {% if time.time == '10:00' %} selected {% endif %}>{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.mon_opening_time|time:'H:i' %} selected {% endif %} >{{time.str_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -263,9 +286,9 @@
                                         <select class="chosen-select" name="mon_closing_time"
                                             data-placeholder="Closing Time" required>
                                             <option label="Closing Time"></option>
-                                            <option value="">Closed</option>
+                                            <option value="" {% if not center.mon_closing_time %} selected {% endif %}>Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}" {% if time.time == '18:00' %} selected {% endif %}>{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.mon_closing_time|time:'H:i' %} selected {% endif %}>{{time.str_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -280,9 +303,9 @@
                                         <select class="chosen-select" name="tue_opening_time"
                                             data-placeholder="Opening Time" required>
                                             <option label="Opening Time"></option>
-                                            <option value="">Closed</option>
+                                            <option value="" {% if not center.tue_opening_time %} selected {% endif %}>Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}" {% if time.time == '10:00' %} selected {% endif %}>{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.tue_opening_time|time:'H:i' %} selected {% endif %}>{{time.str_time}}</option>
                                             {% endfor %}
                                             <!-- Hours added via JS (this is only for demo purpose) -->
                                         </select>
@@ -291,9 +314,9 @@
                                         <select class="chosen-select" name="tue_closing_time"
                                             data-placeholder="Closing Time" required>
                                             <option label="Closing Time"></option>
-                                            <option value="">Closed</option>
+                                            <option value="" {% if not center.tue_closing_time %} selected {% endif %}>Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}" {% if time.time == '18:00' %} selected {% endif %}>{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.tue_closing_time|time:'H:i' %} selected {% endif %}>{{time.str_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -308,9 +331,9 @@
                                         <select class="chosen-select" name="wed_opening_time"
                                             data-placeholder="Opening Time" required>
                                             <option label="Opening Time"></option>
-                                            <option value="">Closed</option>
+                                            <option value="" {% if not center.wed_opening_time %} selected {% endif %}>Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}" {% if time.time == '10:00' %} selected {% endif %}>{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.wed_opening_time|time:'H:i' %} selected {% endif %}>{{time.str_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -318,9 +341,9 @@
                                         <select class="chosen-select" name="wed_closing_time"
                                             data-placeholder="Closing Time" required>
                                             <option label="Closing Time"></option>
-                                            <option value="">Closed</option>
+                                            <option value="" {% if not center.wed_closing_time %} selected {% endif %}>Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}" {% if time.time == '18:00' %} selected {% endif %}>{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.wed_closing_time|time:'H:i' %} selected {% endif %}>{{time.str_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -335,9 +358,9 @@
                                         <select class="chosen-select" name="thu_opening_time"
                                             data-placeholder="Opening Time" required>
                                             <option label="Opening Time"></option>
-                                            <option value="">Closed</option>
+                                            <option value="" {% if not center.thu_opening_time %} selected {% endif %}>Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}" {% if time.time == '10:00' %} selected {% endif %}>{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.thu_opening_time|time:'H:i' %} selected {% endif %}>{{time.str_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -345,9 +368,9 @@
                                         <select class="chosen-select" name="thu_closing_time"
                                             data-placeholder="Closing Time" required>
                                             <option label="Closing Time"></option>
-                                            <option value="">Closed</option>
+                                            <option value="" {% if not center.thu_closing_time %} selected {% endif %}>Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}" {% if time.time == '18:00' %} selected {% endif %}>{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.thu_closing_time|time:'H:i' %} selected {% endif %}>{{time.str_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -362,9 +385,9 @@
                                         <select class="chosen-select" name="fri_opening_time"
                                             data-placeholder="Opening Time" required>
                                             <option label="Opening Time"></option>
-                                            <option value="">Closed</option>
+                                            <option value="" {% if not center.fri_opening_time %} selected {% endif %}>Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}" {% if time.time == '10:00' %} selected {% endif %}>{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.fri_opening_time|time:'H:i' %} selected {% endif %}>{{time.str_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -372,9 +395,9 @@
                                         <select class="chosen-select" name="fri_closing_time"
                                             data-placeholder="Closing Time" required>
                                             <option label="Closing Time"></option>
-                                            <option value="">Closed</option>
+                                            <option value="" {% if not center.fri_closing_time %} selected {% endif %} >Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}" {% if time.time == '18:00' %} selected {% endif %}>{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.fri_closing_time|time:'H:i' %} selected {% endif %}>{{time.str_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -389,9 +412,9 @@
                                         <select class="chosen-select" name="sat_opening_time"
                                             data-placeholder="Opening Time" required>
                                             <option label="Opening Time"></option>
-                                            <option value=" ">Closed</option>
+                                            <option value="" {% if not center.sat_opening_time %} selected {% endif %} >Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}" {% if time.time == '10:00' %} selected {% endif %}>{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.sat_opening_time|time:'H:i' %} selected {% endif %}>{{time.str_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -399,9 +422,9 @@
                                         <select class="chosen-select" name="sat_closing_time"
                                             data-placeholder="Closing Time" required>
                                             <option label="Closing Time"></option>
-                                            <option value="">Closed</option>
+                                            <option value="" {% if not center.sat_closing_time %} selected {% endif %} >Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}" {% if time.time == '18:00' %} selected {% endif %}>{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.sat_closing_time|time:'H:i' %} selected {% endif %}>{{time.str_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -416,9 +439,9 @@
                                         <select class="chosen-select" name="sun_opening_time"
                                             data-placeholder="Opening Time" required>
                                             <option label="Opening Time"></option>
-                                            <option value="" selected>Closed</option>
+                                            <option value="" {% if not center.sun_opening_time %} selected {% endif %} >Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}">{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.sun_opening_time|time:'H:i' %} selected {% endif %}>{{time.str_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -426,9 +449,9 @@
                                         <select class="chosen-select" name="sun_closing_time"
                                             data-placeholder="Closing Time" required>
                                             <option label="Closing Time"></option>
-                                            <option value="" selected >Closed</option>
+                                            <option value="" {% if not center.sun_closing_time %} selected {% endif %} >Closed</option>
                                             {% for time in time_data %}
-                                            <option value="{{time.time}}">{{time.str_time}}</option>
+                                            <option value="{{time.time}}" {% if time.time == center.sun_closing_time|time:'H:i' %} selected {% endif %}>{{time.str_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -458,13 +481,10 @@
                                                     <div class="fm-input pricing-name">
                                                         <select class="chosen-select" name="social_medias"
                                                             data-placeholder="Select Social Media">
-                                                            <option value="Facebook">Facebook</option>
-                                                            <option value="Instagram">Instagram</option>
-                                                            <option value="Twitter">Twitter</option>
-                                                            <option value="YouTube">YouTube</option>
-                                                            <option value="LinkedIn">LinkedIn</option>
-                                                            <option value="Pinterest">Pinterest</option>
-                                                            <option value="Tumblr">Tumblr</option>
+                                                            <option value="">Select Social Media</option>
+                                                            {% for social_media in social_medias %}
+                                                            <option value="{{social_media}}" {% for social_media_obj in center.social_media_links.all %} {% if social_media_obj.social_media_name == social_media %} selected {% endif %} {% endfor %}>{{social_media}}</option>
+                                                            {% endfor %}
                                                         </select>
                                                     </div>
                                                     <div class="fm-input pricing-ingredients"><input type="text"
@@ -502,7 +522,7 @@
                         <div style="clear:both;"></div>
                     </div>
                     <!-- Section / End -->
-                     <div id="add-csc-btns-div">
+                     <div id="update-csc-btns-div">
                         <a href="#" id="preview-btn" class="button preview">Preview <i class="fa fa-arrow-circle-right"></i></a>
                         <button class="button preview" type="button">Submit</button>
                      </div>
@@ -609,7 +629,7 @@
                 $('#add-csc-form select').prop('disabled', true).trigger('chosen:updated');
 
                 $(this).html('Edit Form');
-                $('#add-csc-btns-div button').show();
+                $('#update-csc-btns-div button').show();
             } else {
                 $('#add-csc-form input').prop('readonly', false);
                 $('#add-csc-form textarea').prop('readonly', false);
@@ -623,12 +643,12 @@
                 $('#add-csc-form select').prop('disabled', false).trigger('chosen:updated');
 
                 $(this).html('Preview <i class="fa fa-arrow-circle-right"></i>');
-                $('#add-csc-btns-div button').hide();
+                $('#update-csc-btns-div button').hide();
             };
         });
     });
 
-    $('#add-csc-btns-div button').on('click', function () {
+    $('#update-csc-btns-div button').on('click', function () {
         $('#add-csc-form input').prop('readonly', false);
         $('#add-csc-form textarea').prop('readonly', false);
 
@@ -641,10 +661,48 @@
         $('#add-csc-form select').prop('disabled', false).trigger('chosen:updated');
 
         $(this).html('Preview <i class="fa fa-arrow-circle-right"></i>');
-        $('#add-csc-btns-div button').hide();
+        $('#update-csc-btns-div button').hide();
         
         $('#add-csc-form').submit()
     });
+</script>
+
+<!-- Remove CSC Logo and Banner -->
+<script src="{% static 'w3/admin_csc_center/js/removeCscImages.js' %}"></script>
+
+<!-- Preview Updating CSC Images Links -->
+<script>
+    
+    function previewCscLogoLink () {
+        const cscLogoInput = $('#csc-logo-input')[0];
+        const file = cscLogoInput.files[0]
+        const fileName = file.name
+
+        if (file) {
+            const logoUrl = URL.createObjectURL(file);
+            let html = `current logo: <a href=${logoUrl} target="_blank" />${fileName}</a>`;
+            $('#current-csc-logo').html(html);
+            $('#current-csc-logo').show();
+        };
+    };
+
+    $('#csc-logo-input').on('change', previewCscLogoLink)
+
+    function previewCscBannerLink () {
+        const cscBannerInput = $('#csc-banner-input')[0];
+        const file = cscBannerInput.files[0]
+        const fileName = file.name
+
+        if (file) {
+            const logoUrl = URL.createObjectURL(file);
+            let html = `current banner: <a href=${logoUrl} target="_blank" />${fileName}</a>`;
+            $('#current-csc-banner').html(html);
+            $('#current-csc-banner').show();
+        };
+    };
+
+    $('#csc-banner-input').on('change', previewCscBannerLink)
+
 </script>
 
 {% endblock scripts %}

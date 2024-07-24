@@ -3,6 +3,8 @@ from django.utils.text import slugify
 from services.models import Service
 from products.models import Product
 
+from django.urls import reverse
+
 class State(models.Model):
     state = models.CharField(max_length=150)
 
@@ -83,7 +85,8 @@ class SocialMediaLink(models.Model):
         return f"{self.social_media_name} for {self.csc_center_id.name}"
 
 class CscCenter(models.Model):
-    name = models.CharField(max_length=150, unique=True)
+    name = models.CharField(max_length=150)
+    slug = models.SlugField()
     type = models.ForeignKey(CscNameType, on_delete=models.CASCADE)
     keywords = models.ManyToManyField(CscKeyword)
     state = models.ForeignKey(State, on_delete=models.CASCADE)
@@ -124,11 +127,77 @@ class CscCenter(models.Model):
 
     social_media_links = models.ManyToManyField(SocialMediaLink)
 
-    location_latitude = models.CharField(max_length=50)
-    location_longitude = models.CharField(max_length=50)
+    latitude = models.CharField(max_length=50)
+    longitude = models.CharField(max_length=50)
+
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            while CscCenter.objects.filter(slug = slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug 
+        super().save(*args, **kwargs)
+
+    @property
+    def full_name(self):
+        return f"{self.name} {self.type}, {self.location}"
+    
+    @property
+    def partial_address(self):
+        return f"{self.block}, {self.district}, {self.state}"
+    
+    @property
+    def full_address(self):
+        return f"{self.landmark_or_building_name}, {self.street}, {self.location} {self.zipcode}, {self.block}, {self.district}, {self.state}"
+    
+    @property
+    def get_absolute_url(self):
+        return reverse('csc_admin:csc_center', kwargs={"slug": self.slug})
+    
+    @property
+    def get_services(self):
+        if self.services:
+            service_list = []
+            for service in self.services.all():
+                service_list.append(service.name)
+            return service_list
+        return None
+    
+    @property
+    def get_products(self):
+        if self.products:
+            product_list = []
+            for product in self.products.all():
+                product_list.append(product.name)
+            return product_list
+        return None
+
+    @property
+    def get_keywords(self):
+        if self.keywords:
+            keyword_list = []
+            for keyword in self.keywords.all():
+                keyword_list.append(keyword.keyword)
+            return keyword_list
+        return None
+    
 
     class Meta:
         db_table = 'csc_center'
 
     def __str__(self):
         return self.name
+    
+
+
+class Image(models.Model):
+    name = models.CharField(max_length=150, default="No Image")
+    image = models.ImageField(upload_to="rough/", blank=True, null=True)
+    banner = models.ImageField(upload_to="rough_banner/", blank=True, null=True)
+

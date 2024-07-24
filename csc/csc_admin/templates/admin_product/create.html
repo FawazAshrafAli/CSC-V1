@@ -70,19 +70,25 @@
                                         {% endfor %}
                                     </select>
                                 </div>                            
-                            </div>
-                            <div class="form">
-                                <h5>Description</h5>
-                                <textarea class="WYSIWYG" name="description" cols="40" rows="3" id="summary" spellcheck="true"></textarea>
-                            </div>
+                            </div>                            
                             <div class="row with-forms">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <h5>Product Image <i class="tip" data-tip-content="Product Image"></i></h5>
                                     <input class="search-field" type="file" name="image" />
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <h5>Product Price <i class="tip" data-tip-content="Product Price"></i></h5>
                                     <input class="search-field" type="text" name="price" placeholder="Product Price"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5>Product Quantity <i class="tip" data-tip-content="Product Quantity"></i></h5>
+                                    <input class="search-field" type="number" name="quantity" placeholder="Product Quantity"/>
+                                </div>
+                            </div>
+                            <div class="row with-forms">
+                                <div class="col-md-12">
+                                    <h5>Product Description</h5>
+                                    <textarea class="WYSIWYG" name="description" cols="40" rows="3" id="summary" spellcheck="true" placeholder="Product Description"></textarea>
                                 </div>
                             </div>
                             <div id="submit-btn-div">

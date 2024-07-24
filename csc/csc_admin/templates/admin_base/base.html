@@ -89,9 +89,9 @@
 
 						<li><a href="#" {% if request.path == '/admin/' %} class="current" {% endif %}>Home</a></li>
 
-						<li><a href="{% url 'csc_admin:csc_centers' %}">CSC Centers</a></li>
+						<li><a href="{% url 'csc_admin:csc_centers' %}" {% if csc_center_page %} class="current" {% endif %}>CSC Centers</a></li>
 
-						<li><a href="{% url 'csc_admin:blogs' %}" {% if request.path == '/admin/blogs/' %} class="current" {% endif %}>Blog</a></li>
+						<li><a href="{% url 'csc_admin:blogs' %}" {% if blog_page %} class="current" {% endif %}>Blog</a></li>
 
 						<li><a href="{% url 'csc_admin:services' %}" {% if request.path == '/admin/services/' or service_page %} class="current" {% endif %}>Services</a></li>
 
@@ -149,14 +149,14 @@
 
 			<ul data-submenu-title="Main">
 				<li {% if request.path == '/admin/' %} class="active" {% endif %}><a href="dashboard.html"><i class="sl sl-icon-home"></i> Home</a></li>
-				<li><a href="{% url 'csc_admin:csc_centers' %}"><i class="sl sl-icon-info"></i> CSC Centers</a>
+				<li {% if csc_center_page %} class="active" {% endif %}><a href="{% url 'csc_admin:csc_centers' %}"><i class="sl sl-icon-info"></i> CSC Centers</a>
 					<ul>
 						<li><a href="{% url 'csc_admin:csc_centers' %}">List CSC Center</a></li>
 						<li><a href="#">Add CSC Center</a></li>						
 					</ul>	
 				</li>
 
-				<li ><a href="{% url 'csc_admin:blogs' %}"><i class="fa fa-book"></i> Blog</a>
+				<li {% if blog_page %} class="active" {% endif %}><a href="{% url 'csc_admin:blogs' %}"><i class="fa fa-book"></i> Blog</a>
 					<ul>
 						<li><a href="{% url 'csc_admin:blogs' %}">List Blog</a></li>
 						<li><a href="{% url 'csc_admin:create_blog' %}">Add Blog</a></li>						
@@ -201,7 +201,6 @@
 	</div>
 	<!-- Navigation / End -->
 
-	
 	{% block content %}
 	{% endblock content %}	
 
