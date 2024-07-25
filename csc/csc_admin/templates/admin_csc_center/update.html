@@ -56,7 +56,7 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <form method="post" action="{% url 'csc_admin:add_csc' %}" enctype="multipart/form-data" id="add-csc-form">
+                <form method="post" action="{% url 'csc_admin:update_csc' center.slug %}" enctype="multipart/form-data" id="add-csc-form">
                     {% csrf_token %}
                     <div id="add-listing" class="separated-form">
                         <!-- Section -->
@@ -511,10 +511,10 @@
                             </div>
                             <div class="col-md-12">
                                 <div class="col-md-6">
-                                    <input type="text" name="latitude" id="latitude" placeholder="latitude" required>
+                                    <input type="text" name="latitude" id="latitude" placeholder="latitude" value="{{center.latitude}}" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <input type="text" name="longitude" id="longitude" placeholder="longitude" required>
+                                    <input type="text" name="longitude" id="longitude" placeholder="longitude" value="{{center.longitude}}" required>
                                 </div>
                                 <div id="map" style="width: 100%; height: 400px"></div>
                             </div>
@@ -524,7 +524,7 @@
                     <!-- Section / End -->
                      <div id="update-csc-btns-div">
                         <a href="#" id="preview-btn" class="button preview">Preview <i class="fa fa-arrow-circle-right"></i></a>
-                        <button class="button preview" type="button">Submit</button>
+                        <button class="button preview" type="button">Save Changes</button>
                      </div>
                 </form>
                 <br>
@@ -578,30 +578,75 @@
 <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
 <script>
 
+    $(document).ready(function () {
+        let latitude = 51.958
+        let longitude = 9.141
 
-    let mapOptions = {
-        center: [51.958, 9.141],
-        zoom: 10
-    }
+        let currentLatitude = $('#latitude').val();
+        let currentLongitude = $('#longitude').val();
 
-    let map = new L.map('map', mapOptions);
-
-    let layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
-    map.addLayer(layer);
-
-
-    let marker = null;
-    map.on('click', (event) => {
-
-        if (marker !== null) {
-            map.removeLayer(marker);
+        if (currentLatitude) {
+            latitude = currentLatitude
         }
 
-        marker = L.marker([event.latlng.lat, event.latlng.lng]).addTo(map);
+        if (currentLongitude) {
+            longitude = currentLongitude
+        } 
+        
+        let mapOptions = {
+            center: [latitude, longitude],
+            zoom: 10
+        }
 
-        document.getElementById('latitude').value = event.latlng.lat;
-        document.getElementById('longitude').value = event.latlng.lng;
+        let map = new L.map('map', mapOptions);
 
+        let layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+        map.addLayer(layer);
+
+
+        let marker = null;
+        marker = L.marker([latitude, longitude]).addTo(map);
+
+        function markOnMap(event=undefined, latitude, longitude) {
+                if (marker !== null) {
+                    map.removeLayer(marker);
+                }
+
+                let markingLatitude;
+                let markingLongitude;
+
+                if (latitude) {
+                    markingLatitude = latitude;
+                }
+                
+                if (longitude) {
+                    markingLongitude = longitude;
+                } 
+                
+                
+                if (!latitude && !longitude && event) {
+                    markingLatitude = event.latlng.lat;
+                    markingLongitude = event.latlng.lng;
+                }
+
+                marker = L.marker([markingLatitude, markingLongitude]).addTo(map);       
+
+                document.getElementById('latitude').value = markingLatitude;
+                document.getElementById('longitude').value = markingLongitude;
+            }
+
+        map.on('click', (event) => {            
+            markOnMap(event);
+        })
+
+        $('#latitude, #longitude').on('change', function() {
+            let changedLatitude = parseFloat($('#latitude').val());
+            let changedLongitude = parseFloat($('#longitude').val());
+
+            if (!isNaN(changedLatitude) && !isNaN(changedLongitude)) {
+                markOnMap(undefined, changedLatitude, changedLongitude);
+            }
+        });
     })
 
 </script>

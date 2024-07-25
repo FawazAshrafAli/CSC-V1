@@ -5,6 +5,10 @@
 
 {% block content %}
 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'w3/admin_csc_center/css/admin_csc_center.css' %}">
+{% endblock styles %}
+
 <div class="dashboard-content">
 	<!-- Titlebar -->
 	<div id="titlebar">
@@ -176,6 +180,20 @@
             }
         </style>
 
+        <!-- Delete Confirmation Box Start-->
+    <div id="delete-confirmation-box" style="display: none;">
+        <div class="modal-content">            
+            <h4><span>Deleting</span> CSC Center <span id="csc-name" style="color: black"></span> . . .</h4>
+            <h5>Are you sure?</h5>                        
+        </div>
+        <br>
+        <form method="GET" action="#">
+            <button type="submit" id="confirm-deletion-btn">Delete</button>
+            <button class="cancel-btn" type="button" id="cancel-deletion-btn">Cancel</button>
+        </form>
+    </div>
+    <!-- Delete Confirmation Box Start-->
+
         <!-- Pop Up Box Start -->
         <div id="pop-up-box">
             <h3 id="pop-up-box-heading" ></h3>
@@ -204,14 +222,14 @@
 						</div>
 						<div class="buttons-to-right">													
 							<a href="{% url 'csc_admin:update_csc' center.slug %}" class="button gray"><i class="sl sl-icon-note"></i> Edit</a>
-							<a href="#" class="button gray" onclick="(e) => e.preventDefault(); toggleBlogDeletion(`{{blog.slug}}`, `{{blog.title}}`);"><i class="sl sl-icon-close"></i> Delete</a>
+							<a href="#" class="button gray" onclick="(e) => e.preventDefault(); toggleCscDeletion(`{{center.slug}}`, `{{center.full_name}}`);"><i class="sl sl-icon-close"></i> Delete</a>
 						</div>
 					</li>
 					{% endfor %}
 				</ul>
 			</div>
         </div>
-        <!-- Blog Posts / End -->
+        <!-- Csc Posts / End -->
         <!-- Widgets -->
         <div class="col-lg-3 col-md-4">
             <div class="sidebar right">                
@@ -259,6 +277,7 @@
         // Close pop up box
         $('.close-btn').click(() => {
             $('#pop-up-box').hide();
+            $('#delete-confirmation-box').hide();
         });
 
         $(document).on('keydown', (event) => {
@@ -823,5 +842,19 @@
 
         popUpDefaultView();
     });
+</script>
+
+<script>
+    function toggleCscDeletion(cscSlug, cscName) {		
+		$('#delete-confirmation-box form').prop('action', `/admin/delete_csc/${cscSlug}`);
+		$('#csc-name').html(`'${cscName}'`);
+		$('.close-btn').click();
+		$('#delete-confirmation-box').show();
+	};
+
+    $('.cancel-btn').click(function () {
+        $('#delete-confirmation-box').hide();
+        $('.close-btn').click();
+    })
 </script>
 {% endblock scripts %}

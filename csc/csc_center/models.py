@@ -86,7 +86,7 @@ class SocialMediaLink(models.Model):
 
 class CscCenter(models.Model):
     name = models.CharField(max_length=150)
-    slug = models.SlugField()
+    slug = models.SlugField(unique=True, blank=True, null=True)
     type = models.ForeignKey(CscNameType, on_delete=models.CASCADE)
     keywords = models.ManyToManyField(CscKeyword)
     state = models.ForeignKey(State, on_delete=models.CASCADE)

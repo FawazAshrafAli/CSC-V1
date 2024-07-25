@@ -59,7 +59,7 @@
 			</div>
 		</div>
         <div id="delete-toggle-div" style="display: flex; align-items: center;">
-            <a href="#" id="update-toggle-btn">UPDATE<a></button>
+            <a href="{% url 'csc_admin:update_csc' center.slug %}" id="update-toggle-btn">UPDATE<a></button>
             <button type="button" id="delete-toggle-btn">DELETE<button>
             <button type="button" title="Options" id="csc-more-option-btn"><i class="fas fa-ellipsis-v"></i></button>
         </div>
@@ -69,11 +69,11 @@
     <!-- Delete Confirmation Box Start-->
     <div id="delete-confirmation-box" style="display: none;">
         <div class="modal-content">            
-            <h4><span>Deleting</span> Blog '{{csc.name}}' . . .</h4>
+            <h4><span>Deleting</span> CSC Center '{{center.full_name}}' . . .</h4>
             <h5>Are you sure?</h5>                        
         </div>
         <br>
-        <form method="GET" action="#">
+        <form method="GET" action="{% url 'csc_admin:delete_csc' center.slug %}">
             <button type="submit" id="confirm-deletion-btn">Delete</button>
             <button type="button" id="cancel-deletion-btn">Cancel</button>
         </form>
