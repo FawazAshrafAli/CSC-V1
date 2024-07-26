@@ -531,6 +531,7 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
         context['keywords'] = CscKeyword.objects.all().order_by('keyword')
         context['products'] = Product.objects.all()
         context['states'] = State.objects.all()
+        context['social_medias'] = ["Facebook", "Instagram", "Twitter", "YouTube", "LinkedIn", "Pinterest", "Tumblr"]
 
         time_data = []
         for i in range(1, 25):
@@ -599,7 +600,7 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
         sat_closing_time = sat_closing_time if  sat_closing_time != "" else None
         sun_closing_time = sun_closing_time if  sun_closing_time != "" else None
 
-        social_medias = request.POST.getlist('social_media') # manytomany
+        social_medias = request.POST.getlist('social_medias') # manytomany
         social_links = request.POST.getlist('social_links') # manytomany
 
         latitude = request.POST.get('latitude')
@@ -655,19 +656,23 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
         self.object.products.set(products)
         self.object.save()
 
-        social_media_length = len(social_medias)
-        if social_media_length > 0:
-            social_media_list = []
-            for i in range(social_media_length):
-                social_media_link, created = SocialMediaLink.objects.get_or_create(
-                    csc_center_id = self.object,
-                    social_media_name = social_medias[i],
-                    social_media_link = social_links[i]
-                )
-                social_media_list.append(social_media_link)
-            
-            self.object.social_media_links.set(social_media_list)
-            self.object.save()
+        if social_medias and social_links:
+            print(social_medias)
+            print(social_links)
+            social_media_length = len(social_medias)
+            if social_media_length > 0:
+                social_media_list = []
+                for i in range(social_media_length):
+                    if social_medias[i] and social_links[i]:
+                        social_media_link, created = SocialMediaLink.objects.get_or_create(
+                            csc_center_id = self.object,
+                            social_media_name = social_medias[i],
+                            social_media_link = social_links[i]
+                        )
+                        social_media_list.append(social_media_link)
+                
+                    self.object.social_media_links.set(social_media_list)
+                    self.object.save()
         
         return redirect(self.success_url)
 
@@ -739,21 +744,23 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         services = request.POST.getlist('services')
         products = request.POST.getlist('products')
 
-        mon_opening_time = request.POST.get('mon_opening_time') #timefield
-        tue_opening_time = request.POST.get('tue_opening_time') #timefield
-        wed_opening_time = request.POST.get('wed_opening_time') #timefield
-        thu_opening_time = request.POST.get('thu_opening_time') #timefield
-        fri_opening_time = request.POST.get('fri_opening_time') #timefield
-        sat_opening_time = request.POST.get('sat_opening_time') #timefield
-        sun_opening_time = request.POST.get('sun_opening_time') #timefield
+        show_opening_hours = request.POST.get('show_opening_hours')
 
-        mon_closing_time = request.POST.get('mon_closing_time') #timefield
-        tue_closing_time = request.POST.get('tue_closing_time') #timefield
-        wed_closing_time = request.POST.get('wed_closing_time') #timefield
-        thu_closing_time = request.POST.get('thu_closing_time') #timefield
-        fri_closing_time = request.POST.get('fri_closing_time') #timefield
-        sat_closing_time = request.POST.get('sat_closing_time') #timefield
-        sun_closing_time = request.POST.get('sun_closing_time') #timefield
+        mon_opening_time = request.POST.get('mon_opening_time') if show_opening_hours else None #timefield
+        tue_opening_time = request.POST.get('tue_opening_time') if show_opening_hours else None #timefield
+        wed_opening_time = request.POST.get('wed_opening_time') if show_opening_hours else None #timefield
+        thu_opening_time = request.POST.get('thu_opening_time') if show_opening_hours else None #timefield
+        fri_opening_time = request.POST.get('fri_opening_time') if show_opening_hours else None #timefield
+        sat_opening_time = request.POST.get('sat_opening_time') if show_opening_hours else None #timefield
+        sun_opening_time = request.POST.get('sun_opening_time') if show_opening_hours else None #timefield
+
+        mon_closing_time = request.POST.get('mon_closing_time') if show_opening_hours else None #timefield
+        tue_closing_time = request.POST.get('tue_closing_time') if show_opening_hours else None #timefield
+        wed_closing_time = request.POST.get('wed_closing_time') if show_opening_hours else None #timefield
+        thu_closing_time = request.POST.get('thu_closing_time') if show_opening_hours else None #timefield
+        fri_closing_time = request.POST.get('fri_closing_time') if show_opening_hours else None #timefield
+        sat_closing_time = request.POST.get('sat_closing_time') if show_opening_hours else None #timefield
+        sun_closing_time = request.POST.get('sun_closing_time') if show_opening_hours else None #timefield
 
         mon_opening_time = mon_opening_time if  mon_opening_time != "" else None
         tue_opening_time = tue_opening_time if  tue_opening_time != "" else None
@@ -771,8 +778,12 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         sat_closing_time = sat_closing_time if  sat_closing_time != "" else None
         sun_closing_time = sun_closing_time if  sun_closing_time != "" else None
 
-        social_medias = request.POST.getlist('social_media') # manytomany
-        social_links = request.POST.getlist('social_links') # manytomany
+        show_social_media_links = request.POST.get('show_social_media_links')
+
+        print("Social Visibity: ", show_social_media_links)
+
+        social_medias = request.POST.getlist('social_medias') if show_social_media_links else None # manytomany
+        social_links = request.POST.getlist('social_links') if show_social_media_links else None # manytomany
 
         latitude = request.POST.get('latitude')
         longitude = request.POST.get('longitude')
@@ -828,6 +839,9 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         self.object.email = email
         self.object.website = website
 
+        self.object.show_opening_hours = True if show_opening_hours else False
+        self.object.show_social_media_links = True if show_social_media_links else False
+
         self.object.mon_opening_time = mon_opening_time
         self.object.tue_opening_time = tue_opening_time
         self.object.wed_opening_time = wed_opening_time
@@ -851,18 +865,26 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         self.object.products.set(products)
         self.object.save()
 
-        social_media_length = len(social_medias)
-        if social_media_length > 0:
-            social_media_list = []
-            for i in range(social_media_length):
-                social_media_link, created = SocialMediaLink.objects.get_or_create(
-                    csc_center_id = self.object,
-                    social_media_name = social_medias[i],
-                    social_media_link = social_links[i]
-                )
-                social_media_list.append(social_media_link)
-            
-            self.object.social_media_links.set(social_media_list)
+        if social_medias and social_links:
+            social_media_length = len(social_medias)
+            if social_media_length > 0:
+                social_media_list = []
+                for i in range(social_media_length):
+                    if social_medias[i] and social_links[i]:
+                        social_media_link, created = SocialMediaLink.objects.get_or_create(
+                            csc_center_id = self.object,
+                            social_media_name = social_medias[i],
+                            social_media_link = social_links[i]
+                        )
+                        social_media_list.append(social_media_link)
+                
+                    self.object.social_media_links.set(social_media_list)
+                    self.object.save()
+            else:
+                self.object.social_media_links.clear()
+                self.object.save()
+        else:
+            self.object.social_media_links.clear()
             self.object.save()
 
         messages.success(request, "Updated CSC Center Details")      
@@ -915,6 +937,33 @@ class RemoveCscCenterBannerView(BaseAdminCscCenterView, UpdateView):
 
         self.object.banner = None
         self.object.save()
+        return JsonResponse({'message': 'success'})
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class RemoveSocialMediaLinkView(BaseAdminCscCenterView, UpdateView):
+    fields = ["social_media_links"]
+    pk_url_kwarg = 'slug'
+
+    def get_object(self, **kwargs):
+        try:
+            return get_object_or_404(CscCenter, slug = self.kwargs['slug'])
+        except Http404:
+            return JsonResponse({"message": "Error. Invalid CSC Center"})
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        social_media_id = request.POST.get('social_media_id')
+
+        try:
+            social_media_link = get_object_or_404(SocialMediaLink, pk = social_media_id)
+        except Http404:
+            return JsonResponse({"message": "Error. No such social media object"})
+        
+        self.object.social_media_links.remove(social_media_link)
+        self.object.save()
+        
         return JsonResponse({'message': 'success'})
 
 

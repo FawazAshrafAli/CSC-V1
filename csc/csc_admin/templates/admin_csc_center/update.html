@@ -262,7 +262,7 @@
                             <div class="add-listing-headline">
                                 <h3><i class="sl sl-icon-clock"></i> Opening Hours</h3>
                                 <!-- Switcher -->
-                                <label class="switch"><input type="checkbox" checked><span
+                                <label class="switch"><input type="checkbox" name="show_opening_hours" {% if center.show_opening_hours %} checked {% endif %}><span
                                         class="slider round"></span></label>
                             </div>
                             <!-- Switcher ON-OFF Content -->
@@ -467,7 +467,7 @@
                             <div class="add-listing-headline">
                                 <h3><i class="sl sl-icon-book-open"></i> Social Media Links</h3>
                                 <!-- Switcher -->
-                                <label class="switch"><input type="checkbox" checked><span
+                                <label class="switch"><input type="checkbox" name="show_social_media_links" {% if center.show_opening_hours %} checked {% endif %}><span
                                         class="slider round"></span></label>
                             </div>
                             <!-- Switcher ON-OFF Content -->
@@ -475,6 +475,8 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <table id="pricing-list-container">
+                                            {% if center.social_media_links.all|length > 0 %}
+                                            {% for social_media_obj in center.social_media_links.all %}
                                             <tr class="pricing-list-item pattern">
                                                 <td>
                                                     <div class="fm-move"><i class="sl sl-icon-cursor-move"></i></div>
@@ -483,7 +485,29 @@
                                                             data-placeholder="Select Social Media">
                                                             <option value="">Select Social Media</option>
                                                             {% for social_media in social_medias %}
-                                                            <option value="{{social_media}}" {% for social_media_obj in center.social_media_links.all %} {% if social_media_obj.social_media_name == social_media %} selected {% endif %} {% endfor %}>{{social_media}}</option>
+                                                            <option value="{{social_media}}" {% if social_media_obj.social_media_name == social_media %} selected {% endif %}>{{social_media}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="fm-input pricing-ingredients"><input type="text"
+                                                            name="social_links"
+                                                            placeholder="URL (E.g https://www.socialmediaurl.com/name)" value="{{social_media_obj.social_media_link}}" />
+                                                    </div>
+                                                    <div class="fm-close"><a class="delete" href="#" onclick="removeSocialMediaLink('{{center.slug}}', {{social_media_obj.pk}})"><i
+                                                                class="fa fa-remove"></i></a></div>
+                                                </td>
+                                            </tr>                                            
+                                            {% endfor %}
+                                            {% else %}
+                                            <tr class="pricing-list-item pattern">
+                                                <td>
+                                                    <div class="fm-move"><i class="sl sl-icon-cursor-move"></i></div>
+                                                    <div class="fm-input pricing-name">
+                                                        <select class="chosen-select" name="social_medias"
+                                                            data-placeholder="Select Social Media">
+                                                            <option value="">Select Social Media</option>
+                                                            {% for social_media in social_medias %}
+                                                            <option value="{{social_media}}">{{social_media}}</option>
                                                             {% endfor %}
                                                         </select>
                                                     </div>
@@ -495,8 +519,9 @@
                                                                 class="fa fa-remove"></i></a></div>
                                                 </td>
                                             </tr>
+                                            {% endif %}
                                         </table>
-                                        <a href="#" class="button add-pricing-list-item" id="add-link-btn" >Add New link</a>
+                                        <button type="button" class="button" id="add-link-btn" >Add New link</button>                                        
                                     </div>
                                 </div>
                             </div>
@@ -576,6 +601,7 @@
 
 
 <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+<!-- Map -->
 <script>
 
     $(document).ready(function () {
@@ -658,6 +684,7 @@
 <!-- Populate Block Dropdown -->
 <script src="{% static 'w3/admin_csc_center/js/populateBlocks.js' %}"></script>
 
+<!-- Preview Form -->
 <script>
     $(document).ready(() => {
         $('#preview-btn').click(function () {
@@ -717,7 +744,6 @@
 
 <!-- Preview Updating CSC Images Links -->
 <script>
-    
     function previewCscLogoLink () {
         const cscLogoInput = $('#csc-logo-input')[0];
         const file = cscLogoInput.files[0]
@@ -748,6 +774,63 @@
 
     $('#csc-banner-input').on('change', previewCscBannerLink)
 
+</script>
+
+<!-- Add New Social Media Link -->
+<script>
+    $(document).ready(() => {
+        $('#add-link-btn').click(() => {
+            $('#pricing-list-container').append(
+                `<tr class="pricing-list-item pattern">
+                    <td>
+                        <div class="fm-move"><i class="sl sl-icon-cursor-move"></i></div>
+                        <div class="fm-input pricing-name">
+                            <select class="chosen-select" name="social_medias"
+                                data-placeholder="Select Social Media">
+                                <option value="">Select Social Media</option>
+                                {% for social_media in social_medias %}
+                                <option value="{{social_media}}" {% for social_media_obj in center.social_media_links.all %} {% if social_media_obj.social_media_name == social_media %} selected {% endif %} {% endfor %}>{{social_media}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="fm-input pricing-ingredients"><input type="text"
+                                name="social_links"
+                                placeholder="URL (E.g https://www.socialmediaurl.com/name)" />
+                        </div>
+                        <div class="fm-close"><a class="delete" href="#"><i
+                                    class="fa fa-remove"></i></a></div>
+                    </td>
+                </tr>`
+                
+            ); 
+
+            $(".chosen-select").chosen({
+                width: "100%",
+                disable_search: true
+            });
+        });        
+    });
+
+
+</script>
+
+<script>
+    function removeSocialMediaLink(cscId, socialMediaId) {
+        $.ajax({
+            type: 'POST',
+            url: `/admin/remove_social_media_link/${cscId}`,
+            dataType: 'json',
+            data: {'social_media_id': socialMediaId},
+            success: (data) => {
+                if (data.message) {
+                    console.log(data.message);
+                };
+            },
+            error: (error) => {
+                console.error("Error: ", error);
+            },
+        });
+    };
 </script>
 
 {% endblock scripts %}

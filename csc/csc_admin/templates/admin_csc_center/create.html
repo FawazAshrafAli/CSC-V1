@@ -458,13 +458,10 @@
                                                     <div class="fm-input pricing-name">
                                                         <select class="chosen-select" name="social_medias"
                                                             data-placeholder="Select Social Media">
-                                                            <option value="Facebook">Facebook</option>
-                                                            <option value="Instagram">Instagram</option>
-                                                            <option value="Twitter">Twitter</option>
-                                                            <option value="YouTube">YouTube</option>
-                                                            <option value="LinkedIn">LinkedIn</option>
-                                                            <option value="Pinterest">Pinterest</option>
-                                                            <option value="Tumblr">Tumblr</option>
+                                                            <option value="" selected hidden disabled>Select Social Media</option>
+                                                            {% for social_media in social_medias %}
+                                                            <option value="{{social_media}}">{{social_media}}</option>
+                                                            {% endfor %}
                                                         </select>
                                                     </div>
                                                     <div class="fm-input pricing-ingredients"><input type="text"
@@ -476,7 +473,7 @@
                                                 </td>
                                             </tr>
                                         </table>
-                                        <a href="#" class="button add-pricing-list-item" id="add-link-btn" >Add New link</a>
+                                        <button type="button" class="button" id="add-link-btn" >Add New link</button>
                                     </div>
                                 </div>
                             </div>
@@ -645,6 +642,44 @@
         
         $('#add-csc-form').submit()
     });
+</script>
+
+<!-- Adding New Social Media Link -->
+<script>
+    $(document).ready(() => {
+        $('#add-link-btn').click(() => {
+            $('#pricing-list-container').append(
+                `<tr class="pricing-list-item pattern">
+                    <td>
+                        <div class="fm-move"><i class="sl sl-icon-cursor-move"></i></div>
+                        <div class="fm-input pricing-name">
+                            <select class="chosen-select" name="social_medias"
+                                data-placeholder="Select Social Media">
+                                <option value="">Select Social Media</option>
+                                {% for social_media in social_medias %}
+                                <option value="{{social_media}}" {% for social_media_obj in center.social_media_links.all %} {% if social_media_obj.social_media_name == social_media %} selected {% endif %} {% endfor %}>{{social_media}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="fm-input pricing-ingredients"><input type="text"
+                                name="social_links"
+                                placeholder="URL (E.g https://www.socialmediaurl.com/name)" />
+                        </div>
+                        <div class="fm-close"><a class="delete" href="#"><i
+                                    class="fa fa-remove"></i></a></div>
+                    </td>
+                </tr>`
+                
+            ); 
+
+            $(".chosen-select").chosen({
+                width: "100%",
+                disable_search: true
+            });
+        });        
+    });
+
+
 </script>
 
 {% endblock scripts %}

@@ -109,6 +109,8 @@ class CscCenter(models.Model):
     services = models.ManyToManyField(Service)
     products = models.ManyToManyField(Product)
 
+    show_opening_hours = models.BooleanField(default=True)
+
     mon_opening_time = models.TimeField(null=True, blank=True)
     tue_opening_time = models.TimeField(null=True, blank=True)
     wed_opening_time = models.TimeField(null=True, blank=True)
@@ -124,6 +126,8 @@ class CscCenter(models.Model):
     fri_closing_time = models.TimeField(null=True, blank=True)
     sat_closing_time = models.TimeField(null=True, blank=True)
     sun_closing_time = models.TimeField(null=True, blank=True)
+
+    show_social_media_links = models.BooleanField(default = True)
 
     social_media_links = models.ManyToManyField(SocialMediaLink)
 

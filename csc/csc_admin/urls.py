@@ -14,6 +14,7 @@ from .views import (
     AddCscCenterView, GetDistrictView, GetBlockView,
     ListCscCenterView, DetailCscCenterView, UpdateCscCenterView,
     DeleteCscCenterView, RemoveCscCenterLogoView, RemoveCscCenterBannerView,
+    RemoveSocialMediaLinkView,
 
     get_all_states, get_all_districts, get_all_blocks,
     get_csc_keywords, get_name_types,
@@ -59,6 +60,7 @@ urlpatterns = [
     path('delete_csc/<str:slug>', DeleteCscCenterView.as_view(), name = "delete_csc"),
     path('remove_csc_logo/<str:slug>', RemoveCscCenterLogoView.as_view(), name = "remove_csc_logo"),
     path('remove_csc_banner/<str:slug>', RemoveCscCenterBannerView.as_view(), name = "remove_csc_banner"),
+    path('remove_social_media_link/<str:slug>', RemoveSocialMediaLinkView.as_view(), name="remove_social_media_link"),
 
     path('get_districts/', GetDistrictView.as_view(), name="get_districts"),
     path('get_blocks/', GetBlockView.as_view(), name="get_blocks"),
