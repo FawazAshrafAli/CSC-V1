@@ -22,49 +22,36 @@
 						<h4>CSC - Common Services Centre programme is an initiative of the Ministry of Electronics and IT (MeitY), Government of India.</h4>
 					</div>
 
-					<div class="main-search-input">
+					<form method="get" action="{% url 'home:csc_centers' %}">
+						{% csrf_token %}
+						<div class="main-search-input">
 
-						<div class="main-search-input-item">
-							<input type="text" placeholder="Search With Pincode" value=""/>
+							<div class="main-search-input-item">
+								<input type="text" placeholder="Search With Pincode" value=""/>
+							</div>
+							<div class="main-search-input-item">
+								<select class="chosen-select" data-placeholder="Select State" id="state-dropdown" name="state">
+									<option label="Select State"></option>
+									{% for state in states %}
+									<option value="{{state.pk}}">{{state.state}}</option>
+									{% endfor %}
+								</select>
+							</div>
+							<div class="main-search-input-item">
+								<select class="chosen-select" data-placeholder="Select District" id="district-dropdown" name="district">
+									<option label="Select District"></option>
+								</select>
+							</div>
+													
+														<div class="main-search-input-item">
+								<select class="chosen-select" data-placeholder="Select Block" id="block-dropdown" name="block">
+									<option label="Select Block"></option>
+								</select>
+							</div>
+							<button class="button" type="submit">Search</button>
+							
 						</div>
-
-						<div class="main-search-input-item">
-							<select class="chosen-select" data-placeholder="Select State">
-								<option label="Select State"></option>
-								<option>Shops</option>
-								<option>Hotels</option>
-								<option>Restaurants</option>
-								<option>Fitness</option>
-								<option>Events</option>
-							</select>
-                            
-						</div>
-
-						<div class="main-search-input-item">
-							<select class="chosen-select" data-placeholder="Select District">
-								<option label="Select District"></option>
-								<option>Shops</option>
-								<option>Hotels</option>
-								<option>Restaurants</option>
-								<option>Fitness</option>
-								<option>Events</option>
-							</select>
-						</div>
-                        
-                        	<div class="main-search-input-item">
-							<select class="chosen-select" data-placeholder="Select Block">
-								<option label="Select Block"></option>
-								<option>Shops</option>
-								<option>Hotels</option>
-								<option>Restaurants</option>
-								<option>Fitness</option>
-								<option>Events</option>
-							</select>
-						</div>
-
-						<button class="button" onclick="window.location.href='listings-half-screen-map-list.html'">Search</button>
-
-					</div>
+					</form>
 				</div>
 			</div>
 			<!-- Features Categories -->
@@ -73,25 +60,12 @@
 					<h5 class="highlighted-categories-headline">Or browse featured categories:</h5>
 					  
 					<div class="highlighted-categories">
+						{% for service in services %}
 						<!-- Box -->
 						<a href="listings-list-with-sidebar.html" class="highlighted-category">
-					    	<h4>FSSAI</h4>
-						</a>	
-
-						<!-- Box -->
-						<a href="listings-list-full-width.html" class="highlighted-category">
-					    	<h4>GST</h4>
-						</a>	
-
-						<!-- Box -->
-						<a href="listings-half-screen-map-list.html" class="highlighted-category">
-					    	<h4>Tickets</h4>
-						</a>	
-
-						<!-- Box -->
-						<a href="listings-half-screen-map-list.html" class="highlighted-category">
-					    	<h4>Registration</h4>
-						</a>		
+					    	<h4>{{service.first_name}}</h4>
+						</a>
+						{% endfor %}
 					</div>
 					
 				</div>
@@ -212,128 +186,21 @@
 		<div class="col-md-12">
 			<div class="simple-slick-carousel dots-nav">
 
+			{% for service in services %}
 			<!-- Listing Item -->
 			<div class="carousel-item">
 				<a href="listings-single-page.html" class="listing-item-container">
 					<div class="listing-item">
-						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
+						<img src="{% if service.image %} {{service.image.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="{{service.first_name}}">
                        <div class="listing-item-content">
-							<h3>FSSAI Registration</h3>
-							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
+							<h3>{{service.name}}</h3>
+							<span></span>
 						</div>
-					</div>
-				 
-				</a>
-			</div>
-			<!-- Listing Item / End -->		<!-- Listing Item -->
-			<div class="carousel-item">
-				<a href="listings-single-page.html" class="listing-item-container">
-					<div class="listing-item">
-						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
-                       <div class="listing-item-content">
-							<h3>FSSAI Registration</h3>
-							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
-						</div>
-					</div>
-				 
+					</div>				 
 				</a>
 			</div>
 			<!-- Listing Item / End -->
-            
-            		<!-- Listing Item -->
-			<div class="carousel-item">
-				<a href="listings-single-page.html" class="listing-item-container">
-					<div class="listing-item">
-						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
-                       <div class="listing-item-content">
-							<h3>FSSAI Registration</h3>
-							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
-						</div>
-					</div>
-				 
-				</a>
-			</div>
-			<!-- Listing Item / End -->
-            
-            
-            		<!-- Listing Item -->
-			<div class="carousel-item">
-				<a href="listings-single-page.html" class="listing-item-container">
-					<div class="listing-item">
-						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
-                       <div class="listing-item-content">
-							<h3>FSSAI Registration</h3>
-							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
-						</div>
-					</div>
-				 
-				</a>
-			</div>
-			<!-- Listing Item / End -->
-            
-            
-            		<!-- Listing Item -->
-			<div class="carousel-item">
-				<a href="listings-single-page.html" class="listing-item-container">
-					<div class="listing-item">
-						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
-                       <div class="listing-item-content">
-							<h3>FSSAI Registration</h3>
-							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
-						</div>
-					</div>
-				 
-				</a>
-			</div>
-			<!-- Listing Item / End -->
-            
-            
-            		<!-- Listing Item -->
-			<div class="carousel-item">
-				<a href="listings-single-page.html" class="listing-item-container">
-					<div class="listing-item">
-						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
-                       <div class="listing-item-content">
-							<h3>FSSAI Registration</h3>
-							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
-						</div>
-					</div>
-				 
-				</a>
-			</div>
-			<!-- Listing Item / End -->
-            
-            
-            		<!-- Listing Item -->
-			<div class="carousel-item">
-				<a href="listings-single-page.html" class="listing-item-container">
-					<div class="listing-item">
-						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
-                       <div class="listing-item-content">
-							<h3>FSSAI Registration</h3>
-							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
-						</div>
-					</div>
-				 
-				</a>
-			</div>
-			<!-- Listing Item / End -->
-            
-            
-            		<!-- Listing Item -->
-			<div class="carousel-item">
-				<a href="listings-single-page.html" class="listing-item-container">
-					<div class="listing-item">
-						<img src="{% static 'images/listing-item-01.jpg' %}" alt="FSSAI Registration">
-                       <div class="listing-item-content">
-							<h3>FSSAI Registration</h3>
-							<span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fringilla libero ut ex luctus volutpat. </span>
-						</div>
-					</div>
-				 
-				</a>
-			</div>
-			<!-- Listing Item / End -->
+			{% endfor %}	
 			</div>
 			
 		</div>
@@ -710,3 +577,8 @@
 <!-- Recent Blog Posts / End -->
 
 {% endblock content %}
+
+{% block scripts %}
+<script src="{% static 'w3/admin_csc_center/js/populateDistricts.js' %}"></script>
+<script src="{% static 'w3/admin_csc_center/js/populateBlocks.js' %}"></script>
+{% endblock scripts %}

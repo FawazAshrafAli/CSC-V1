@@ -15,7 +15,7 @@
 				<!-- Breadcrumbs -->
 				<nav id="breadcrumbs">
 					<ul>
-						<li><a href="{% include "components/home_link.html" %}">Home</a></li>
+						<li><a href="{% url 'home:view' %}">Home</a></li>
                         <li><a href="{% url 'services:list' %}">Services</a></li>
 						<li>{{service.name}}</li>
 					</ul>

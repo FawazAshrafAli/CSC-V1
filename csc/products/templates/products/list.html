@@ -1,0 +1,216 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block products_nav %}
+current
+{% endblock products_nav %}
+
+{% block title_prefix %} Products {% endblock title_prefix %}
+
+{% block meta_description %}Browse our diverse range of products designed for service centers. Find high-quality tools, equipment, and supplies to enhance your service offerings. Detailed product information and easy purchasing options available.{% endblock meta_description %}
+
+{% block meta_keywords %}Service Center Products, Products for Service Centers, Common Service Center Products, CSC Products{% endblock meta_keywords %}
+
+{% block meta_canonical %}https://{{request.get_host}}{{request.path}}{% endblock meta_canonical %}
+
+{% block schema_markup %}
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "WebPage",
+    "mainEntity": {
+      "@type": "CreativeWork",
+      "name": "Keyphrases",
+      "about": [
+      {% for category in categories|slice:':4' %}
+        {
+          "@type": "Thing",
+          "name": "{{category.name}}"
+        },
+        {% endfor %}
+        // Add more keywords as needed
+      ]
+    }
+  }
+</script>
+
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "CollectionPage",
+    "name": "Tags Page",
+    "description": "A page listing various tags for categorizing content.",
+    "url": "https://{{request.get_host}}/tags",
+    "mainEntity": {
+      "@type": "ItemList",
+      "itemListElement": [
+      {% for category in categories|slice:':4' %}
+      {
+        "@type": "ListItem",
+        "position": {{forloop.counter}},
+        "url": "https://{{request.get_host}}{{request.path}}/tags/{{category.slug}}",
+        "name": "{{category.name}}"
+      },
+      {% endfor %}
+      // Add more tags as needed
+      ]
+    }
+  }
+</script>
+{% endblock schema_markup %}
+
+{% block content %}
+
+<!-- Titlebar
+================================================== -->
+<div id="titlebar">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <h2>Products</h2>
+        <span>Online Shopping</span>
+
+        <!-- Breadcrumbs -->
+        <nav id="breadcrumbs">
+          <ul>
+            <li><a href="{% url 'home:view' %}">Home</a></li>
+            <li>Products</li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include "components/message.html" %}
+
+<!-- Content
+================================================== -->
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <!-- Sorting - Filtering Section -->
+      <div class="row margin-bottom-25">
+        <div class="col-md-12">
+          <div class="fullwidth-filters">
+            <!-- Panel Dropdown / End -->
+
+            <!-- Sort by -->
+            <div class="sort-by">
+              <div class="sort-by-select">
+                <select
+                  data-placeholder="List By Category"
+                  class="chosen-select-no-single" id="category-dropdown"
+                >
+                  <option value="" selected hidden disabled>Select Category</option>                  
+                  {% for category in categories %}
+                  <option value="{{category.slug}}" >{{category.name}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <!-- Sort by / End -->
+          </div>
+        </div>
+      </div>
+      <!-- Sorting - Filtering Section / End -->
+
+      <div class="row" id="list-product-div">
+		{% for product in products %}
+        <!-- Listing Item -->
+        <div class="col-lg-3 col-md-4">
+          <div class="product-grid">
+            <div class="product-image">
+              <a href="{{product.get_absolute_url}}" class="image">
+                <img class="pic-1" src="{% if product.image %} {{product.image.url}} {% else %} {% static 'w3/images/noe_image.png' %} {% endif %}" />
+                <img class="pic-2" src="{% if product.image %} {{product.image.url}} {% else %} {% static 'w3/images/noe_image.png' %} {% endif %}" />
+              </a>
+              <span class="product-sale-label">sale!</span>
+
+              <div class="product-rating">
+                <a class="add-to-cart" href="{{product.get_absolute_url}}"> ORDER NOW </a>
+              </div>
+            </div>
+            <div class="product-content">
+              <h3 class="title"><a href="{{product.get_absolute_url}}">{{product.name}}</a></h3>
+              <div class="price">₹{{product.price}}</div>
+            </div>
+          </div>
+        </div>
+        <!-- Listing Item / End -->
+		{% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      <div class="clearfix"></div>
+      <div class="row">
+        <div class="col-md-12">
+          <!-- Pagination -->
+          <div class="pagination-container margin-top-20 margin-bottom-40">
+            <nav class="pagination">
+              <ul>
+                <li><a href="#" class="current-page">1</a></li>
+                <li><a href="#">2</a></li>
+                <li><a href="#">3</a></li>
+                <li>
+                  <a href="#"><i class="sl sl-icon-arrow-right"></i></a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+      <!-- Pagination / End -->
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+<script>
+  $(document).ready(() => {
+    function getProducts(categoryId) {
+      $.ajax({
+        type: 'GET',
+        url: `/products/tags/${categoryId}`,
+        dataType: 'json',
+        success: response => {
+          if (response.products && Array.isArray(response.products)) {
+            $('#list-product-div').html('');
+            response.products.forEach(product => {
+              html = `<div class="col-lg-3 col-md-4">
+                      <div class="product-grid">
+                        <div class="product-image">
+                          <a href="${product.get_absolute_url}" class="image">
+                            <img class="pic-1" src="${product.image ? product.image : '/static/w3/images/noe_image.png'}" />
+                            <img class="pic-2" src="${product.image ? product.image : '/static/w3/images/noe_image.png'}" />
+                          </a>
+                          <span class="product-sale-label">sale!</span>
+
+                          <div class="product-rating">
+                            <a class="add-to-cart" href="${product.get_absolute_url}"> ORDER NOW </a>
+                          </div>
+                        </div>
+                        <div class="product-content">
+                          <h3 class="title"><a href="${product.get_absolute_url}">${product.name}</a></h3>
+                          <div class="price">₹${product.price}</div>
+                        </div>
+                      </div>
+                    </div>`
+              $('#list-product-div').append(html);
+            });
+          }
+        },
+        error: error => {
+          console.error('Error: ', error)
+        }
+      });
+    };
+
+    $('#category-dropdown').on('change', function () {
+      getProducts($(this).val())
+    })
+  });
+</script>
+{% endblock scripts %}

@@ -1,0 +1,309 @@
+{% extends "base/base.html" %} {% load static %} {% load crispy_forms_tags%}
+
+<!-- Meta Tags Start -->
+{% block meta_description %} "Service Creation of Common Service Centres (CSC) in India" {% endblock meta_description %}
+{% block meta_og_description %} "Service Creation of Common Service Centres (CSC) in India" {% endblock meta_og_description %}
+<!-- Meta Tags Start -->
+
+{% block title_prefix %} CSC Centers {% endblock title_prefix %}
+
+{% block content %}
+{% comment %} <div class="dashboard-content"> {% endcomment %}
+  <!-- Titlebar
+================================================== -->
+  <div id="titlebar">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h2>CSC Listing</h2>
+          <span>CSC Centers in {{location}}</span>
+
+          <!-- Breadcrumbs -->
+          <nav id="breadcrumbs">
+            <ul>
+              <li><a href="{% url 'home:view' %}">Home</a></li>
+              <li>CSC Listing</li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "admin_components/message.html" %}
+
+  <!-- Content
+================================================== -->
+  <div class="container">
+    <div class="row">
+      <!-- Search -->
+      <div class="col-md-12">
+        <form method="get" action="{% url 'home:csc_centers' %}">
+          <div class="main-search-input gray-style margin-top-0 margin-bottom-10">
+            <div class="main-search-input-item">
+              <input type="text" placeholder="Pincode" value="" />
+            </div>
+            <div class="main-search-input-item">
+              <select class="chosen-select" data-placeholder="Select State" id="state-dropdown" name="state">
+                <option label="Select State"></option>
+                {% for state in states %}
+                <option value="{{state.pk}}" {% if state.pk == state_obj.pk %} selected {% endif %} >{{state.state}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="main-search-input-item">
+              <select class="chosen-select" data-placeholder="Select District" id="district-dropdown" name="district">
+                <option label="Select District"></option>
+                {% for district in districts %}
+                <option value="{{district.pk}}" {% if district.pk == district_obj.pk %} selected {% endif %} >{{district.district}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="main-search-input-item">
+              <select class="chosen-select" data-placeholder="Select Block" id="block-dropdown" name="block">
+                <option label="Select Block"></option>
+                {% for block in blocks %}                
+                <option value="{{block.pk}}" {% if block.pk == block_obj.pk %} selected {% endif %} >{{block.block}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button
+              class="button"
+              type="submit"
+            >
+              Search
+            </button>
+          </div>
+        </form>
+      </div>
+      <!-- Search Section / End -->
+
+      <div class="col-md-12">
+        <!-- Sorting - Filtering Section -->
+        <div class="row margin-bottom-25 margin-top-30">
+          <div class="col-md-12">
+            <div class="fullwidth-filters">
+              <!-- Panel Dropdown -->
+              <div class="panel-dropdown wide float-right">
+                <a href="#">List By Service</a>
+                <div class="panel-dropdown-content checkboxes">
+                  <!-- Checkboxes -->
+                  <div class="row" id="list-by-services">
+                    {% if services|length > 0 %}
+                    <div class="col-md-6">
+                      {% for service in services|slice:':4' %}
+                      <input class="service" id="check-{{service.first_name}}" type="checkbox" name="check" value="{{service.slug}}" />
+                      <label for="check-{{service.first_name}}">{{service.first_name}}</label>
+                      {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if services|length > 4 %}
+                    <div class="col-md-6">
+                      {% for service in services|slice:'4:8' %}
+                      <input class="service" id="check-{{service.first_name}}" type="checkbox" name="check" value="{{service.slug}} />
+                      <label for="check-{{service.first_name}}">{{service.first_name}}</label>
+                      {% endfor %}
+                    </div>
+                    {% endif %}
+                  </div>
+
+                  <!-- Buttons -->
+                  <div class="panel-buttons">
+                    <button type="button" class="panel-cancel">Cancel</button>
+                    <button type="button" class="panel-apply" id="sort-btn">Apply</button>
+                  </div>
+                </div>
+              </div>
+              <!-- Panel Dropdown / End -->              
+
+              <!-- Sort by -->
+              <div class="sort-by">
+                <div class="sort-by-select">
+                  <select
+                    data-placeholder="List By Name"
+                    class="chosen-select-no-single"
+                    id="sort-dropdown"
+                  >
+                    <option value="name" selected>List By Name</option>
+                    <option value="state">List By State</option>
+                    <option value="district">List By District</option>
+                    <option value="block">List By Block</option>
+                  </select>
+                </div>
+              </div>
+              <!-- Sort by / End -->
+            </div>
+          </div>
+        </div>
+        <!-- Sorting - Filtering Section / End -->
+
+        <div class="row" id="center-listing">
+          {% for center in centers %}
+          <!-- Listing Item -->
+          <div class="col-lg-4 col-md-6">
+            <a
+              href="listings-single-page.html"
+              class="listing-item-container compact"
+            >
+              <div class="listing-item">
+                <img src="{% static 'images/listing-item-01.jpg' %}" alt="" />
+
+                <div class="listing-item-content">
+                  <div class="listing_csc_logo">
+                    <img src="{% if center.logo %} {{center.logo.url}} {% else %} {% static 'images/EGATE-e1651050883359.jpg' %} {% endif %}" alt="" />
+                  </div>
+                  <h3>{{center.full_name}}</h3>
+                  <p>CSC ID : {{center.pk}}</p>
+                  <span
+                    ><i class="fa fa-map-marker" aria-hidden="true"></i> {{center.partial_address}}</span
+                  >
+                </div>
+              </div>
+            </a>
+          </div>
+          <!-- Listing Item / End -->
+          {% endfor %}         
+        </div>
+
+        <!-- Pagination -->
+        <div class="clearfix"></div>
+        <div class="row">
+          <div class="col-md-12">
+            <!-- Pagination -->
+            <div class="pagination-container margin-top-20 margin-bottom-40">
+              <nav class="pagination">
+                <ul>
+                  <li><a href="#" class="current-page">1</a></li>
+                  <li><a href="#">2</a></li>
+                  <li><a href="#">3</a></li>
+                  <li>
+                    <a href="#"><i class="sl sl-icon-arrow-right"></i></a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+        <!-- Pagination / End -->
+      </div>
+    </div>
+  </div>
+{% comment %} </div> {% endcomment %}
+{% endblock content %}
+
+{% block scripts %}
+<script src="{% static 'w3/admin_csc_center/js/populateDistricts.js' %}"></script>
+<script src="{% static 'w3/admin_csc_center/js/populateBlocks.js' %}"></script>
+
+<script>
+  $(document).ready(() => {
+    $('#sort-dropdown').on('change', function () {
+      const state = $('#state-dropdown').val();
+      const district = $('#district-dropdown').val();
+      const block = $('#block-dropdown').val();
+
+      const listing = $(this).val();
+
+      $.ajax({
+        type: 'GET',
+        url: '/listing/',
+        dataType: 'json',
+        data: {
+          'state': state,
+          'district': district,
+          'block': block,
+          'listing': listing
+        },
+
+        success: function (response) {
+          $('#center-listing').html('');
+          response.centers.forEach(center => {
+            let html = `<div class="col-lg-4 col-md-6">
+                          <a
+                            href="listings-single-page.html"
+                            class="listing-item-container compact"
+                          >
+                            <div class="listing-item">
+                              <img src="{% static 'images/listing-item-01.jpg' %}" alt="" />
+
+                              <div class="listing-item-content">
+                                <div class="listing_csc_logo">
+                                  <img src="${center.logo ? center.logo : '/static/images/EGATE-e1651050883359.jpg' }" alt="CSC Center Logo" />
+                                </div>
+                                <h3>${center.full_name}</h3>
+                                <p>CSC ID : ${center.pk}</p>
+                                <span
+                                  ><i class="fa fa-map-marker" aria-hidden="true"></i> ${center.partial_address}</span
+                                >
+                              </div>
+                            </div>
+                          </a>
+                        </div>`
+            $('#center-listing').append(html);
+          });
+        },
+
+        error: error => console.log(error),
+      })
+    });
+  });
+</script>
+
+<!-- To filer centers on the basis of the service they provide -->
+<script>
+  $('#sort-btn').click(()=> {
+    const services = []
+    $('.service:checked').each(function () {
+      let service = $(this).val();
+      services.push(service);
+    });
+
+    const state = $('#state-dropdown').val();
+    const district = $('#district-dropdown').val();
+    const block = $('#block-dropdown').val();
+    const listing = $('#sort-dropdown').val();
+
+    $.ajax({
+      type: 'GET',
+      url: '/filter_centers/',
+      dataType: 'json',
+      data: {
+        'services': services,
+        'state': state,
+        'district': district,
+        'block': block,
+        'listing': listing
+      },
+      success: response => {
+        $('#center-listing').html('');
+          response.centers.forEach(center => {
+            let html = `<div class="col-lg-4 col-md-6">
+                          <a
+                            href="listings-single-page.html"
+                            class="listing-item-container compact"
+                          >
+                            <div class="listing-item">
+                              <img src="{% static 'images/listing-item-01.jpg' %}" alt="" />
+
+                              <div class="listing-item-content">
+                                <div class="listing_csc_logo">
+                                  <img src="${center.logo ? center.logo : '/static/images/EGATE-e1651050883359.jpg' }" alt="CSC Center Logo" />
+                                </div>
+                                <h3>${center.full_name}</h3>
+                                <p>CSC ID : ${center.pk}</p>
+                                <span
+                                  ><i class="fa fa-map-marker" aria-hidden="true"></i> ${center.partial_address}</span
+                                >
+                              </div>
+                            </div>
+                          </a>
+                        </div>`
+            $('#center-listing').append(html);
+          });
+      },
+      error: error => console.log("Error: ", error),
+    })
+
+  })
+</script>
+{% endblock scripts %}

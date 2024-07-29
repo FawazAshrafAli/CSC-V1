@@ -28,7 +28,7 @@
 				<!-- Breadcrumbs -->
 				<nav id="breadcrumbs">
 					<ul>
-						<li><a href="{% include "admin_components/home_link.html" %}">Home</a></li>						
+						<li><a href="{% url 'csc_admin:home' %}">Home</a></li>						
 						<li><a href="{% url 'csc_admin:services' %}">Services</a></li>						
                         <li>Add</li>
 					</ul>
@@ -36,6 +36,8 @@
 			</div>
 		</div>
 	</div>
+
+	{% include "admin_components/message.html" %}
 
     <div class="row">
         <div class="row">

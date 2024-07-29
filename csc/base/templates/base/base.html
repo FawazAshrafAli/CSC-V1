@@ -32,7 +32,6 @@
 
 <meta property="og:url" content="https://cscindia.info/" />
 
-<!-- <link rel="canonical" href="https://cscindia.info/" /> -->
 <link rel="canonical" href="{% block meta_canonical %}{% endblock meta_canonical %}" />
 
 {% block meta_tags %}{% endblock meta_tags %}
@@ -84,7 +83,7 @@
 				 <nav id="navigation" class="style-1" itemscope="" itemtype="http://www.schema.org/SiteNavigationElement">
 					<ul id="responsive">
 
-						<li itemprop="name"><a itemprop="url" class="{% block home_nav %}{% endblock home_nav %}" href="{% include "components/home_link.html" %}">Home</a></li>
+						<li itemprop="name"><a itemprop="url" class="{% block home_nav %}{% endblock home_nav %}" href="{% url 'home:view' %}">Home</a></li>
 
 						<li itemprop="name"><a itemprop="url" class="{% block about_us_nav %}{% endblock about_us_nav %}" href="{% url 'about_us:view' %}">About Us</a>
 							<ul>
@@ -128,7 +127,7 @@
 							</div>
 						</li>
 
-						<li itemprop="name"><a itemprop="url" class="{% block products_nav %}{% endblock products_nav %}" href="{% url 'products:view' %}">Products</a></li>
+						<li itemprop="name"><a itemprop="url" class="{% block products_nav %}{% endblock products_nav %}" href="{% url 'products:products' %}">Products</a></li>
 						<li itemprop="name"><a itemprop="url" class="{% block contact_us_nav %}{% endblock contact_us_nav %}" href="{% url 'contact_us:view' %}">Contact Us</a></li>
                         
                         
@@ -150,7 +149,7 @@
 					
 					<!-- User Menu -->
 					<div class="user-menu">
-                     <a href="{% include "components/login_link.html" %}" class="user-name"><span><img src="{% static 'images/dashboard-avatar.jpg' %}" alt=""></span> Login</a> 
+                     <a href="{% url 'authentication:login' %}" class="user-name"><span><img src="{% static 'images/dashboard-avatar.jpg' %}" alt=""></span> Login</a> 
                     
                     <!--  
                      <div class="user-name"><span><img src="{% static 'images/dashboard-avatar.jpg' %}" alt=""></span>CSC Name</div>
@@ -163,7 +162,7 @@
                         
 					</div>
 
-					<a target="_blank" href="{% include "components/add_csc_center_link.html" %}" class="button border with-icon">ADD CSC CENTER <i class="sl sl-icon-plus"></i></a>
+					<a target="_blank" href="{% url 'csc_center:create' %}" class="button border with-icon">ADD CSC CENTER <i class="sl sl-icon-plus"></i></a>
 				</div>
 				<!-- Header Widget / End -->
 			</div>
@@ -280,11 +279,11 @@
 			<div class="col-md-4 col-sm-6 ">
 				<h4>Helpful Links</h4>
 				<ul class="footer-links">
-					<li><a href="{% include "components/home_link.html" %}">Home</a></li>
-					<li><a href="{% include "components/login_link.html" %}">Login</a></li>
+					<li><a href="{% url 'home:view' %}">Home</a></li>
+					<li><a href="{% url 'authentication:login' %}">Login</a></li>
 					<li><a href="#">Sign Up</a></li>
 					<li><a href="#">My Account</a></li>
-					<li><a href="{% include "components/add_csc_center_link.html" %}">Add CSC Centers</a></li>
+					<li><a href="{% url 'csc_center:create' %}">Add CSC Centers</a></li>
 					<li><a href="#">Services</a></li>
 				</ul>
 

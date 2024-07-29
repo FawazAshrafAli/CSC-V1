@@ -1,14 +1,15 @@
 import requests
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
 from django.http import JsonResponse, Http404
-from django.views.generic import TemplateView, View, DetailView
+from django.views.generic import TemplateView, View, DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
+from django.contrib import messages
+from django.urls import reverse_lazy
 
-from .models import Block
-from .models import CommonServiceCenter as CSC
+from csc_center.models import CscCenter, State, District, Block
 from services.models import Service
 
 
@@ -16,127 +17,126 @@ class HomePageView(TemplateView):
     template_name = 'home/home.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        context = {}
         context["services"] = Service.objects.all()
+        context['states'] = State.objects.all()
         return context
     
 
+# @method_decorator(never_cache, name="dispatch")
+# class FilteredLocationView(View):
+#     def get(self, request, *args, **kwargs):
+#         state = request.GET.get('state', None)
+#         district = request.GET.get('district', None)
+#         block = request.GET.get('block', None)
 
-@method_decorator(never_cache, name="dispatch")
-class FilteredLocationView(View):
-    def get(self, request, *args, **kwargs):
-        state = request.GET.get('state', None)
-        district = request.GET.get('district', None)
-        block = request.GET.get('block', None)
 
-
-        response_data = {}
-        print(district)
-        if state and district and block:
-            centers = CSC.objects.filter(state__state = state, district__district = district, block__block = block)
-        elif state and district:
-            centers = CSC.objects.filter(state__state = state, district__district = district)
-        elif state:
-            centers = CSC.objects.filter(state__state = state)
+#         response_data = {}
+#         print(district)
+#         if state and district and block:
+#             centers = CscCenter.objects.filter(state__state = state, district__district = district, block__block = block)
+#         elif state and district:
+#             centers = CscCenter.objects.filter(state__state = state, district__district = district)
+#         elif state:
+#             centers = CscCenter.objects.filter(state__state = state)
             
-        else:
-            message = "Please choose atleast one filtering."
-            response_data['message'] = message
+#         else:
+#             message = "Please choose atleast one filtering."
+#             response_data['message'] = message
 
-        if centers:
-            response_data.update({
-                'centers_data': list(centers.values()),
-                'block': block
-                })
+#         if centers:
+#             response_data.update({
+#                 'centers_data': list(centers.values()),
+#                 'block': block
+#                 })
 
-        return JsonResponse(response_data, safe=False)
+#         return JsonResponse(response_data, safe=False)
 
-@method_decorator(never_cache, name="dispatch")
-class PincodeLocationView(View):
-    def get(self, request, *args, **kwargs):
-        pincode = request.GET.get('pincode', None)
+# @method_decorator(never_cache, name="dispatch")
+# class PincodeLocationView(View):
+#     def get(self, request, *args, **kwargs):
+#         pincode = request.GET.get('pincode', None)
 
-        response_data = {}
-        if pincode:
-            api_key = '1b4ea0d7dc5f4cffb9dbd971a896a71c'
+#         response_data = {}
+#         if pincode:
+#             api_key = '1b4ea0d7dc5f4cffb9dbd971a896a71c'
 
-            url = f'https://api.opencagedata.com/geocode/v1/json?q={pincode}&key={api_key}'
+#             url = f'https://api.opencagedata.com/geocode/v1/json?q={pincode}&key={api_key}'
 
-            response = requests.get(url)
-            data = response.json()
+#             response = requests.get(url)
+#             data = response.json()
 
-            if data['results']:
-                county = data['results'][0]['components']['county']
-                latitude = data['results'][0]['geometry']['lat']
-                longitude = data['results'][0]['geometry']['lng']
-                response_data.update({
-                    'place': county,
-                })
-                if county:
-                    block = Block.objects.get(block = county)
-                    centers = CSC.objects.filter(block = block)
-                    response_data['centers_data'] = list(centers.values())
-            else:
-                response_data.update({
-                    'message': f"No location found for pincode {pincode}"
-                })
-                print(f"No location found for pincode {pincode}")
+#             if data['results']:
+#                 county = data['results'][0]['components']['county']
+#                 latitude = data['results'][0]['geometry']['lat']
+#                 longitude = data['results'][0]['geometry']['lng']
+#                 response_data.update({
+#                     'place': county,
+#                 })
+#                 if county:
+#                     block = Block.objects.get(block = county)
+#                     centers = CscCenter.objects.filter(block = block)
+#                     response_data['centers_data'] = list(centers.values())
+#             else:
+#                 response_data.update({
+#                     'message': f"No location found for pincode {pincode}"
+#                 })
+#                 print(f"No location found for pincode {pincode}")
 
-        else:
-            response_data.update({'message': "No data available for this pincode."})
+#         else:
+#             response_data.update({'message': "No data available for this pincode."})
 
-        return JsonResponse(response_data, safe=False, status=200)    
-
-
+#         return JsonResponse(response_data, safe=False, status=200)    
 
 
-@method_decorator(never_cache, name="dispatch")
-class LocateMeView(View):
-    def get(self, request, *args, **kwargs):
-        latitude = request.GET.get('latitude', None)
-        longitude = request.GET.get('longitude', None)
 
-        response_data = {}
-        if latitude and longitude:
-            api_key = '1b4ea0d7dc5f4cffb9dbd971a896a71c'
 
-            url = f'https://api.opencagedata.com/geocode/v1/json?q={latitude}+{longitude}&key={api_key}'
+# @method_decorator(never_cache, name="dispatch")
+# class LocateMeView(View):
+#     def get(self, request, *args, **kwargs):
+#         latitude = request.GET.get('latitude', None)
+#         longitude = request.GET.get('longitude', None)
 
-            response = requests.get(url)
-            data = response.json()
+#         response_data = {}
+#         if latitude and longitude:
+#             api_key = '1b4ea0d7dc5f4cffb9dbd971a896a71c'
 
-            if data['results']:
-                county = data['results'][0]['components']['county']
-                response_data.update({
-                    'place': county,
-                })
-                print(f"The county for the given coordinates is {county}")
+#             url = f'https://api.opencagedata.com/geocode/v1/json?q={latitude}+{longitude}&key={api_key}'
 
-                if county:
-                    try:
-                        block = get_object_or_404(Block, block = county)
-                        centers = CSC.objects.filter(block = block)
-                        response_data['centers_data'] = list(centers.values())
-                    except Http404:
-                        pass
+#             response = requests.get(url)
+#             data = response.json()
+
+#             if data['results']:
+#                 county = data['results'][0]['components']['county']
+#                 response_data.update({
+#                     'place': county,
+#                 })
+#                 print(f"The county for the given coordinates is {county}")
+
+#                 if county:
+#                     try:
+#                         block = get_object_or_404(Block, block = county)
+#                         centers = CscCenter.objects.filter(block = block)
+#                         response_data['centers_data'] = list(centers.values())
+#                     except Http404:
+#                         pass
                 
-            else:
-                response_data.update({
-                    'message': f"No location found for the given coordinates."
-                })
-                print(f"No location found for the given coordinates.")
+#             else:
+#                 response_data.update({
+#                     'message': f"No location found for the given coordinates."
+#                 })
+#                 print(f"No location found for the given coordinates.")
 
-        else:
-            response_data.update({'message': "Please provide both latitude and longitude."})
+#         else:
+#             response_data.update({'message': "Please provide both latitude and longitude."})
 
-        return JsonResponse(response_data, safe=False, status=200)
+#         return JsonResponse(response_data, safe=False, status=200)
     
 
 
-# Detail CSC Center
-
+# Detail CscCenter Center
 class DetailCscView(DetailView):
-    model = CSC
+    model = CscCenter
     template_name = 'csc/detail_csc.html'
     context_object_name = 'csc'
 
@@ -146,3 +146,151 @@ class DetailCscView(DetailView):
         services = self.object.service.all()
         context['services'] = services
         return context
+    
+
+
+class SearchCscCenterView(HomePageView, ListView):
+    model = CscCenter
+    template_name = 'home/list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+    
+    def get(self, request, *args, **kwargs):
+        state = request.GET.get('state', None)
+        district = request.GET.get('district', None)
+        block = request.GET.get('block', None)
+
+        if state:
+            try:
+                state = get_object_or_404(State, pk=state)
+                kwargs['state'] = state
+            except Http404:
+                pass
+
+        if district:
+            try:
+                district = get_object_or_404(District, pk=district)
+                kwargs['district'] = district
+            except Http404:
+                pass
+
+        if block:
+            try:
+                block = get_object_or_404(Block, pk=block)
+                kwargs['block'] = block
+            except Http404:
+                pass
+
+        centers = CscCenter.objects.filter(**kwargs).order_by('name')
+
+        if block:
+            location = block
+        elif district:
+           location = district
+        elif state:
+            location = state
+        else:
+            location = None
+
+        context = self.get_context_data(**kwargs)
+
+        context.update({
+            'centers': centers,
+            'state_obj': state if state else None,
+            'district_obj': district if district else None,
+            'block_obj': block if block else None,
+            'location': location,
+            'districts': District.objects.filter(state = state) if state else None,
+            'blocks': Block.objects.filter(state = state, district = district) if state and district else None,
+            })
+        return render(request, self.template_name, context)
+
+
+class ModifyListCscCenterView(SearchCscCenterView):
+    def initial(self, request, *args, **kwargs):
+        state = request.GET.get('state', None)
+        district = request.GET.get('district', None)
+        block = request.GET.get('block', None)        
+
+        if state:
+            try:
+                state = get_object_or_404(State, pk=state)
+                kwargs['state'] = state
+            except Http404:
+                pass
+
+        if district:
+            try:
+                district = get_object_or_404(District, pk=district)
+                kwargs['district'] = district
+            except Http404:
+                pass
+
+        if block:
+            try:
+                block = get_object_or_404(Block, pk=block)
+                kwargs['block'] = block
+            except Http404:
+                pass
+
+        centers = CscCenter.objects.filter(**kwargs)
+
+        return centers
+
+
+    def get(self, request, *args, **kwargs):
+        listing = request.GET.get('listing', None)
+        centers = self.initial(request, *args, **kwargs)
+
+        centers = centers.order_by(listing)
+
+        list_centers = []
+        for center in centers:
+            list_centers.append({
+                "pk": center.pk,
+                "full_name": center.full_name,
+                "logo": center.logo.url if center.logo else None,
+                "partial_address": center.partial_address
+            })
+
+        return JsonResponse({'message': 'success', 'centers': list_centers})
+    
+
+class FilterCscCenterListView(SearchCscCenterView):
+    def get(self, request, *args, **kwargs):
+        services = request.GET.getlist('services[]', None)
+        print(services)
+        listing = request.GET.get('listing', None)
+        centers = ModifyListCscCenterView.initial(self, request, *args, **kwargs)
+
+        centers = centers.order_by(listing)
+
+        filtered_centers = centers
+
+
+        for center in centers:
+            set_services = set()
+            for service in center.services.all():
+                set_services.add(service.slug)
+                print(set(services))
+                print(set_services)
+            if not set(services).issubset(set_services):
+                filtered_centers = filtered_centers.exclude(pk=center.pk)
+        
+        print(filtered_centers)
+
+        list_centers = []
+        for center in filtered_centers:
+            list_centers.append({
+                "pk": center.pk,
+                "full_name": center.full_name,
+                "logo": center.logo.url if center.logo else None,
+                "partial_address": center.partial_address
+            })
+
+
+        return JsonResponse({'message': 'success', 'centers': list_centers})
+        
+

@@ -1,6 +1,8 @@
 {% extends "base/base.html" %}
 {% load static %}
 
+{% block prefix_title %} CSC Centers {% endblock prefix_title %}
+
 {% block content %}
 
 <!-- Titlebar
@@ -13,7 +15,7 @@
 				<!-- Breadcrumbs -->
 				<nav id="breadcrumbs">
 					<ul>
-						<li><a href="{% include "components/home_link.html" %}">Home</a></li>
+						<li><a href="{% url "home:view" %}">Home</a></li>
 						<li>CSC Login</li>
 					</ul>
 				</nav>

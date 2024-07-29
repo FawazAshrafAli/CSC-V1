@@ -568,21 +568,23 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
         services = request.POST.getlist('services')
         products = request.POST.getlist('products')
 
-        mon_opening_time = request.POST.get('mon_opening_time') #timefield
-        tue_opening_time = request.POST.get('tue_opening_time') #timefield
-        wed_opening_time = request.POST.get('wed_opening_time') #timefield
-        thu_opening_time = request.POST.get('thu_opening_time') #timefield
-        fri_opening_time = request.POST.get('fri_opening_time') #timefield
-        sat_opening_time = request.POST.get('sat_opening_time') #timefield
-        sun_opening_time = request.POST.get('sun_opening_time') #timefield
+        show_opening_hours = request.POST.get('show_opening_hours')
 
-        mon_closing_time = request.POST.get('mon_closing_time') #timefield
-        tue_closing_time = request.POST.get('tue_closing_time') #timefield
-        wed_closing_time = request.POST.get('wed_closing_time') #timefield
-        thu_closing_time = request.POST.get('thu_closing_time') #timefield
-        fri_closing_time = request.POST.get('fri_closing_time') #timefield
-        sat_closing_time = request.POST.get('sat_closing_time') #timefield
-        sun_closing_time = request.POST.get('sun_closing_time') #timefield
+        mon_opening_time = request.POST.get('mon_opening_time') if show_opening_hours else None #timefield
+        tue_opening_time = request.POST.get('tue_opening_time') if show_opening_hours else None #timefield
+        wed_opening_time = request.POST.get('wed_opening_time') if show_opening_hours else None #timefield
+        thu_opening_time = request.POST.get('thu_opening_time') if show_opening_hours else None #timefield
+        fri_opening_time = request.POST.get('fri_opening_time') if show_opening_hours else None #timefield
+        sat_opening_time = request.POST.get('sat_opening_time') if show_opening_hours else None #timefield
+        sun_opening_time = request.POST.get('sun_opening_time') if show_opening_hours else None #timefield
+
+        mon_closing_time = request.POST.get('mon_closing_time') if show_opening_hours else None #timefield
+        tue_closing_time = request.POST.get('tue_closing_time') if show_opening_hours else None #timefield
+        wed_closing_time = request.POST.get('wed_closing_time') if show_opening_hours else None #timefield
+        thu_closing_time = request.POST.get('thu_closing_time') if show_opening_hours else None #timefield
+        fri_closing_time = request.POST.get('fri_closing_time') if show_opening_hours else None #timefield
+        sat_closing_time = request.POST.get('sat_closing_time') if show_opening_hours else None #timefield
+        sun_closing_time = request.POST.get('sun_closing_time') if show_opening_hours else None #timefield
 
         mon_opening_time = mon_opening_time if  mon_opening_time != "" else None
         tue_opening_time = tue_opening_time if  tue_opening_time != "" else None
@@ -600,8 +602,10 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
         sat_closing_time = sat_closing_time if  sat_closing_time != "" else None
         sun_closing_time = sun_closing_time if  sun_closing_time != "" else None
 
-        social_medias = request.POST.getlist('social_medias') # manytomany
-        social_links = request.POST.getlist('social_links') # manytomany
+        show_social_media_links = request.POST.get('show_social_media_links')
+
+        social_medias = request.POST.getlist('social_medias') if show_social_media_links else None # manytomany
+        social_links = request.POST.getlist('social_links') if show_social_media_links else None # manytomany
 
         latitude = request.POST.get('latitude')
         longitude = request.POST.get('longitude')
@@ -779,8 +783,6 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         sun_closing_time = sun_closing_time if  sun_closing_time != "" else None
 
         show_social_media_links = request.POST.get('show_social_media_links')
-
-        print("Social Visibity: ", show_social_media_links)
 
         social_medias = request.POST.getlist('social_medias') if show_social_media_links else None # manytomany
         social_links = request.POST.getlist('social_links') if show_social_media_links else None # manytomany

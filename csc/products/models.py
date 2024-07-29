@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from django.urls import reverse
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -37,6 +38,10 @@ class Product(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+    @property
+    def get_absolute_url(self):
+        return reverse('products:product', kwargs = {'slug': self.slug})
 
     class Meta:
         db_table = 'Product'
