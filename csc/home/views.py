@@ -8,6 +8,7 @@ from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 from django.contrib import messages
 from django.urls import reverse_lazy
+from django.core.paginator import Paginator
 
 from csc_center.models import CscCenter, State, District, Block
 from services.models import Service
@@ -143,7 +144,7 @@ class DetailCscView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         self.object = self.get_object()
-        services = self.object.service.all()
+        services = self.object.services.all()
         context['services'] = services
         return context
     
@@ -157,7 +158,7 @@ class SearchCscCenterView(HomePageView, ListView):
         context = super().get_context_data(**kwargs)
         return context
     
-    def get(self, request, *args, **kwargs):
+    def initial(self, request, *args, **kwargs):
         state = request.GET.get('state', None)
         district = request.GET.get('district', None)
         block = request.GET.get('block', None)
@@ -183,7 +184,7 @@ class SearchCscCenterView(HomePageView, ListView):
             except Http404:
                 pass
 
-        centers = CscCenter.objects.filter(**kwargs).order_by('name')
+        centers = CscCenter.objects.filter(**kwargs)
 
         if block:
             location = block
@@ -197,7 +198,6 @@ class SearchCscCenterView(HomePageView, ListView):
         context = self.get_context_data(**kwargs)
 
         context.update({
-            'centers': centers,
             'state_obj': state if state else None,
             'district_obj': district if district else None,
             'block_obj': block if block else None,
@@ -205,92 +205,73 @@ class SearchCscCenterView(HomePageView, ListView):
             'districts': District.objects.filter(state = state) if state else None,
             'blocks': Block.objects.filter(state = state, district = district) if state and district else None,
             })
+
+        return centers, context
+    
+    def get(self, request, *args, **kwargs):
+        centers, context = self.initial(request, *args, **kwargs)
+        centers = centers.order_by('name')
+        context.update({
+            'centers': centers,            
+            })
         return render(request, self.template_name, context)
 
 
-class ModifyListCscCenterView(SearchCscCenterView):
-    def initial(self, request, *args, **kwargs):
-        state = request.GET.get('state', None)
-        district = request.GET.get('district', None)
-        block = request.GET.get('block', None)        
-
-        if state:
-            try:
-                state = get_object_or_404(State, pk=state)
-                kwargs['state'] = state
-            except Http404:
-                pass
-
-        if district:
-            try:
-                district = get_object_or_404(District, pk=district)
-                kwargs['district'] = district
-            except Http404:
-                pass
-
-        if block:
-            try:
-                block = get_object_or_404(Block, pk=block)
-                kwargs['block'] = block
-            except Http404:
-                pass
-
-        centers = CscCenter.objects.filter(**kwargs)
-
-        return centers
-
-
-    def get(self, request, *args, **kwargs):
-        listing = request.GET.get('listing', None)
-        centers = self.initial(request, *args, **kwargs)
-
-        centers = centers.order_by(listing)
-
-        list_centers = []
-        for center in centers:
-            list_centers.append({
-                "pk": center.pk,
-                "full_name": center.full_name,
-                "logo": center.logo.url if center.logo else None,
-                "partial_address": center.partial_address
-            })
-
-        return JsonResponse({'message': 'success', 'centers': list_centers})
-    
-
-class FilterCscCenterListView(SearchCscCenterView):
+class FilterAndSortCscCenterView(SearchCscCenterView):
     def get(self, request, *args, **kwargs):
         services = request.GET.getlist('services[]', None)
-        print(services)
         listing = request.GET.get('listing', None)
-        centers = ModifyListCscCenterView.initial(self, request, *args, **kwargs)
 
-        centers = centers.order_by(listing)
+        centers, context = self.initial(request, *args, **kwargs)
 
         filtered_centers = centers
-
 
         for center in centers:
             set_services = set()
             for service in center.services.all():
                 set_services.add(service.slug)
-                print(set(services))
-                print(set_services)
             if not set(services).issubset(set_services):
                 filtered_centers = filtered_centers.exclude(pk=center.pk)
-        
-        print(filtered_centers)
+
+        filtered_centers = filtered_centers.order_by(listing)
 
         list_centers = []
         for center in filtered_centers:
             list_centers.append({
                 "pk": center.pk,
                 "full_name": center.full_name,
-                "logo": center.logo.url if center.logo else None,
+                "logo": center.logo.url if center.logo
+                 else None,
                 "partial_address": center.partial_address
             })
 
+        data = {
+            'message': 'success',
+            "centers": list_centers,
+        }
 
-        return JsonResponse({'message': 'success', 'centers': list_centers})
-        
+        return JsonResponse(data)
 
+
+# class PaginationCscCenterView(SearchCscCenterView):
+#     def get(self, request, *args, **kwargs):
+#         centers = self.initial(request, *args, **kwargs)
+
+#         list_centers = []
+#         for center in centers:
+#             list_centers.append({
+#                 "pk": center.pk,
+#                 "full_name": center.full_name,
+#                 "logo": center.logo.url if center.logo else None,
+#                 "partial_address": center.partial_address
+#             })
+
+#         data = {
+#             'centers': list_centers,
+#             'has_next': centers.has_next(),
+#             'has_previous': centers.has_previous(),
+#             'next_page_number': centers.next_page_number() if centers.has_next() else None,
+#             'previous_page_number': centers.previous_page_number() if centers.has_previous() else None
+#         }
+
+#         return JsonResponse(data)
