@@ -150,7 +150,7 @@ class CscCenter(models.Model):
 
     @property
     def full_name(self):
-        return f"{self.name} {self.type}, {self.location}"
+        return f"{self.name} {self.type} {self.location}"
     
     @property
     def partial_address(self):
@@ -162,7 +162,7 @@ class CscCenter(models.Model):
     
     @property
     def get_absolute_url(self):
-        return reverse('csc_admin:csc_center', kwargs={"slug": self.slug})
+        return reverse('home:csc_center', kwargs={"slug": self.slug})
     
     @property
     def get_services(self):

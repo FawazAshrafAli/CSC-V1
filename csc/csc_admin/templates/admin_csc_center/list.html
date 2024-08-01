@@ -211,11 +211,11 @@
 					<li>				
 						<div class="list-box-listing">
 							<div class="list-box-listing-img" style="display: flex; flex-direction: column;">
-								<a href="{{center.get_absolute_url}}"><img src={% if center.logo %} {{center.logo.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %} alt="CSC Logo"></a>								
+								<a href="{% url 'csc_admin:csc_center' center.slug %}"><img src={% if center.logo %} {{center.logo.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %} alt="CSC Logo"></a>								
 							</div>
 							<div class="list-box-listing-content">
 								<div class="inner">
-									<h3><a href="{{center.get_absolute_url}}">{{center.full_name}}</a></h3>
+									<h3><a href="{% url 'csc_admin:csc_center' center.slug %}">{{center.full_name}}</a></h3>
 									<p>{{center.partial_address}}</p>
 								</div>
 							</div>

@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     HomePageView, DetailCscView, SearchCscCenterView,
-    FilterAndSortCscCenterView,
+    FilterAndSortCscCenterView, CscCenterDetailView
 )
 
 app_name = "home"
@@ -15,5 +15,7 @@ urlpatterns = [
     path('csc_centers/', SearchCscCenterView.as_view(), name="csc_centers"),
     path('filter_and_sort_centers/', FilterAndSortCscCenterView.as_view(), name="filter_and_sort_csc"),
 
-    path('csc/<pk>', DetailCscView.as_view(), name="csc"),
+    # path('csc/<pk>', DetailCscView.as_view(), name="csc"),
+
+    path('csc_center/<slug>', CscCenterDetailView.as_view(), name="csc_center"),
 ]

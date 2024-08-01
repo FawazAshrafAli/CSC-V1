@@ -275,3 +275,10 @@ class FilterAndSortCscCenterView(SearchCscCenterView):
 #         }
 
 #         return JsonResponse(data)
+
+class CscCenterDetailView(DetailView):
+    model = CscCenter
+    template_name = 'home/detail.html'
+    context_object_name = 'center'
+    slug_url_kwarg = 'slug'
+

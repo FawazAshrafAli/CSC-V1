@@ -1,11 +1,136 @@
 {% extends "base/base.html" %} {% load static %} {% load crispy_forms_tags%}
 
 <!-- Meta Tags Start -->
-{% block meta_description %} "Service Creation of Common Service Centres (CSC) in India" {% endblock meta_description %}
-{% block meta_og_description %} "Service Creation of Common Service Centres (CSC) in India" {% endblock meta_og_description %}
+{% block meta_description %}Discover top Common Service Centers (CSCs) near you with detailed information on services, contact details, and operating hours of local CSCs to help you find the best support for your needs.{% endblock meta_description %}
 <!-- Meta Tags Start -->
 
+{% block meta_keywords %}Common Service Centers, CSC list, find CSCs, Common Service Center locations{% endblock meta_keywords %}
+
+{% block meta_canonical %}https://{{request.get_host}}{{request.path}}{% endblock meta_canonical %}
+
 {% block title_prefix %} CSC Centers {% endblock title_prefix %}
+
+{% block schema_markup %}
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "WebSite",
+    "url": "https://cscindia.info",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://{{request.get_host}}{{request.path}}?state={state_id}&district={district_id}&block={block_id}",
+      "query-input": "required name=state_id, district_id, block_id"
+    }
+  }
+</script>
+
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "WebPage",
+    "mainEntity": {
+      "@type": "CreativeWork",
+      "name": "Keyphrases",
+      "about": [
+      {
+        "@type": "Thing",
+        "name": "Common Service Center"
+      },
+      {
+        "@type": "Thing",
+        "name": "CSC services"
+      },
+      {
+        "@type": "Thing",
+        "name": "CSC locations"
+      },
+      {
+        "@type": "Thing",
+        "name": "CSC contact information"
+      },
+        // Add more keywords as needed
+      ]
+    }
+  }
+</script>
+
+<script type="application/ld+json">
+  {
+  "@context": "http://schema.org",
+  "@type": "CollectionPage",
+  "name": "Tags Page",
+  "description": "A page listing various tags for categorizing content.",
+  "url": "https://{{request.get_host}}/tags",
+  "mainEntity": {
+  "@type": "ItemList",
+  "itemListElement": [
+  {% for service in services|slice:':4' %}
+  {
+  "@type": "ListItem",
+  "position": {{forloop.counter}},
+  "url": "https://{{request.get_host}}/tags/{{service.slug}}",
+  "name": "{{service.name}}"
+  },
+  {% endfor %}
+  // Add more tags as needed
+  ]
+  }
+  }
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "ItemList",
+      "itemListElement": [
+      {% for center in centers|slice:':4' %}
+        {
+          "@type": "ListItem",
+          "position": {{forloop.counter}},
+          "item": {
+            "@type": "Organization",
+            "name": "{{center.name}}",
+            "url": "https://{{request.get_host}}{{center.get_absolute_url}}",
+            "logo": "https://{{request.get_host}}{{center.get_absolute_url}}{{center.logo.name}}",
+            "description": "{{center.description}}"
+          }
+        },
+      {% endfor %}
+        // Add more companies as needed
+      ]
+    }
+    </script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "http://schema.org",
+        "@type": "ItemList",
+        "itemListElement": [
+        {% for center in centers|slice:':4' %}
+          {
+            "@type": "ListItem",
+            "position": {{forloop.counter}},
+            "item": {
+              "@type": "Service",
+              "provider": {
+                "@type": "Organization",
+                "name": "{{center.name}}",
+                "url": "https://{{request.get_host}}{{center.get_absolute_url}}",
+                "logo": "https://{{request.get_host}}{{center.get_absolute_url}}{{center.logo.name}}",
+              },
+              {% for service in center.services.all|slice:':1' %}
+              "name": "{{service.name}}",
+              "description": "{{service.description}}"
+              {% endfor %}
+            }
+          },
+          {% endfor %}
+          // Add more products and services provided by companies as needed
+        ]
+      }
+      </script>
+
+{% endblock schema_markup %}
 
 {% block content %}
 <style>
@@ -159,7 +284,7 @@
         <!-- Listing Item -->
         <div class="col-lg-4 col-md-6 center-items">
           <a
-            href="listings-single-page.html"
+            href="{{center.get_absolute_url}}"
             class="listing-item-container compact"
           >
             <div class="listing-item">
