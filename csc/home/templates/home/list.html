@@ -149,8 +149,11 @@
     <div class="row">
       <div class="col-md-12">
         <h2>CSC Listing</h2>
+        {% if pincode %}
+        <span>CSC Centers for pincode {{pincode}}</span>
+        {% else %}
         <span>CSC Centers in {{location}}</span>
-
+        {% endif %}
         <!-- Breadcrumbs -->
         <nav id="breadcrumbs">
           <ul>
@@ -163,18 +166,17 @@
   </div>
 </div>
 
-{% include "admin_components/message.html" %}
-
 <!-- Content
 ================================================== -->
 <div class="container">
   <div class="row">
+    {% include "admin_components/message.html" %}
     <!-- Search -->
     <div class="col-md-12">
       <form method="get" action="{% url 'home:csc_centers' %}">
         <div class="main-search-input gray-style margin-top-0 margin-bottom-10">
           <div class="main-search-input-item">
-            <input type="text" placeholder="Pincode" value="" />
+            <input type="text" placeholder="Pincode" name="pincode" value="{{pincode}}" />
           </div>
           <div class="main-search-input-item">
             <select class="chosen-select" data-placeholder="Select State" id="state-dropdown" name="state">
@@ -276,7 +278,11 @@
       <div class="row" id="center-listing">
         {% if not centers %}
         <div>
+          {% if pincode %}
+          <h3 class="centered-heading">No CSC centers found for pincode: {{pincode}}</h3>
+          {% else %}
           <h3 class="centered-heading">No CSC centers found for location: {{location}}</h3>
+          {% endif %}
           <br>
         </div>
         {% endif %}
@@ -317,10 +323,7 @@
               <ul>
                 <li>
                   <a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
-                </li>
-                <!-- <li><a href="#" class="current-page" id="current-page">1</a></li>
-                <li><a href="#" id="next-first-page">2</a></li>
-                <li><a href="#" id="next-second-page" >3</a></li> -->
+                </li>                
                 <li><a href="#" id="first-page">1</a></li>
                 <li><a href="#" id="second-page">2</a></li>
                 <li><a href="#" id="third-page" >3</a></li>
@@ -419,54 +422,50 @@
       let totalItems = $('.center-items').length;
       let totalPages = Math.ceil(totalItems / itemsPerPage);
 
-      $('.prev-page').hide();
+      $('.prev-page').hide();      
 
       function paginationBtnVisibility() {
-        $('#first-page, #second-page, #third-page').removeClass('current-page prev-page next-page uncoming-page earlier-page');
-
-        if (currentPage == totalPages) {
+        $('#first-page, #second-page, #third-page').removeClass('current-page prev-page next-page uncoming-page earlier-page').hide();
+        $('.next-page').hide();
+        $('.prev-page').hide();
+        
+        if (currentPage == totalPages) {          
           $('.next-page').hide();
-
+          
           if (totalPages == 1) {
-            $('#first-page').html(currentPage).addClass('current-page');
-            $('#second-page').hide();
-            $('#third-page').hide();
-
+            $('#first-page').html(currentPage).addClass('current-page').show();            
+            
           } else if (totalPages == 2) {
-            $('#first-page').html(currentPage - 1).addClass('prev-page');            
-            $('#second-page').html(currentPage).addClass('current-page');
-            $('#third-page').hide();
+            $('#first-page').html(currentPage - 1).addClass('prev-page').show();            
+            $('#second-page').html(currentPage).addClass('current-page').show();
             $('.prev-page').show();
-
+            
           } else if (totalPages == 3) {
-            $('#first-page').html(currentPage - 2).addClass('earlier-page');
-            $('#second-page').html(currentPage - 1).addClass('prev-page');
-            $('#third-page').html(currentPage).addClass('current-page');
+            $('#first-page').html(currentPage - 2).addClass('earlier-page').show();
+            $('#second-page').html(currentPage - 1).addClass('prev-page').show();
+            $('#third-page').html(currentPage).addClass('current-page').show();
 
           } else {
-            $('#first-page').html(currentPage - 2).addClass('earlier-page');
-            $('#second-page').html(currentPage - 1).addClass('prev-page');
-            $('#third-page').html(currentPage).addClass('current-page');
+            $('#first-page').html(currentPage - 2).addClass('earlier-page').show();
+            $('#second-page').html(currentPage - 1).addClass('prev-page').show();
+            $('#third-page').html(currentPage).addClass('current-page').show();
             $('.prev-page').show();            
           };
 
         } else if (currentPage > 1) {          
           $('.prev-page').show();
           $('.next-page').show();
-          $('#first-page').html(currentPage - 1).addClass('prev-page');
-          $('#second-page').html(currentPage).addClass('current-page');
-          $('#third-page').html(currentPage + 1).addClass('next-page');
+          $('#first-page').html(currentPage - 1).addClass('prev-page').show();
+          $('#second-page').html(currentPage).addClass('current-page').show();
+          $('#third-page').html(currentPage + 1).addClass('next-page').show();
 
-        } else if (currentPage == 1) {
-          $('.prev-page').hide();
+        } else if (currentPage == 1 && totalPages > 0) {          
           $('.next-page').show();
-          $('#first-page').html(currentPage).addClass('current-page');
-          $('#second-page').html(currentPage + 1).addClass('next-page');
+          $('#first-page').html(currentPage).addClass('current-page').show();
+          $('#second-page').html(currentPage + 1).addClass('next-page').show();
 
-          if (totalPages < 3) {
-            $('#third-page').hide();
-          } else {
-            $('#third-page').html(currentPage + 2).addClass('upcoming-page');
+          if (totalPages >= 3) {          
+            $('#third-page').html(currentPage + 2).addClass('upcoming-page').show();
           }
         }          
       };

@@ -4,6 +4,15 @@
 {% block home_nav %} current {% endblock home_nav %}
 
 {% block content %}
+<style>
+	#near-me {
+		color: blue;
+	}
+	#near-me:hover {
+		text-decoration: underline;
+	}
+</style>
+
 <!-- Banner
 ================================================== -->
 <div class="main-search-container plain-color">
@@ -11,6 +20,7 @@
 
 		<div class="container">
 			<div class="row">
+				{% include "components/message.html" %}
 				<div class="col-md-12">
                 
 					<div class="main-search-headlines">
@@ -27,7 +37,7 @@
 						<div class="main-search-input">
 
 							<div class="main-search-input-item">
-								<input type="text" placeholder="Search With Pincode" value=""/>
+								<input type="text" placeholder="Search With Pincode" name="pincode" value=""/>
 							</div>
 							<div class="main-search-input-item">
 								<select class="chosen-select" data-placeholder="Select State" id="state-dropdown" name="state">
@@ -52,6 +62,9 @@
 							
 						</div>
 					</form>
+					<div style="margin-top:5px">
+						<a href="#" id="near-me">Centers Near Me</a>
+					</div>
 				</div>
 			</div>
 			<!-- Features Categories -->
@@ -154,7 +167,7 @@
 <section class="fullwidth margin-top-0 padding-top-0 padding-bottom-40"  style="background: rgb(255 249 244);">
 <div class="container">
 	<div class="row">
-
+		
 		<div class="col-md-12">
 			<h3 class="headline margin-top-75">
 				<strong class="headline-with-separator">COMMON SERVICE CENTRES (CSC)</strong>
@@ -581,4 +594,22 @@
 {% block scripts %}
 <script src="{% static 'w3/admin_csc_center/js/populateDistricts.js' %}"></script>
 <script src="{% static 'w3/admin_csc_center/js/populateBlocks.js' %}"></script>
+
+<script>
+	$(document).ready(() => {
+		$('#near-me').click(function() {
+			if (navigator.geolocation) {
+				navigator.geolocation.getCurrentPosition(
+					(position) => {
+						const latitude = position.coords.latitude;
+						const longitude = position.coords.longitude;
+						if (latitude && longitude) {
+							window.location.href = `/centers_near_me/${latitude}/${longitude}`;
+						}
+					}
+				)
+			}			
+		});		
+	})
+</script>
 {% endblock scripts %}

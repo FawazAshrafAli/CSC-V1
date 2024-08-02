@@ -294,7 +294,7 @@
 
 
 
-
+            {% if center.show_opening_hours %}
             <!-- Opening Hours -->
             <div class="boxed-widget opening-hours margin-top-35">
 
@@ -309,8 +309,10 @@
                     <li>Sunday <span>{% if center.sun_opening_time %} {{center.sun_opening_time}} - {{center.sun_closing_time}} {% else %} Closed {% endif %}</span></li>
                 </ul>
             </div>
-            <!-- Opening Hours / End -->            
+            <!-- Opening Hours / End -->
+            {% endif %}
             
+            {% if center.show_social_media_links %}
             <div class="widget margin-top-40">
                 <h3 class="margin-bottom-25">Social Media</h3>
                 <ul class="social-icons rounded">
@@ -318,8 +320,8 @@
                     <li><a class="{{social_media.social_media_name|lower}}" href="{{ social_media.social_media_link }}"><i class="icon-{{social_media.social_media_name|lower}}"></i></a></li>
                     {% endfor %}                    
                 </ul>
-
             </div>
+            {% endif %}            
 
 
 

@@ -513,8 +513,8 @@ class BaseAdminCscCenterView(BaseAdminView, View):
 
 class ListCscCenterView(BaseAdminCscCenterView, ListView):
     template_name = "admin_csc_center/list.html"
-    paginate_by = 10
-    paginate_orphans = 5
+    # paginate_by = 10
+    # paginate_orphans = 5
     ordering = ['name']
     context_object_name = 'centers'
     queryset = CscCenter.objects.all().order_by('name')

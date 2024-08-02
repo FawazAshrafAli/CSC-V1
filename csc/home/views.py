@@ -25,35 +25,6 @@ class HomePageView(TemplateView):
     
 
 # @method_decorator(never_cache, name="dispatch")
-# class FilteredLocationView(View):
-#     def get(self, request, *args, **kwargs):
-#         state = request.GET.get('state', None)
-#         district = request.GET.get('district', None)
-#         block = request.GET.get('block', None)
-
-
-#         response_data = {}
-#         print(district)
-#         if state and district and block:
-#             centers = CscCenter.objects.filter(state__state = state, district__district = district, block__block = block)
-#         elif state and district:
-#             centers = CscCenter.objects.filter(state__state = state, district__district = district)
-#         elif state:
-#             centers = CscCenter.objects.filter(state__state = state)
-            
-#         else:
-#             message = "Please choose atleast one filtering."
-#             response_data['message'] = message
-
-#         if centers:
-#             response_data.update({
-#                 'centers_data': list(centers.values()),
-#                 'block': block
-#                 })
-
-#         return JsonResponse(response_data, safe=False)
-
-# @method_decorator(never_cache, name="dispatch")
 # class PincodeLocationView(View):
 #     def get(self, request, *args, **kwargs):
 #         pincode = request.GET.get('pincode', None)
@@ -159,9 +130,20 @@ class SearchCscCenterView(HomePageView, ListView):
         return context
     
     def initial(self, request, *args, **kwargs):
+        pincode = request.GET.get('pincode', None)
         state = request.GET.get('state', None)
         district = request.GET.get('district', None)
         block = request.GET.get('block', None)
+
+        context = self.get_context_data(**kwargs)
+
+        if pincode:
+            centers = CscCenter.objects.filter(zipcode = pincode)
+            context['pincode'] = pincode
+
+            if len(centers) > 0 or (not state and not district and not block):
+                print("Worked")
+                return centers, context
 
         if state:
             try:
@@ -194,8 +176,6 @@ class SearchCscCenterView(HomePageView, ListView):
             location = state
         else:
             location = None
-
-        context = self.get_context_data(**kwargs)
 
         context.update({
             'state_obj': state if state else None,
@@ -253,28 +233,44 @@ class FilterAndSortCscCenterView(SearchCscCenterView):
         return JsonResponse(data)
 
 
-# class PaginationCscCenterView(SearchCscCenterView):
-#     def get(self, request, *args, **kwargs):
-#         centers = self.initial(request, *args, **kwargs)
+@method_decorator(never_cache, name="dispatch")
+class NearMeCscCenterView(View):
+    model = CscCenter
+    template_name = 'home/list.html'
+    redirect_url = reverse_lazy('home:view')
 
-#         list_centers = []
-#         for center in centers:
-#             list_centers.append({
-#                 "pk": center.pk,
-#                 "full_name": center.full_name,
-#                 "logo": center.logo.url if center.logo else None,
-#                 "partial_address": center.partial_address
-#             })
+    def get(self, request, *args, **kwargs):
+        latitude = self.kwargs['latitude']
+        longitude = self.kwargs['longitude']
 
-#         data = {
-#             'centers': list_centers,
-#             'has_next': centers.has_next(),
-#             'has_previous': centers.has_previous(),
-#             'next_page_number': centers.next_page_number() if centers.has_next() else None,
-#             'previous_page_number': centers.previous_page_number() if centers.has_previous() else None
-#         }
+        context = {}
 
-#         return JsonResponse(data)
+
+        try:
+            if latitude and longitude:            
+                api_key = '1b4ea0d7dc5f4cffb9dbd971a896a71c'
+
+                url = f'https://api.opencagedata.com/geocode/v1/json?q={latitude}+{longitude}&key={api_key}'
+
+                response = requests.get(url)
+                data = response.json()
+
+                if data['results']:
+                    county = data['results'][0]['components']['county']
+                    
+                    context.update({
+                        'location': county,
+                    })
+
+                    if county:
+                        centers = CscCenter.objects.filter(block__block = county)
+                        context['centers'] = centers
+                        return render(request, self.template_name, context)
+                    
+        except Exception as e:
+            messages.warning(request, "Failed to load your location data.")
+            return redirect(self.redirect_url)  
+
 
 class CscCenterDetailView(DetailView):
     model = CscCenter
