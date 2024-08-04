@@ -1,7 +1,7 @@
 import requests
 from django.shortcuts import redirect, get_object_or_404, render
 from django.http import JsonResponse, Http404
-from django.views.generic import TemplateView, View, DetailView, ListView
+from django.views.generic import TemplateView, View, DetailView, ListView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
@@ -9,9 +9,10 @@ from django.utils.decorators import method_decorator
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.core.paginator import Paginator
+from django.contrib import messages
 
 from csc_center.models import CscCenter, State, District, Block
-from services.models import Service
+from services.models import Service, ServiceEnquiry
 
 
 class HomePageView(TemplateView):
@@ -278,3 +279,38 @@ class CscCenterDetailView(DetailView):
     context_object_name = 'center'
     slug_url_kwarg = 'slug'
 
+
+class ServiceRequestView(CreateView):
+    model = ServiceEnquiry
+    fields = ('csc_center', 'applicant_name', 'applicant_email', 'applicant_phone', 'service', 'message')
+
+    def get_success_url(self):
+        return reverse_lazy('home:csc_center', kwargs={'slug': self.kwargs.get('slug')})
+
+    def post(self, request, *args, **kwargs):
+        applicant_name = request.POST.get('applicant_name')
+        applicant_email = request.POST.get('applicant_email')
+        applicant_phone = request.POST.get('applicant_phone')
+        service = request.POST.get('service')
+        message = request.POST.get('message')
+        try:
+            service = get_object_or_404(Service, slug = service)
+        except Http404:
+            messages.warning(request, "Invalid service selected.")
+            return redirect(self.get_success_url())
+        try:
+            csc_center = get_object_or_404(CscCenter, slug = kwargs['slug'])
+        except Http404:
+            messages.warning(request, "Invalid center selected.")
+            return redirect(self.get_success_url())
+        
+        ServiceEnquiry.objects.create(
+            applicant_name = applicant_name,
+            applicant_email = applicant_email,
+            applicant_phone = applicant_phone,
+            service = service,
+            csc_center = csc_center,
+            message = message
+        )
+        messages.success(request, "Request submitted")
+        return redirect(self.get_success_url())

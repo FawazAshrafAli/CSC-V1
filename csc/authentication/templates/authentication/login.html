@@ -29,11 +29,12 @@
 ================================================== -->
 
 <div id="sign-in-dialog">
+	{% include "admin_components/message.html" %}
 	<div class="tabs-container alt">
 		<!-- Login -->
 		<div class="tab-content" id="tab1">	
 			<h3>Login</h3>		
-			<form method="POST" class="login">
+			<form method="get" class="login">
 				{% csrf_token %}
 				<p class="form-row form-row-wide">
 					<label for="username">Username:
@@ -51,7 +52,7 @@
 					</span>
 				</p>
 				<div class="form-row">				
-					<button type="submit" class="button border margin-top-5" name="login" value="Login" >Login</button>
+					<button type="submit" class="button border margin-top-5" name="login" id="login-btn" value="Login">Login</button>
 					<div class="checkboxes margin-top-10">
 						<input id="remember-me" type="checkbox" name="check">
 						<label for="remember-me">Remember Me</label>
@@ -63,3 +64,24 @@
 </div>
 
 {% endblock content %}
+
+{% block scripts %}
+<script>
+	$(document).ready(() => {
+		function loginFormValidation() {
+			let username = $('#username').val();
+			let password = $('#password').val();
+
+			if (username == '' || password == '') {
+				$('#login-btn').prop('disabled', true).css('pointer-events', 'none');							
+			} else {
+				$('#login-btn').prop('disabled', false).css('pointer-events', 'auto');
+			}
+		};
+
+		$('#username, #password').on('input', loginFormValidation);
+
+		loginFormValidation();
+	})
+</script>
+{% endblock scripts %}

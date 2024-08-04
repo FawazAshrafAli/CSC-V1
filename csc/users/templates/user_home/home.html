@@ -1,0 +1,19 @@
+{% extends "user_base/base.html" %}
+
+{% block content %}
+<!-- Titlebar -->
+<div id="titlebar">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Home</h2>
+            <!-- Breadcrumbs -->
+            <nav id="breadcrumbs">
+                <ul>
+                    <li>Home</li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% include "admin_components/message.html" %}
+</div>
+{% endblock content %}

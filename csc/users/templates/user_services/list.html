@@ -1,0 +1,97 @@
+{% extends "user_base/base.html" %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'w3/admin_service/css/admin_service.css' %}">
+{% endblock styles %}
+
+{% block title_prefix %} Services {% endblock title_prefix %}
+
+{% block content %}
+	<!-- Titlebar -->
+	<div id="titlebar">
+		<div class="row">
+			<div class="col-md-12">
+				<h2>Services</h2>
+				<!-- Breadcrumbs -->
+				<nav id="breadcrumbs">
+					<ul>
+						<li><a href="{% url 'csc_admin:home' %}">Home</a></li>						
+						<li>Services</li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+		{% if messages %}
+		<div id="message-div">
+			<ul class="messages">
+				{% for message in messages %}
+				<li {% if message.tags %} class="{{message.tags}}" {% endif %}>{{message}}</li>
+				{% endfor %}
+			</ul>
+		</div>
+		{% endif %}
+	</div>
+
+	<!-- Delete Confirmation Box Start-->
+    <div id="delete-confirmation-box" style="display: none;">
+        <div class="modal-content">            
+            <h4>Removing Service <span id="service-name"></span> . . .</h4>
+            <h5>Are you sure?</h5>                        
+        </div>
+        <br>
+        <form method="GET" action="#">
+            <button type="submit" id="confirm-deletion-btn">Remove</button>
+            <button type="button" id="cancel-deletion-btn">Cancel</button>
+        </form>
+    </div>
+    <!-- Delete Confirmation Box Start-->
+
+	<div class="row">
+		
+		<!-- Listings -->
+		<div class="col-lg-12 col-md-12">
+			<div class="dashboard-list-box margin-top-0">
+				<h4>Services</h4>
+				<ul>
+					{% for service in services %}
+					<li>
+						<div class="list-box-listing">
+							<div class="list-box-listing-img"><a href="#"><img src={% if service.image %} {{service.image.url}} {% else %} "images/listing-item-01.jpg" {% endif %} alt=""></a></div>
+							<div class="list-box-listing-content">
+								<div class="inner">
+									<h3><a href="{% url 'csc_admin:service' service.pk %}">{{service.name}}</a></h3>
+								</div>
+							</div>
+						</div>
+						<div class="buttons-to-right">
+							<a href="#" class="button gray" onclick="(e) => e.preventDefault(); toggleServiceDeletion(`{{service.slug}}`, `{{service.first_name}}`);"><i class="sl sl-icon-close"></i> Remove</a>
+						</div>
+					</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+
+
+		<!-- Copyrights -->
+		<div class="col-md-12">
+			<div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
+		</div>
+	</div>
+
+{% endblock content %}
+
+{% block scripts %}
+<script>
+	function toggleServiceDeletion(serviceId, serviceName) {
+		$('#delete-confirmation-box form').prop('action', `/users/remove_service/${serviceId}`);
+		$('#service-name').html(serviceName);
+		$('#delete-confirmation-box').show();
+	}	
+	
+	$('#cancel-deletion-btn').click(() => {
+		$('#delete-confirmation-box').hide();		
+	})
+</script>
+{% endblock scripts %}

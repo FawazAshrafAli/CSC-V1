@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'blog',
     'authentication',
     'csc_center',
+    'users',
 ]
 
 MIDDLEWARE = [
