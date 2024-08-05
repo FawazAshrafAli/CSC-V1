@@ -1,7 +1,7 @@
 from django.db import models
 from ckeditor.fields import RichTextField
 from django.utils.text import slugify
-from django.apps import apps
+from django.urls import reverse
 
 class Service(models.Model):
     name = models.CharField(max_length=150, unique=True)
@@ -26,6 +26,12 @@ class Service(models.Model):
     def first_name(self):
         if self.name.endswith(' in India'):
             return self.name.split(' in India')[0]
+        
+
+    @property
+    def get_absolute_url(self):
+        return reverse("services:service", kwargs={"slug": self.slug})
+    
 
     def __str__(self):
         return self.name
@@ -45,7 +51,7 @@ class ServiceEnquiry(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            base_slug = slugify(self.applicant_email+self.service.name)
+            base_slug = slugify(self.applicant_email+ '-' + self.service.name)
             self.slug = base_slug
 
             count = 1
@@ -54,6 +60,11 @@ class ServiceEnquiry(models.Model):
                 count += 1
         
         return super().save(*args, **kwargs)
+    
+    @property
+    def get_absolute_url(self):
+        return reverse("users:enquiry", kwargs={"slug": self.slug})
+    
     
     def __str__(self):
         return f"From {self.applicant_email} to {self.csc_center.name}"

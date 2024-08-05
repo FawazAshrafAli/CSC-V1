@@ -164,11 +164,11 @@
 
 						<li><a href="{% url 'users:home' %}" {% if request.path == '/admin/' %} class="current" {% endif %}>Home</a></li>
 
-						<li><a href="{% url 'csc_admin:blogs' %}" {% if blog_page %} class="current" {% endif %}>Blog</a></li>
+						<li><a href="#" {% if center_page %} class="current" {% endif %}>CSC Centers</a></li>
 
 						<li><a href="{% url 'users:services' %}" {% if service_page %} class="current" {% endif %}>Services</a></li>
 
-						<li><a href="{% url 'csc_admin:products' %}" {% if request.path == '/admin/products/' or product_page %} class="current" {% endif %}>Products</a></li>
+						<li><a href="{% url 'users:products' %}" {% if product_page %} class="current" {% endif %}>Products</a></li>
 					</ul>
 				</nav>
 				<div class="clearfix"></div>
@@ -223,24 +223,25 @@
 			<ul data-submenu-title="Main">
 				<li {% if request.path == '/admin/' %} class="active" {% endif %}><a href="{% url 'users:home' %}"><i class="sl sl-icon-home"></i> Home</a></li>
 
-				<li {% if blog_page %} class="active" {% endif %}><a href="{% url 'csc_admin:blogs' %}"><i class="fa fa-book"></i> Blog</a>
+				<li {% if center_page %} class="active" {% endif %} ><a><i class="sl sl-icon-info"></i> CSC Centers</a>
 					<ul>
-						<li><a href="#">List Blog</a></li>
-						<li><a href="#">Add Blog</a></li>						
+						<li><a href="#">List CSC Centers</a></li>
+						<li><a href="#" >Add CSC Center</a></li>
 					</ul>	
 				</li>
 
 				<li {% if service_page %} class="active" {% endif %} ><a><i class="fa fa-handshake"></i> Services</a>
 					<ul>
 						<li><a href="{% url 'users:services' %}">List Services</a></li>
-						<li><a href="#" onclick="$('#pop-up-box').show()">Add services</a></li>
+						<li><a href="#" id="add-services" >Add Services</a></li>
+						<li><a href="{% url 'users:enquiries' %}" >Enquiries</a></li>
 					</ul>	
 				</li>
 
-				<li {% if request.path == '/admin/products/' or product_page %} class="active" {% endif %} ><a><i class="fa fa-handshake"></i> Products</a>
+				<li {% if product_page %} class="active" {% endif %} ><a><i class="fa fa-handshake"></i> Products</a>
 					<ul>
-						<li><a href="#">List Products</a></li>
-						<li><a href="#">Add Product</a></li>						
+						<li><a href="{% url 'users:products' %}">List Products</a></li>
+						<li><a href="#" id="add-products" >Add Product</a></li>						
 					</ul>	
 				</li>
 
@@ -258,18 +259,14 @@
         {% block content %}
         {% endblock content %}	
         <div id="pop-up-box">
-            <h4 id="pop-up-box-heading" class="text-center">Add Services</h4>
+            <h4 id="pop-up-box-heading" class="text-center"></h4>
             <button class="close-btn" aria-label="Close" title="Close">&times;</button>
-            <form id="pop-up-form" method="post" action="{% url 'users:add_service' %}">
+            <form id="pop-up-form" method="post" action="#">
                 {% csrf_token %}
-                <select name="services" id="pop-up-dropdown" multiple>
-                    <option value="" hidden disabled selected>Select Service</option>
-                    {% for service in services_left %}
-                    <option value="{{service.pk}}">{{service.first_name}}</option>
-                    {% endfor %}
+                <select name="services" id="pop-up-dropdown" multiple required>                    
                 </select>
                 <div id="pop-up-add-btn-div">
-                    <button id="pop-up-add-btn" type="submit">Add Service</button>
+                    <button id="pop-up-add-btn" type="submit" disabled></button>
                     <button id="pop-up-cancel-btn" type="button">Cancel</button>
                 </div>
             </form>
@@ -307,6 +304,57 @@
 			$('#message-div').hide();
 		}, 3000);
 	})
+</script>
+
+<script>
+	$(document).ready(() => {
+		// Toggle add services pop up box and product pop up box
+
+		$('#add-services').click((event) => {
+			event.preventDefault();
+
+			$('#pop-up-form').prop('action', `{% url 'users:add_services' %}`);
+			$('#pop-up-box-heading, #pop-up-add-btn').html('Add Services');
+			
+			let html = `<option value="" hidden disabled selected>Select Service</option>
+			{% if services_left %}
+			{% for service in services_left %}
+			<option value="{{service.pk}}">{{service.name}}</option>
+			{% endfor %}
+			{% else %}
+			<option label="Added All Services" disabled></option>
+			{% endif %}`			
+			
+			$('#pop-up-dropdown').html(html).prop('name', 'services');
+			$('#pop-up-box').show();
+		});
+
+		$('#add-products').click((event) => {
+			event.preventDefault();
+
+			$('#pop-up-form').prop('action', `{% url 'users:add_products' %}`);
+			$('#pop-up-box-heading, #pop-up-add-btn').html('Add Products');
+			
+			let html = `<option value="" hidden disabled selected>Select Product</option>
+			{% for product in products_left %}
+			<option value="{{product.pk}}">{{product.name}}</option>
+			{% endfor %}`
+			
+			$('#pop-up-dropdown').html(html).prop('name', 'products');
+			$('#pop-up-box').show();
+		});
+
+		$('#pop-up-dropdown').on('change', function () {		
+			if ($(this).val().length > 0) {
+				$('#pop-up-add-btn').prop('disabled', false);
+			} else {
+				$('#pop-up-add-btn').prop('disabled', true);
+			}
+		});
+		
+		// Close | Cancel add service pop up box
+		$('#pop-up-cancel-btn, .close-btn').click(() => $('#pop-up-box').hide())
+	});
 </script>
 
 {% block scripts %}{% endblock scripts %}

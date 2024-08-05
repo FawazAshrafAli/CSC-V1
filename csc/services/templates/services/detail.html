@@ -16,7 +16,7 @@
 				<nav id="breadcrumbs">
 					<ul>
 						<li><a href="{% url 'home:view' %}">Home</a></li>
-                        <li><a href="{% url 'services:list' %}">Services</a></li>
+                        <li><a href="{% url 'services:services' %}">Services</a></li>
 						<li>{{service.name}}</li>
 					</ul>
 				</nav>
@@ -137,7 +137,7 @@
 				<h3>SERVICE LINKS</h3>
 				<ul class="option-set">
 					{% for service in services|slice:4 %}
-                    <li><a href="{% url 'services:detail' service.pk %}">{{service.name}}</a></li>
+                    <li><a href="{% url 'services:service' service.slug %}">{{service.name}}</a></li>
 					{% endfor %}                    
                 </ul>
 			</div>

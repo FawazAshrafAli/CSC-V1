@@ -34,7 +34,7 @@
 				<!-- Listing Item -->
 				 {% for service in services %}
 				<div class="col-lg-4 col-md-6">
-					<a href="{% url 'services:detail' service.pk %}" class="listing-item-container compact">
+					<a href="{% url 'services:service' service.slug %}" class="listing-item-container compact">
 						<div class="listing-item">
 							<img src={% if service.image %} {{service.image.url}} {% else %} "images/listing-item-01.jpg" {% endif %} alt="Image of service">
 							<div class="listing-item-content">

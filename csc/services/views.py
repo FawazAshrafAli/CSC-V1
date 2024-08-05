@@ -19,6 +19,7 @@ class DetailServiceView(DetailView):
     model = Service
     template_name = 'services/detail.html'
     context_object_name = "service"
+    slug_url_kwarg = 'slug'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

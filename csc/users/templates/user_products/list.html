@@ -1,0 +1,94 @@
+{% extends "user_base/base.html" %}
+{% load static %}
+
+{% block title_prefix %}Products{% endblock title_prefix %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'w3/admin_product/css/admin_product.css' %}">
+{% endblock styles %}
+
+{% block content %}
+<div id="titlebar">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Products</h2>
+            <!-- Breadcrumbs -->
+            <nav id="breadcrumbs">
+                <ul>
+                    <li><a href="{% url 'csc_admin:home' %}">Home</a></li>						
+                    <li>Products</li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% include "admin_components/message.html" %}
+</div>
+
+<!-- Delete Confirmation Box Start-->
+<div id="delete-confirmation-box" style="display: none;">
+    <div class="modal-content">            
+        <h4><span>Deleting</span> Product <span id="product-name" style="color: black"></span> . . .</h4>
+        <h5>Are you sure?</h5>                        
+    </div>
+    <br>
+    <form method="GET" action="#">
+        <button type="submit" id="confirm-deletion-btn">Delete</button>
+        <button class="cancel-btn" type="button" id="cancel-deletion-btn">Cancel</button>
+    </form>
+</div>
+<!-- Delete Confirmation Box Start-->
+
+<div class="row">    
+    <div class="col-lg-12 col-md-8 padding-right-30">
+        <div class="dashboard-list-box margin-top-0">
+            <h4>Products</h4>
+            <ul>
+                {% for product in products %}
+                <li>				
+                    <div class="list-box-listing">
+                        <div class="list-box-listing-img" style="display: flex; flex-direction: column;">
+                            <a href="{% url 'csc_admin:product' product.slug %}"><img src={% if product.image %} {{product.image.url}} {% else %} "images/listing-item-01.jpg" {% endif %} alt=""></a>
+                            <button id="product-status-btn-{{product.slug}}" style="{% if product.status == 'Published' %} background-color:green; {% else %} background-color: darkred; {% endif %} color: #fff; border: 0;">{{product.status}}</button>
+                        </div>
+                        <div class="list-box-listing-content">
+                            <div class="inner">
+                                <h3><a href="{% url 'csc_admin:product' product.slug %}">{{product.name}}</a></h3>
+                                <p>{{product.description|slice:':100'}}...</p>                                
+                                <h5>Price: &#8377; {{product.price}}</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="buttons-to-right">                        
+                        <a href="#" class="button gray" onclick="(e) => e.preventDefault(); toggleProductDeletion(`{{product.slug}}`, `{{product.name}}`);"><i class="sl sl-icon-close"></i> Remove</a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <!-- Product Posts / End -->
+</div>
+
+
+    <!-- Copyrights -->
+    <div class="col-md-12">
+        <div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+
+<script>
+    function toggleProductDeletion(productSlug, productTitle) {		
+		$('#delete-confirmation-box form').prop('action', `/users/remove_product/${productSlug}`);
+		$('#product-name').html(`'${productTitle}'`);
+		$('#delete-confirmation-box').show();
+	};
+
+    $('.cancel-btn').click(() => {
+        $('#delete-confirmation-box').hide();
+    });
+</script>
+{% endblock scripts %}

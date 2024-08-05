@@ -4,6 +4,6 @@ from .views import ListServiceView, DetailServiceView
 app_name = "services"
 
 urlpatterns = [
-    path("", ListServiceView.as_view(), name="list"),
-    path("detail/<pk>", DetailServiceView.as_view(), name="detail"),
+    path("", ListServiceView.as_view(), name="services"),
+    path("service/<str:slug>", DetailServiceView.as_view(), name="service"),
 ]

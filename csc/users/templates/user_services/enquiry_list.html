@@ -5,19 +5,19 @@
 <link rel="stylesheet" href="{% static 'w3/admin_service/css/admin_service.css' %}">
 {% endblock styles %}
 
-{% block title_prefix %} Services {% endblock title_prefix %}
+{% block title_prefix %} Service Equiry {% endblock title_prefix %}
 
 {% block content %}
 	<!-- Titlebar -->
 	<div id="titlebar">
 		<div class="row">
 			<div class="col-md-12">
-				<h2>Services</h2>
+				<h2>Service Enquiry</h2>
 				<!-- Breadcrumbs -->
 				<nav id="breadcrumbs">
 					<ul>
 						<li><a href="{% url 'csc_admin:home' %}">Home</a></li>						
-						<li>Services</li>
+						<li>Service Enquiry</li>
 					</ul>
 				</nav>
 			</div>
@@ -36,12 +36,12 @@
 	<!-- Delete Confirmation Box Start-->
     <div id="delete-confirmation-box" style="display: none;">
         <div class="modal-content">            
-            <h4>Removing Service <span id="service-name"></span> . . .</h4>
+            <h4>Deleting Service Enquiry <span id="service-enquiry"></span> . . .</h4>
             <h5>Are you sure?</h5>                        
         </div>
         <br>
         <form method="GET" action="#">
-            <button type="submit" id="confirm-deletion-btn">Remove</button>
+            <button type="submit" id="confirm-deletion-btn">Delete</button>
             <button type="button" id="cancel-deletion-btn">Cancel</button>
         </form>
     </div>
@@ -52,20 +52,33 @@
 		<!-- Listings -->
 		<div class="col-lg-12 col-md-12">
 			<div class="dashboard-list-box margin-top-0">
-				<h4>Services</h4>
+				<h4>Service Enquiry</h4>
 				<ul>
-					{% for service in services %}
+					{% for enquiry in enquiries %}
 					<li>
 						<div class="list-box-listing">
-							<div class="list-box-listing-img"><a href="#"><img src={% if service.image %} {{service.image.url}} {% else %} "images/listing-item-01.jpg" {% endif %} alt=""></a></div>
+							
 							<div class="list-box-listing-content">
-								<div class="inner">
-									<h3><a href="{{service.get_absolute_url}}">{{service.name}}</a></h3>
+								<div class="inner" style="top: 0;">
+									<div class="row">
+										<div class="col-md-3">
+											<h3><a href="{{enquiry.get_absolute_url}}">{{forloop.counter}} &nbsp;&nbsp;&nbsp;{{enquiry.applicant_name}}</a></h3>
+										</div>
+										<div class="col-md-3">
+											<span>{{enquiry.service.first_name}}<span>
+										</div>
+										<div class="col-md-3">
+											<span>{{enquiry.applicant_email}}<span>
+										</div>
+										<div class="col-md-3">
+											<span>{{enquiry.applicant_phone}}<span>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
 						<div class="buttons-to-right">
-							<a href="#" class="button gray" onclick="(e) => e.preventDefault(); toggleServiceDeletion(`{{service.slug}}`, `{{service.first_name}}`);"><i class="sl sl-icon-close"></i> Remove</a>
+							<a href="#" class="button gray" onclick="(e) => e.preventDefault(); toggleServiceDeletion(`{{enquiry.slug}}`, `{{enquiry.applicant_name}} ({{enquiry.service.first_name}})`);"><i class="sl sl-icon-close"></i> Delete</a>
 						</div>
 					</li>
 					{% endfor %}
@@ -85,8 +98,8 @@
 {% block scripts %}
 <script>
 	function toggleServiceDeletion(serviceId, serviceName) {
-		$('#delete-confirmation-box form').prop('action', `/users/remove_service/${serviceId}`);
-		$('#service-name').html(serviceName);
+		$('#delete-confirmation-box form').prop('action', `/users/delete_enquiry/${serviceId}`);
+		$('#service-enquiry').html(serviceName);
 		$('#delete-confirmation-box').show();
 	}	
 	

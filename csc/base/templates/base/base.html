@@ -116,13 +116,13 @@
 							</ul>
 						</li>
 
-						<li itemprop="name"><a itemprop="url" class="{% block services_nav %}{% endblock services_nav %}" href="{% url 'services:list' %}">Services</a>
+						<li itemprop="name"><a itemprop="url" class="{% block services_nav %}{% endblock services_nav %}" href="{% url 'services:services' %}">Services</a>
 							<div class="mega-menu mobile-styles {% if service_group_1 and service_group_2 and service_group_3 %} three-columns {% elif service_group_1 and service_group_2 %} two-columns {% elif service_group_1 %} one-columns {% endif %} ">
 									{% if services|length > 0 %}
 									<div class="mega-menu-section">
 										<ul>
 											{% for service in services|slice:'0:6' %}
-											<li itemprop="name"><a itemprop="url" href="{% url 'services:detail' service.pk %}">{{service.name}}</a></li>
+											<li itemprop="name"><a itemprop="url" href="{% url 'services:service' service.slug %}">{{service.name}}</a></li>
 											{% endfor %}
 										</ul>
 									</div>
@@ -132,7 +132,7 @@
 									<div class="mega-menu-section">
 										<ul>
 											{% for service in services|slice:'6:12' %}
-											<li itemprop="name"><a itemprop="url" href="{% url 'services:detail' service.pk %}">{{service.name}}</a></li>
+											<li itemprop="name"><a itemprop="url" href="{% url 'services:service' service.slug %}">{{service.name}}</a></li>
 											{% endfor %}
 										</ul>
 									</div>
@@ -142,7 +142,7 @@
 									<div class="mega-menu-section">
 										<ul>
 											{% for service in services|slice:'12:18' %}
-											<li itemprop="name"><a itemprop="url" href="{% url 'services:detail' service.pk %}">{{service.name}}</a></li>
+											<li itemprop="name"><a itemprop="url" href="{% url 'services:service' service.slug %}">{{service.name}}</a></li>
 											{% endfor %}
 										</ul>
 									</div>
