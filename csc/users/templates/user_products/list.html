@@ -8,6 +8,40 @@
 {% endblock styles %}
 
 {% block content %}
+<style>
+    #product-table {
+        min-width: 100%;
+        background-color: #fff;
+    }
+    #product-table tr {
+        border-bottom: 1px solid silver;
+    }
+    #product-table tbody tr{
+        cursor: pointer;
+    }
+    #product-table tbody tr:hover {
+        color: blue;
+    }
+    #product-table td:first-child,
+    #product-table th:first-child,
+    #td-image,
+    #th-image {
+        text-align: center;
+    }
+    #product-table img {
+        padding: 3px 0;
+        height: 50px;
+    }
+    #product-table button {
+        height: 0;
+        padding: 0 10px;
+    }
+    #product-table tbody tr:hover button {
+        height: 100%;
+        padding: 5px 10px;
+    }
+</style>
+
 <div id="titlebar">
     <div class="row">
         <div class="col-md-12">
@@ -15,7 +49,7 @@
             <!-- Breadcrumbs -->
             <nav id="breadcrumbs">
                 <ul>
-                    <li><a href="{% url 'csc_admin:home' %}">Home</a></li>						
+                    <li><a href="{% url 'users:home' %}">Home</a></li>						
                     <li>Products</li>
                 </ul>
             </nav>
@@ -40,30 +74,50 @@
 
 <div class="row">    
     <div class="col-lg-12 col-md-8 padding-right-30">
-        <div class="dashboard-list-box margin-top-0">
+        <div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
+            <!-- Sort by -->
+		<div class="sort-by">
+			<div class="sort-by-select">
+			  <select
+				data-placeholder="List By Category"
+				class="chosen-select-no-single"
+				id="center-dropdown"
+			  >
+					<option value="" selected hidden disabled>
+					Select CSC Center
+					</option>
+					{% for center_obj in centers %}
+					<option value="{{center_obj.slug}}" {% if center_obj.slug == center.slug %} selected {% endif %}>{{center_obj.name}}</option>
+					{% endfor %}
+			  	</select>
+			</div>
+		</div>
             <h4>Products</h4>
-            <ul>
-                {% for product in products %}
-                <li>				
-                    <div class="list-box-listing">
-                        <div class="list-box-listing-img" style="display: flex; flex-direction: column;">
-                            <a href="{% url 'csc_admin:product' product.slug %}"><img src={% if product.image %} {{product.image.url}} {% else %} "images/listing-item-01.jpg" {% endif %} alt=""></a>
-                            <button id="product-status-btn-{{product.slug}}" style="{% if product.status == 'Published' %} background-color:green; {% else %} background-color: darkred; {% endif %} color: #fff; border: 0;">{{product.status}}</button>
-                        </div>
-                        <div class="list-box-listing-content">
-                            <div class="inner">
-                                <h3><a href="{% url 'csc_admin:product' product.slug %}">{{product.name}}</a></h3>
-                                <p>{{product.description|slice:':100'}}...</p>                                
-                                <h5>Price: &#8377; {{product.price}}</h5>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="buttons-to-right">                        
-                        <a href="#" class="button gray" onclick="(e) => e.preventDefault(); toggleProductDeletion(`{{product.slug}}`, `{{product.name}}`);"><i class="sl sl-icon-close"></i> Remove</a>
-                    </div>
-                </li>
-                {% endfor %}
-            </ul>
+            <br>
+            <table id="product-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th id="th-image">Image</th>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="product-tbody">
+                    {% for product in center.products.all %}
+                    <tr onclick="window.location='{% url 'products:product' product.slug %}'">
+                        <td>{{ forloop.counter }}</td>
+                        <td id="td-image">
+                            <img src="{% if product.image %} {{product.image.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
+                        </td>
+                        <td>{{ product.name }}</td>
+                        <td>&#8377; {{product.price}}</td>
+                        <td><button class="button gray" onclick="event.stopPropagation(); toggleProductDeletion(`{{product.slug}}`, `{{product.name}}`)">Remove</button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>            
         </div>
     </div>
     <!-- Product Posts / End -->
@@ -85,10 +139,62 @@
 		$('#delete-confirmation-box form').prop('action', `/users/remove_product/${productSlug}`);
 		$('#product-name').html(`'${productTitle}'`);
 		$('#delete-confirmation-box').show();
+        $('#product-table').css('pointer-events', 'none');
 	};
 
     $('.cancel-btn').click(() => {
         $('#delete-confirmation-box').hide();
+        $('#product-table').css('pointer-events', 'auto');
     });
+</script>
+
+<!-- Get products ajax function for multiple centers -->
+<script>
+	$(document).ready(function() {
+
+		function getProducts(center) {
+            console.log("called")
+			$.ajax({
+				type: 'GET',
+				url: `/users/products/`,
+				dataType: 'json',
+				data: {'center_slug': center},
+				success: response => {
+					$('#product-tbody').html('');
+                    $('#center-dropdown option').prop('selected', false);
+                    $(`#center-dropdown option[value='${center}']`).prop('selected', true);
+					response.products.forEach(product => {
+						let html = `<tr onclick="window.location='/products/product/${product.slug}'">
+                        <td>${ product.count }</td>
+                        <td id="td-image">
+                            <img src="${ product.image ? product.image : 'static/w3/images/no_image.png'}" alt="Product Image">
+                        </td>
+                        <td>${ product.name }</td>
+                        <td>&#8377; ${product.price}</td>
+                        <td><button class="button gray" onclick="event.stopPropagation(); toggleProductDeletion('${product.slug}', '${product.name}')">Remove</button></td>
+                        </tr>`
+						$('#product-tbody').append(html);
+
+					})
+				},
+				error: error => console.error("Error: ", error),
+			})
+		};
+
+		const center =  localStorage.getItem('centerSlug');
+		const user = localStorage.getItem('cscUser');
+
+		if (user == `{{request.user.username}}`) {
+			getProducts(center);
+		}
+
+		$('#center-dropdown').on('change', function () {
+			const center = $(this).val();
+			localStorage.setItem('centerSlug', center)
+			localStorage.setItem('cscUser', `{{request.user.username}}`)
+
+			getProducts(center);
+		});
+	});
 </script>
 {% endblock scripts %}

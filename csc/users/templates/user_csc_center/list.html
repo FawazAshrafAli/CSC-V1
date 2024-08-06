@@ -1,0 +1,106 @@
+{% extends "user_base/base.html" %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'w3/admin_service/css/admin_service.css' %}">
+{% endblock styles %}
+
+{% block title_prefix %} CSC Centers {% endblock title_prefix %}
+
+{% block content %}
+<style>
+    #csc-center-table {
+        min-width: 100%;
+        background-color: #fff;
+    }
+    #csc-center-table tr {
+        border-bottom: 1px solid silver;
+    }
+    #csc-center-table tbody tr{
+        cursor: pointer;
+    }
+    #csc-center-table tbody tr:hover {
+        color: blue;
+    }
+    #csc-center-table td:first-child,
+    #csc-center-table th:first-child,
+    #td-image,
+    #th-image {
+        text-align: center;
+    }
+    #csc-center-table img {
+        padding: 3px 0;
+        height: 50px;
+    }
+    #csc-center-table button {
+        height: 0;
+        padding: 0 10px;
+    }
+    #csc-center-table tbody tr:hover button {
+        height: 100%;
+        padding: 5px 10px;
+    }
+</style>
+	<!-- Titlebar -->
+	<div id="titlebar">
+		<div class="row">
+			<div class="col-md-12">
+				<h2>CSC Centers</h2>
+				<!-- Breadcrumbs -->
+				<nav id="breadcrumbs">
+					<ul>
+						<li><a href="{% url 'users:home' %}">Home</a></li>						
+						<li>CSC Centers</li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+		{% if messages %}
+		<div id="message-div">
+			<ul class="messages">
+				{% for message in messages %}
+				<li {% if message.tags %} class="{{message.tags}}" {% endif %}>{{message}}</li>
+				{% endfor %}
+			</ul>
+		</div>
+		{% endif %}
+	</div>
+
+	<div class="row">
+		
+		<!-- Listings -->
+		<div class="col-lg-12 col-md-12">
+			<div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
+				<h4>CSC Centers</h4>
+				<br>
+				<table id="csc-center-table">
+					<thead>
+						<tr>
+							<th>No</th>
+							<th id="th-image">Image</th>
+							<th>CSC Center</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for center in centers %}
+						<tr onclick="window.location='#'">
+							<td>{{ forloop.counter }}</td>
+							<td id="td-image">
+								<img src="{% if center.logo %} {{center.logo.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
+							</td>
+							<td>{{ center.full_name }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>            				
+			</div>
+		</div>
+
+
+		<!-- Copyrights -->
+		<div class="col-md-12">
+			<div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
+		</div>
+	</div>
+
+{% endblock content %}

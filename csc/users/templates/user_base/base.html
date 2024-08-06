@@ -164,7 +164,7 @@
 
 						<li><a href="{% url 'users:home' %}" {% if request.path == '/admin/' %} class="current" {% endif %}>Home</a></li>
 
-						<li><a href="#" {% if center_page %} class="current" {% endif %}>CSC Centers</a></li>
+						<li><a href="{% url 'users:centers' %}" {% if center_page %} class="current" {% endif %}>CSC Centers</a></li>
 
 						<li><a href="{% url 'users:services' %}" {% if service_page %} class="current" {% endif %}>Services</a></li>
 
@@ -193,7 +193,7 @@
 						</ul>
 					</div>
 					
-					<a href="{% url 'csc_admin:add_csc' %}" class="button border with-icon">ADD CSC CENTER <i class="sl sl-icon-plus"></i></a>
+					<a href="{% url 'users:add_csc' %}" class="button border with-icon">ADD CSC CENTER <i class="sl sl-icon-plus"></i></a>
 				</div>
 				<!-- Header Widget / End -->
 			</div>
@@ -225,8 +225,8 @@
 
 				<li {% if center_page %} class="active" {% endif %} ><a><i class="sl sl-icon-info"></i> CSC Centers</a>
 					<ul>
-						<li><a href="#">List CSC Centers</a></li>
-						<li><a href="#" >Add CSC Center</a></li>
+						<li><a href="{% url 'users:centers' %}">List CSC Centers</a></li>
+						<li><a href="{% url 'users:add_csc' %}" >Add CSC Center</a></li>
 					</ul>	
 				</li>
 
@@ -234,14 +234,15 @@
 					<ul>
 						<li><a href="{% url 'users:services' %}">List Services</a></li>
 						<li><a href="#" id="add-services" >Add Services</a></li>
-						<li><a href="{% url 'users:enquiries' %}" >Enquiries</a></li>
+						<li><a href="{% url 'users:enquiries' %}" >Service Enquiries</a></li>
 					</ul>	
 				</li>
 
 				<li {% if product_page %} class="active" {% endif %} ><a><i class="fa fa-handshake"></i> Products</a>
 					<ul>
 						<li><a href="{% url 'users:products' %}">List Products</a></li>
-						<li><a href="#" id="add-products" >Add Product</a></li>						
+						<li><a href="#" id="add-products" >Add Product</a></li>
+						<li><a href="#" >Product Enquiries</a></li>
 					</ul>	
 				</li>
 

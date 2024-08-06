@@ -661,8 +661,6 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
         self.object.save()
 
         if social_medias and social_links:
-            print(social_medias)
-            print(social_links)
             social_media_length = len(social_medias)
             if social_media_length > 0:
                 social_media_list = []

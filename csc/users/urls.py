@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (HomeView, ServiceListView, RemoveServiceView, 
                     AddServiceView, ServiceEnquiryListView, DeleteServiceEnquiryView,
                     ServiceEnquiryDetailView, ProductListView, RemoveProductView,
-                    AddProductView)
+                    AddProductView, CscCenterListView, AddCscCenterView)
 
 app_name = "users"
 
@@ -19,4 +19,7 @@ urlpatterns = [
     path('products/', ProductListView.as_view(), name="products"),
     path('remove_product/<str:slug>', RemoveProductView.as_view(), name="remove_product"),
     path('add_products/', AddProductView.as_view(), name="add_products"),
+
+    path('centers/', CscCenterListView.as_view(), name="centers"),
+    path('add_csc/', AddCscCenterView.as_view(), name="add_csc"),
 ]

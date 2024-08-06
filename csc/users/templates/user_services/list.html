@@ -1,97 +1,221 @@
 {% extends "user_base/base.html" %}
-{% load static %}
-
+{% load static %} 
 {% block styles %}
-<link rel="stylesheet" href="{% static 'w3/admin_service/css/admin_service.css' %}">
+<link
+  rel="stylesheet"
+  href="{% static 'w3/admin_service/css/admin_service.css' %}"
+/>
 {% endblock styles %}
-
-{% block title_prefix %} Services {% endblock title_prefix %}
-
+{% block title_prefix %} Services {% endblock title_prefix %} 
 {% block content %}
-	<!-- Titlebar -->
-	<div id="titlebar">
-		<div class="row">
-			<div class="col-md-12">
-				<h2>Services</h2>
-				<!-- Breadcrumbs -->
-				<nav id="breadcrumbs">
-					<ul>
-						<li><a href="{% url 'csc_admin:home' %}">Home</a></li>						
-						<li>Services</li>
-					</ul>
-				</nav>
-			</div>
-		</div>
-		{% if messages %}
-		<div id="message-div">
-			<ul class="messages">
-				{% for message in messages %}
-				<li {% if message.tags %} class="{{message.tags}}" {% endif %}>{{message}}</li>
-				{% endfor %}
-			</ul>
-		</div>
-		{% endif %}
-	</div>
-
-	<!-- Delete Confirmation Box Start-->
-    <div id="delete-confirmation-box" style="display: none;">
-        <div class="modal-content">            
-            <h4>Removing Service <span id="service-name"></span> . . .</h4>
-            <h5>Are you sure?</h5>                        
-        </div>
-        <br>
-        <form method="GET" action="#">
-            <button type="submit" id="confirm-deletion-btn">Remove</button>
-            <button type="button" id="cancel-deletion-btn">Cancel</button>
-        </form>
+<style>
+  #service-table {
+    min-width: 100%;
+    background-color: #fff;
+  }
+  #service-table tr {
+    border-bottom: 1px solid silver;
+  }
+  #service-table tbody tr {
+    cursor: pointer;
+  }
+  #service-table tbody tr:hover {
+    color: blue;
+  }
+  #service-table td:first-child,
+  #service-table th:first-child,
+  #td-image,
+  #th-image {
+    text-align: center;
+  }
+  #service-table img {
+    padding: 3px 0;
+    height: 50px;
+  }
+  #service-table button {
+    height: 0;
+    padding: 0 10px;
+  }
+  #service-table tbody tr:hover button {
+    height: 100%;
+    padding: 5px 10px;
+  }
+</style>
+<!-- Titlebar -->
+<div id="titlebar">
+  <div class="row">
+    <div class="col-md-12">
+      <h2>Services</h2>
+      <!-- Breadcrumbs -->
+      <nav id="breadcrumbs">
+        <ul>
+          <li><a href="{% url 'users:home' %}">Home</a></li>
+          <li>Services</li>
+        </ul>
+      </nav>
     </div>
-    <!-- Delete Confirmation Box Start-->
+  </div>
+  {% if messages %}
+  <div id="message-div">
+    <ul class="messages">
+      {% for message in messages %}
+      <li {% if message.tags %} class="{{message.tags}}" {% endif %}>
+        {{message}}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</div>
 
-	<div class="row">
-		
-		<!-- Listings -->
-		<div class="col-lg-12 col-md-12">
-			<div class="dashboard-list-box margin-top-0">
-				<h4>Services</h4>
-				<ul>
-					{% for service in services %}
-					<li>
-						<div class="list-box-listing">
-							<div class="list-box-listing-img"><a href="#"><img src={% if service.image %} {{service.image.url}} {% else %} "images/listing-item-01.jpg" {% endif %} alt=""></a></div>
-							<div class="list-box-listing-content">
-								<div class="inner">
-									<h3><a href="{{service.get_absolute_url}}">{{service.name}}</a></h3>
-								</div>
-							</div>
-						</div>
-						<div class="buttons-to-right">
-							<a href="#" class="button gray" onclick="(e) => e.preventDefault(); toggleServiceDeletion(`{{service.slug}}`, `{{service.first_name}}`);"><i class="sl sl-icon-close"></i> Remove</a>
-						</div>
-					</li>
+<!-- Delete Confirmation Box Start-->
+<div id="delete-confirmation-box" style="display: none">
+  <div class="modal-content">
+    <h4>Removing Service <span id="service-name"></span> . . .</h4>
+    <h5>Are you sure?</h5>
+  </div>
+  <br />
+  <form method="GET" action="#">
+    <button type="submit" id="confirm-deletion-btn">Remove</button>
+    <button type="button" id="cancel-deletion-btn">Cancel</button>
+  </form>
+</div>
+<!-- Delete Confirmation Box Start-->
+
+<div class="row">
+  <!-- Listings -->
+  <div class="col-lg-12 col-md-12">
+    <div class="dashboard-list-box margin-top-0" style="background-color: #fff">
+		<!-- Sort by -->
+		<div class="sort-by">
+			<div class="sort-by-select">
+			  <select
+				data-placeholder="List By Category"
+				class="chosen-select-no-single"
+				id="center-dropdown"
+			  >
+					<option value="" selected hidden disabled>
+					Select CSC Center
+					</option>
+					{% for center_obj in centers %}
+					<option value="{{center_obj.slug}}" {% if center_obj.slug == center.slug %} selected {% endif %}>{{center_obj.name}}</option>
 					{% endfor %}
-				</ul>
+			  	</select>
 			</div>
 		</div>
+      <h4>Services</h4>
+      <br />
+      <table id="service-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th id="th-image">Image</th>
+            <th>Service</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="service-tbody">
+          {% for service in center.services.all %}
+          <tr
+            onclick="window.location='{% url 'services:service' service.slug %}'"
+          >
+            <td>{{ forloop.counter }}</td>
+            <td id="td-image">
+              <img
+                src="{% if service.image %} {{service.image.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}"
+                alt="Product Image"
+              />
+            </td>
+            <td>{{ service.name }}</td>
+            <td>
+              <button
+                class="button gray"
+                onclick="event.stopPropagation(); toggleServiceDeletion(`{{service.slug}}`, `{{service.name}}`)"
+              >
+                Remove
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 
+  <!-- Copyrights -->
+  <div class="col-md-12">
+    <div class="copyrights">
+      © 2021 CSCIndia. All Rights Reserved.| Powered by
+      <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a>
+    </div>
+  </div>
+</div>
 
-		<!-- Copyrights -->
-		<div class="col-md-12">
-			<div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
-		</div>
-	</div>
-
-{% endblock content %}
-
-{% block scripts %}
+{% endblock content %} {% block scripts %}
 <script>
-	function toggleServiceDeletion(serviceId, serviceName) {
-		$('#delete-confirmation-box form').prop('action', `/users/remove_service/${serviceId}`);
-		$('#service-name').html(serviceName);
-		$('#delete-confirmation-box').show();
-	}	
-	
-	$('#cancel-deletion-btn').click(() => {
-		$('#delete-confirmation-box').hide();		
-	})
+  function toggleServiceDeletion(serviceId, serviceName) {
+    $("#delete-confirmation-box form").prop(
+      "action",
+      `/users/remove_service/${serviceId}`
+    );
+    $("#service-name").html(serviceName);
+    $("#delete-confirmation-box").show();
+    $("#service-table").css("pointer-events", "none");
+  }
+
+  $("#cancel-deletion-btn").click(() => {
+    $("#delete-confirmation-box").hide();
+    $("#service-table").css("pointer-events", "auto");
+  });
+</script>
+
+<!-- Get Service for multiple centers -->
+<script>
+	$(document).ready(function() {
+
+		function getServices(center) {
+			$.ajax({
+				type: 'GET',
+				url: `/users/services/`,
+				dataType: 'json',
+				data: {'center_slug': center},
+				success: response => {
+					$('#service-tbody').html('');
+					response.services.forEach(service => {
+						let html = `<tr onclick="window.location='/services/service/${service.slug}'">
+										<td>${service.count}</td>
+										<td id="td-image">
+										<img
+											src="${service.image ? service.image : 'static/w3/images/no_image.png' }"
+											alt="Product Image"
+										/>
+										</td>
+										<td>${service.name}</td>
+										<td>
+										<button class="button gray" onclick="event.stopPropagation(); toggleServiceDeletion(${service.slug}, ${service.name})">Remove</button>
+										</td>
+									</tr>`
+						$('#service-tbody').append(html);
+					})
+				},
+				error: error => console.error("Error: ", error),
+			})
+		};
+
+		const center =  localStorage.getItem('centerSlug');
+		const user = localStorage.getItem('cscUser');
+
+		if (user == `{{request.user.username}}`) {
+			getServices(center);
+		}
+
+		$('#center-dropdown').on('change', function () {
+			const center = $(this).val();
+			localStorage.setItem('centerSlug', center)
+			localStorage.setItem('cscUser', `{{request.user.username}}`)
+
+			getServices(center);
+		});
+	});
 </script>
 {% endblock scripts %}
