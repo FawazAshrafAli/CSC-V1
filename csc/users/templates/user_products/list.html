@@ -161,8 +161,8 @@
 				data: {'center_slug': center},
 				success: response => {
 					$('#product-tbody').html('');
-                    $('#center-dropdown option').prop('selected', false);
-                    $(`#center-dropdown option[value='${center}']`).prop('selected', true);
+                    $(`#center-dropdown option[value='${center}']`).prop('selected', true).trigger('chosen:updated');
+
 					response.products.forEach(product => {
 						let html = `<tr onclick="window.location='/products/product/${product.slug}'">
                         <td>${ product.count }</td>
@@ -174,7 +174,6 @@
                         <td><button class="button gray" onclick="event.stopPropagation(); toggleProductDeletion('${product.slug}', '${product.name}')">Remove</button></td>
                         </tr>`
 						$('#product-tbody').append(html);
-
 					})
 				},
 				error: error => console.error("Error: ", error),
@@ -185,7 +184,9 @@
 		const user = localStorage.getItem('cscUser');
 
 		if (user == `{{request.user.username}}`) {
-			getProducts(center);
+            if ($('#center-dropdown').val() != center) {
+                getProducts(center);
+            }
 		}
 
 		$('#center-dropdown').on('change', function () {

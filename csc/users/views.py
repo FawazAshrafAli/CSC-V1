@@ -7,7 +7,7 @@ from django.contrib import messages
 from datetime import datetime
 from django.http import JsonResponse
 
-from products.models import Product
+from products.models import Product, ProductEnquiry
 from services.models import Service, ServiceEnquiry
 from csc_center.models import (CscCenter, SocialMediaLink, State,
                                 District, Block, CscKeyword, 
@@ -15,29 +15,13 @@ from csc_center.models import (CscCenter, SocialMediaLink, State,
 
 class BaseUserView(LoginRequiredMixin, View):
     login_url = reverse_lazy('authentication:login')
-    model = CscCenter
-
-    # def get_object(self, **kwargs):
-    #     try:
-    #         return get_object_or_404(CscCenter, email = self.request.user.email)
-    #     except Http404:
-    #         return redirect(reverse_lazy('authentication:logout'))
-        
 
     def get_context_data(self, **kwargs):
-        # context = super().get_context_data(**kwargs)
         context = {}
         try:
-            # self.object = self.get_queryset()
             centers = CscCenter.objects.filter(email = self.request.user.email)
             context['centers'] = centers
             context['center'] = centers[0]
-
-            # excluding_services = self.object.services.all()
-            # context['services_left'] = Service.objects.all().exclude(id__in=excluding_services.values_list('id', flat=True))
-
-            # excluding_products = self.object.products.all()
-            # context['products_left'] = Product.objects.all().exclude(id__in=excluding_products.values_list('id', flat=True))
 
         except Exception as e:
             print(e)
@@ -52,8 +36,8 @@ class HomeView(BaseUserView, TemplateView):
 
 # Service
 class BaseServiceView(BaseUserView):
-    def get_context_data(self):
-        context = super().get_context_data()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         context['service_page'] = True
         return context
     
@@ -119,7 +103,28 @@ class ServiceEnquiryListView(BaseServiceView, ListView):
     context_object_name = 'enquiries'
 
     def get_queryset(self):
-        return ServiceEnquiry.objects.filter(csc_center__email = self.request.user.email).order_by('-created')
+        center = CscCenter.objects.filter(email = self.request.user.email).first()
+        enquiries = self.model.objects.filter(csc_center = center).order_by('-created')
+        return enquiries
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['enquiries'] = self.get_queryset()
+        return context
+    
+    def get(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            center_slug = request.GET.get('center_slug')
+            try:
+                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email)
+                enquiries = self.model.objects.filter(csc_center = center)
+                enquiries_list = []
+                for count, enquiry in enumerate(enquiries):
+                    enquiries_list.append({'applicant_name': enquiry.applicant_name, 'applicant_email': enquiry.applicant_email, 'applicant_phone': enquiry.applicant_phone, 'get_absolute_url': enquiry.get_absolute_url, 'service': enquiry.service.name, 'count': count+1})
+                return JsonResponse({'enquiries': enquiries_list})
+            except Http404:
+                pass
+        return super().get(request, *args, **kwargs)
     
 
 class ServiceEnquiryDetailView(BaseServiceView, DetailView):
@@ -215,6 +220,67 @@ class AddProductView(ProductBaseView, View):
         messages.success(request, 'Added Products')
         return redirect(self.success_url)
     
+
+class ProductEnquiryListView(ProductBaseView, ListView):
+    model = ProductEnquiry
+    template_name = 'user_products/enquiry_list.html'
+    context_object_name = 'enquiries'
+
+    def get_queryset(self):
+        center = CscCenter.objects.filter(email = self.request.user.email).first()
+        enquiries = self.model.objects.filter(csc_center = center).order_by('-created')
+        return enquiries
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['enquiries'] = self.get_queryset()
+        return context
+    
+    def get(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            center_slug = request.GET.get('center_slug')
+            try:
+                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email)
+                enquiries = self.model.objects.filter(csc_center = center)
+                enquiries_list = []
+                for count, enquiry in enumerate(enquiries):
+                    enquiries_list.append({'applicant_name': enquiry.applicant_name, 'applicant_email': enquiry.applicant_email, 'applicant_phone': enquiry.applicant_phone, 'get_absolute_url': enquiry.get_absolute_url, 'product': enquiry.product.name, 'count': count+1})
+                return JsonResponse({'enquiries': enquiries_list})
+            except Http404:
+                pass
+        return super().get(request, *args, **kwargs)
+    
+
+class ProductEnquiryDetailView(ProductBaseView, DetailView):
+    model = ProductEnquiry
+    template_name = 'user_products/enquiry_detail.html'
+    slug_url_kwarg = 'slug'
+    context_object_name = 'enquiry'
+    
+    def get_object(self, **kwargs):
+        try:
+            self.object = get_object_or_404(ProductEnquiry, slug = self.kwargs['slug'])
+            return self.object
+        except Http404:
+            return redirect(reverse_lazy('users:enquiries'))
+    
+
+class DeleteProductEnquiryView(ProductBaseView, View):
+    model = ProductEnquiry
+    success_url = reverse_lazy('users:enquiries')
+    redirect_url = success_url
+
+    def get_object(self):
+        try:
+            return get_object_or_404(ProductEnquiry, slug = self.kwargs['slug'])
+        except Http404:
+            return redirect(self.redirect_url)
+        
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        messages.success(self.request, 'Enquiry deleted successfully')
+        return redirect(self.success_url)
 
 # CSC Centers2
 class CscCenterBaseView(BaseUserView):

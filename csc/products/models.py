@@ -51,3 +51,43 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class ProductEnquiry(models.Model):
+    csc_center = models.ForeignKey("csc_center.CscCenter", on_delete=models.CASCADE)
+    applicant_name = models.CharField(max_length=150)
+    applicant_email = models.EmailField(max_length=254)
+    applicant_phone = models.CharField(max_length=20)
+    product = models.ForeignKey("products.Product", on_delete=models.CASCADE)
+    message = models.TextField()
+    
+    slug = models.SlugField(blank=True, null=True, max_length=150)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.applicant_email+ '-' + self.product.name)
+            self.slug = base_slug
+
+            count = 1
+            while ProductEnquiry.objects.filter(slug = self.slug).exists():
+                self.slug = f"{base_slug}-{count}"
+                count += 1
+
+            print(self.slug)
+        
+        return super().save(*args, **kwargs)
+    
+    @property
+    def get_absolute_url(self):
+        return reverse("users:enquiry", kwargs={"slug": self.slug})
+    
+    
+    def __str__(self):
+        return f"From {self.applicant_email} to {self.csc_center.name}"
+    
+    class Meta:
+        db_table = 'product_enquiry'
+        ordering = ['-created']
+

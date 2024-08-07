@@ -13,6 +13,7 @@ from django.contrib import messages
 
 from csc_center.models import CscCenter, State, District, Block
 from services.models import Service, ServiceEnquiry
+from products.models import Product, ProductEnquiry
 
 
 class HomePageView(TemplateView):
@@ -120,7 +121,6 @@ class DetailCscView(DetailView):
         context['services'] = services
         return context
     
-
 
 class SearchCscCenterView(HomePageView, ListView):
     model = CscCenter
@@ -261,6 +261,7 @@ class NearMeCscCenterView(View):
                     
                     context.update({
                         'location': county,
+                        'states': State.objects.all()
                     })
 
                     if county:
@@ -309,6 +310,43 @@ class ServiceRequestView(CreateView):
             applicant_email = applicant_email,
             applicant_phone = applicant_phone,
             service = service,
+            csc_center = csc_center,
+            message = message
+        )
+        messages.success(request, "Request submitted")
+        return redirect(self.get_success_url())
+
+
+class ProductRequestView(CreateView):
+    model = ProductEnquiry
+    fields = ('csc_center', 'applicant_name', 'applicant_email', 'applicant_phone', 'product', 'message')
+
+    def get_success_url(self):
+        return reverse_lazy('home:csc_center', kwargs={'slug': self.kwargs.get('slug')})
+
+    def post(self, request, *args, **kwargs):
+        applicant_name = request.POST.get('applicant_name')
+        applicant_email = request.POST.get('applicant_email')
+        applicant_phone = request.POST.get('applicant_phone')
+        product = request.POST.get('product')
+        print(product)
+        message = request.POST.get('message')
+        try:
+            product = get_object_or_404(Product, slug = product)
+        except Http404:
+            messages.warning(request, "Invalid product selected.")
+            return redirect(self.get_success_url())
+        try:
+            csc_center = get_object_or_404(CscCenter, slug = kwargs['slug'])
+        except Http404:
+            messages.warning(request, "Invalid center selected.")
+            return redirect(self.get_success_url())
+        
+        ProductEnquiry.objects.create(
+            applicant_name = applicant_name,
+            applicant_email = applicant_email,
+            applicant_phone = applicant_phone,
+            product = product,
             csc_center = csc_center,
             message = message
         )

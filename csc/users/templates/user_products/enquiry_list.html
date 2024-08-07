@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{% static 'w3/admin_service/css/admin_service.css' %}">
 {% endblock styles %}
 
-{% block title_prefix %} Service Equiry {% endblock title_prefix %}
+{% block title_prefix %} Product Equiry {% endblock title_prefix %}
 
 {% block content %}
 <style>
@@ -46,12 +46,12 @@
 	<div id="titlebar">
 		<div class="row">
 			<div class="col-md-12">
-				<h2>Service Enquiry</h2>
+				<h2>Product Enquiry</h2>
 				<!-- Breadcrumbs -->
 				<nav id="breadcrumbs">
 					<ul>
 						<li><a href="{% url 'csc_admin:home' %}">Home</a></li>						
-						<li>Service Enquiry</li>
+						<li>Product Enquiry</li>
 					</ul>
 				</nav>
 			</div>
@@ -70,7 +70,7 @@
 	<!-- Delete Confirmation Box Start-->
     <div id="delete-confirmation-box" style="display: none;">
         <div class="modal-content">            
-            <h4>Deleting Service Enquiry <span id="enquiry-enquiry"></span> . . .</h4>
+            <h4>Deleting Product Enquiry <span id="enquiry-enquiry"></span> . . .</h4>
             <h5>Are you sure?</h5>                        
         </div>
         <br>
@@ -103,14 +103,14 @@
 						</select>
 					</div>
 				</div>
-				<h4>Service Enquiry</h4>
+				<h4>Product Enquiry</h4>
 				<br />
 				<table id="enquiry-table">
 					<thead>
 					<tr>
 						<th>No</th>
 						<th>Applicant Name</th>
-						<th>Service</th>
+						<th>Product</th>
 						<th>Applicant Email</th>
 						<th>Applicant Phone</th>
 						<th></th>
@@ -123,7 +123,7 @@
 					>
 						<td>{{ forloop.counter }}</td>
 						<td>{{ enquiry.applicant_name }}</td>
-						<td>{{ enquiry.service.name }}</td>
+						<td>{{ enquiry.product.name }}</td>
 						<td>{{ enquiry.applicant_email }}</td>
 						<td>{{ enquiry.applicant_phone }}</td>
 						<td>
@@ -163,14 +163,14 @@
 	})
 </script>
 
-<!-- Get Service Enquiry for multiple centers -->
+<!-- Get Product Enquiry for multiple centers -->
 <script>
 	$(document).ready(function() {
 
 		function getEnquiries(center) {
 			$.ajax({
 				type: 'GET',
-				url: `/users/service_enquiries/`,
+				url: `/users/product_enquiries/`,
 				dataType: 'json',
 				data: {'center_slug': center},
 				success: response => {
@@ -183,7 +183,7 @@
 									>
 										<td>${ enquiry.count }</td>
 										<td>${ enquiry.applicant_name }</td>
-										<td>${ enquiry.service }</td>
+										<td>${ enquiry.product }</td>
 										<td>${ enquiry.applicant_email }</td>
 										<td>${ enquiry.applicant_phone }</td>
 										<td>
