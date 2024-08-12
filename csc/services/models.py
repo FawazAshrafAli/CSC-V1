@@ -63,7 +63,7 @@ class ServiceEnquiry(models.Model):
     
     @property
     def get_absolute_url(self):
-        return reverse("users:enquiry", kwargs={"slug": self.slug})
+        return reverse("users:service_enquiry", kwargs={"slug": self.slug})
     
     
     def __str__(self):

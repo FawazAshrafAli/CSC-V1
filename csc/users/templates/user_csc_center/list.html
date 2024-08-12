@@ -79,16 +79,18 @@
 							<th>No</th>
 							<th id="th-image">Image</th>
 							<th>CSC Center</th>
+							<th></th>
 						</tr>
 					</thead>
 					<tbody>
 						{% for center in centers %}
-						<tr onclick="window.location='#'">
+						<tr onclick="window.location='{% url 'users:csc_center' center.slug %}'">
 							<td>{{ forloop.counter }}</td>
 							<td id="td-image">
 								<img src="{% if center.logo %} {{center.logo.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
 							</td>
 							<td>{{ center.full_name }}</td>
+							<td><a href="{% url 'users:update_csc' center.slug %}" class="button gray">Update</a></td>
 						</tr>
 						{% endfor %}
 					</tbody>

@@ -130,7 +130,7 @@
             <td>
               <button
                 class="button gray"
-                onclick="event.stopPropagation(); toggleServiceDeletion(`{{service.slug}}`, `{{service.name}}`)"
+                onclick="event.stopPropagation(); toggleServiceDeletion('{{service.slug}}', '{{service.name}}')"
               >
                 Remove
               </button>
@@ -194,7 +194,7 @@
               </td>
               <td>${service.name}</td>
               <td>
-              <button class="button gray" onclick="event.stopPropagation(); toggleServiceDeletion(${service.slug}, ${service.name})">Remove</button>
+              <button class="button gray" onclick="event.stopPropagation(); toggleServiceDeletion('${service.slug}', '${service.name}')">Remove</button>
               </td>
             </tr>`
 						$('#service-tbody').append(html);

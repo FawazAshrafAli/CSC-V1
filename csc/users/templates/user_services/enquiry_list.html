@@ -70,7 +70,7 @@
 	<!-- Delete Confirmation Box Start-->
     <div id="delete-confirmation-box" style="display: none;">
         <div class="modal-content">            
-            <h4>Deleting Service Enquiry <span id="enquiry-enquiry"></span> . . .</h4>
+            <h4>Deleting Service Enquiry <span id="service-enquiry"></span> . . .</h4>
             <h5>Are you sure?</h5>                        
         </div>
         <br>
@@ -119,19 +119,19 @@
 					<tbody id="enquiry-tbody">
 					{% for enquiry in enquiries %}
 					<tr
-						onclick="window.location='{% url 'users:enquiry' enquiry.slug %}'"
+						onclick="window.location='{% url 'users:service_enquiry' enquiry.slug %}'"
 					>
 						<td>{{ forloop.counter }}</td>
 						<td>{{ enquiry.applicant_name }}</td>
-						<td>{{ enquiry.service.name }}</td>
+						<td>{{ enquiry.service.first_name }}</td>
 						<td>{{ enquiry.applicant_email }}</td>
 						<td>{{ enquiry.applicant_phone }}</td>
 						<td>
 						<button
 							class="button gray"
-							onclick="event.stopPropagation(); toggleEnquiryDeletion(`{{enquiry.slug}}`, `{{enquiry.name}}`)"
+							onclick="event.stopPropagation(); toggleEnquiryDeletion('{{enquiry.slug}}', '{{enquiry.service.first_name}}')"
 						>
-							Remove
+							Delete
 						</button>
 						</td>
 					</tr>
@@ -153,8 +153,8 @@
 {% block scripts %}
 <script>
 	function toggleEnquiryDeletion(serviceId, serviceName) {
-		$('#delete-confirmation-box form').prop('action', `/users/delete_enquiry/${serviceId}`);
-		$('#enquiry-enquiry').html(serviceName);
+		$('#delete-confirmation-box form').prop('action', `/users/delete_service_enquiry/${serviceId}`);
+		$('#service-enquiry').html(serviceName);
 		$('#delete-confirmation-box').show();
 	}	
 	
@@ -179,7 +179,7 @@
 						if (response.enquiries.length > 0) {
 							response.enquiries.forEach(enquiry => {
 								let html = `<tr
-										onclick="window.location='/users/enquiry/${enquiry.slug}'"
+										onclick="window.location='/users/service_enquiry/${enquiry.slug}'"
 									>
 										<td>${ enquiry.count }</td>
 										<td>${ enquiry.applicant_name }</td>
@@ -189,9 +189,9 @@
 										<td>
 										<button
 											class="button gray"
-											onclick="event.stopPropagation(); toggleEnquiryDeletion(${enquiry.slug}, ${enquiry.name})"
+											onclick="event.stopPropagation(); toggleEnquiryDeletion('${enquiry.slug}', '${enquiry.service}')"
 										>
-											Remove
+											Delete
 										</button>
 										</td>
 									</tr>`

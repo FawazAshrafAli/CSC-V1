@@ -158,7 +158,7 @@ class DeleteServiceView(BaseAdminView, View):
 
     def get(self, request, *args, **kwargs):
         try:
-            self.object = get_object_or_404(Service, pk = self.kwargs['pk'])
+            self.object = get_object_or_404(Service, slug = self.kwargs['slug'])
             self.object.delete()
             messages.success(self.request, "Successfully deleted service.")
             return redirect(self.success_url)
@@ -390,6 +390,7 @@ class BaseAdminCscProductView(BaseAdminView, View):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['product_categories'] = ProductCategory.objects.all().order_by('name')        
+        context['product_page'] = True
         return context
     
 
@@ -513,11 +514,48 @@ class BaseAdminCscCenterView(BaseAdminView, View):
 
 class ListCscCenterView(BaseAdminCscCenterView, ListView):
     template_name = "admin_csc_center/list.html"
-    # paginate_by = 10
-    # paginate_orphans = 5
     ordering = ['name']
     context_object_name = 'centers'
     queryset = CscCenter.objects.all().order_by('name')
+
+    def get(self, request, *args, **kwargs):
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            state = request.GET.get('state', None)
+            district = request.GET.get('district', None)
+            block = request.GET.get('block', None)
+
+            print(f"{state}, {district}, {block}")
+
+            if state and district and block:
+                kwargs = {'state__pk': state, 'district__pk': district, 'block__pk': block}
+            elif state and district:
+                kwargs = {'state__pk': state, 'district__pk': district}
+            elif state:
+                kwargs = {'state__pk': state}
+
+            center_list = []
+            centers = CscCenter.objects.filter(**kwargs).order_by('name')
+
+            data = {}
+
+            if state:
+                districts = list(District.objects.filter(state__pk = state).values('id', 'district')) if state else None
+                data['districts'] = districts
+            if state and district:
+                blocks = list(Block.objects.filter(state__pk = state, district__pk = district).values('id', 'block')) if state and district else None
+                data['blocks'] = blocks
+
+            for count, center in enumerate(centers):
+                center_list.append({
+                    'count': count + 1,
+                    'name': center.name,
+                    'owner': center.owner,
+                    'partial_address': center.partial_address,
+                    'email': center.email,
+                    'contact_number': center.contact_number})
+            data['centers'] = center_list
+            return JsonResponse(data)
+        return super().get(request, *args, **kwargs)
 
 
 class AddCscCenterView(BaseAdminCscCenterView, CreateView):
@@ -560,11 +598,12 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
         logo = request.FILES.get('logo') # dropzone
         banner = request.FILES.get('banner') # dropzone
         description = request.POST.get('description')
+        owner = request.POST.get('owner')
+        email = request.POST.get('email')
+        website = request.POST.get('website') # optional
         contact_number = request.POST.get('contact_number')
         mobile_number = request.POST.get('mobile_number')
         whatsapp_number = request.POST.get('whatsapp_number')
-        email = request.POST.get('email')
-        website = request.POST.get('website') # optional
         services = request.POST.getlist('services')
         products = request.POST.getlist('products')
 
@@ -640,16 +679,16 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
             zipcode = zipcode, landmark_or_building_name = landmark_or_building_name,
             street = street, logo = logo, banner = banner,
             description = description, contact_number = contact_number,
+            owner = owner, email = email, website = website, 
             mobile_number = mobile_number, whatsapp_number = whatsapp_number,
-            email = email, website = website, mon_opening_time = mon_opening_time, 
-            tue_opening_time = tue_opening_time, wed_opening_time = wed_opening_time, 
-            thu_opening_time = thu_opening_time, fri_opening_time = fri_opening_time, 
-            sat_opening_time = sat_opening_time, sun_opening_time = sun_opening_time, 
-            mon_closing_time = mon_closing_time,tue_closing_time = tue_closing_time,
-            wed_closing_time = wed_closing_time,thu_closing_time = thu_closing_time,
-            fri_closing_time = fri_closing_time,sat_closing_time = sat_closing_time,
-            sun_closing_time = sun_closing_time, latitude = latitude,
-            longitude = longitude
+            mon_opening_time = mon_opening_time, tue_opening_time = tue_opening_time, 
+            wed_opening_time = wed_opening_time, thu_opening_time = thu_opening_time, 
+            fri_opening_time = fri_opening_time, sat_opening_time = sat_opening_time, 
+            sun_opening_time = sun_opening_time, mon_closing_time = mon_closing_time, 
+            tue_closing_time = tue_closing_time, wed_closing_time = wed_closing_time, 
+            thu_closing_time = thu_closing_time, fri_closing_time = fri_closing_time, 
+            sat_closing_time = sat_closing_time, sun_closing_time = sun_closing_time, 
+            latitude = latitude, longitude = longitude
         )
 
         messages.success(request, "Added CSC center")      
@@ -688,7 +727,7 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
     template_name = 'admin_csc_center/update.html'
     context_object_name = 'center'
     fields = "__all__"
-    pk_url_kwarg = 'slug'
+    slug_url_kwarg = 'slug'
 
     def get_object(self, **kwargs):
         try:
@@ -738,11 +777,12 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         logo = request.FILES.get('logo') # dropzone
         banner = request.FILES.get('banner') # dropzone
         description = request.POST.get('description')
-        contact_number = request.POST.get('contact_number')
-        mobile_number = request.POST.get('mobile_number')
-        whatsapp_number = request.POST.get('whatsapp_number')
+        owner = request.POST.get('owner')
         email = request.POST.get('email')
         website = request.POST.get('website') # optional
+        contact_number = request.POST.get('contact_number')
+        mobile_number = request.POST.get('mobile_number')
+        whatsapp_number = request.POST.get('whatsapp_number')        
         services = request.POST.getlist('services')
         products = request.POST.getlist('products')
 
@@ -792,25 +832,25 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
             type = get_object_or_404(CscNameType, slug = type)
         except Http404:
             messages.error(request, 'Invalid CSC Name Type')
-            return redirect(reverse_lazy('csc_admin:add_csc'))
+            return redirect(reverse_lazy('csc_admin:update_csc'))
 
         try:
             state = get_object_or_404(State, pk = state)
         except Http404:
             messages.error(request, 'Invalid State')
-            return redirect(reverse_lazy('csc_admin:add_csc'))
+            return redirect(reverse_lazy('csc_admin:update_csc'))
 
         try:
             district = get_object_or_404(District, pk = district)
         except Http404:
             messages.error(request, 'Invalid District')
-            return redirect(reverse_lazy('csc_admin:add_csc'))
+            return redirect(reverse_lazy('csc_admin:update_csc'))
         
         try:
             block = get_object_or_404(Block, pk = block)
         except Http404:
             messages.error(request, 'Invalid Block')
-            return redirect(reverse_lazy('csc_admin:add_csc'))
+            return redirect(reverse_lazy('csc_admin:update_csc'))
         
         self.object = self.get_object()
 
@@ -833,11 +873,12 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         self.object.banner = banner
 
         self.object.description = description
-        self.object.contact_number = contact_number
-        self.object.mobile_number = mobile_number
-        self.object.whatsapp_number = whatsapp_number
+        self.object.owner = owner
         self.object.email = email
         self.object.website = website
+        self.object.contact_number = contact_number
+        self.object.mobile_number = mobile_number
+        self.object.whatsapp_number = whatsapp_number        
 
         self.object.show_opening_hours = True if show_opening_hours else False
         self.object.show_social_media_links = True if show_social_media_links else False

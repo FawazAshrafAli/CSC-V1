@@ -164,7 +164,7 @@
 
 						<li><a href="{% url 'users:home' %}" {% if request.path == '/admin/' %} class="current" {% endif %}>Home</a></li>
 
-						<li><a href="{% url 'users:centers' %}" {% if center_page %} class="current" {% endif %}>CSC Centers</a></li>
+						<li><a href="{% url 'users:csc_centers' %}" {% if center_page %} class="current" {% endif %}>CSC Centers</a></li>
 
 						<li><a href="{% url 'users:services' %}" {% if service_page %} class="current" {% endif %}>Services</a></li>
 
@@ -225,7 +225,7 @@
 
 				<li {% if center_page %} class="active" {% endif %} ><a><i class="fa fa-building"></i> CSC Centers</a>
 					<ul>
-						<li><a href="{% url 'users:centers' %}">List CSC Centers</a></li>
+						<li><a href="{% url 'users:csc_centers' %}">List CSC Centers</a></li>
 						<li><a href="{% url 'users:add_csc' %}" >Add CSC Center</a></li>
 					</ul>	
 				</li>

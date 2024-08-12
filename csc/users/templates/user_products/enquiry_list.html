@@ -70,7 +70,7 @@
 	<!-- Delete Confirmation Box Start-->
     <div id="delete-confirmation-box" style="display: none;">
         <div class="modal-content">            
-            <h4>Deleting Product Enquiry <span id="enquiry-enquiry"></span> . . .</h4>
+            <h4>Deleting Product Enquiry <span id="product-enquiry"></span> . . .</h4>
             <h5>Are you sure?</h5>                        
         </div>
         <br>
@@ -119,7 +119,7 @@
 					<tbody id="enquiry-tbody">
 					{% for enquiry in enquiries %}
 					<tr
-						onclick="window.location='{% url 'users:enquiry' enquiry.slug %}'"
+						onclick="window.location='{% url 'users:product_enquiry' enquiry.slug %}'"
 					>
 						<td>{{ forloop.counter }}</td>
 						<td>{{ enquiry.applicant_name }}</td>
@@ -129,9 +129,9 @@
 						<td>
 						<button
 							class="button gray"
-							onclick="event.stopPropagation(); toggleEnquiryDeletion(`{{enquiry.slug}}`, `{{enquiry.name}}`)"
+							onclick="event.stopPropagation(); toggleEnquiryDeletion('{{enquiry.slug}}', '{{enquiry.product}}')"
 						>
-							Remove
+							Delete
 						</button>
 						</td>
 					</tr>
@@ -152,9 +152,10 @@
 
 {% block scripts %}
 <script>
-	function toggleEnquiryDeletion(serviceId, serviceName) {
-		$('#delete-confirmation-box form').prop('action', `/users/delete_enquiry/${serviceId}`);
-		$('#enquiry-enquiry').html(serviceName);
+	function toggleEnquiryDeletion(productId, productName) {
+		console.log(productId)
+		$('#delete-confirmation-box form').prop('action', `/users/delete_product_enquiry/${productId}`);
+		$('#product-enquiry').html(productName);
 		$('#delete-confirmation-box').show();
 	}	
 	
@@ -179,7 +180,7 @@
 						if (response.enquiries.length > 0) {
 							response.enquiries.forEach(enquiry => {
 								let html = `<tr
-										onclick="window.location='/users/enquiry/${enquiry.slug}'"
+										onclick="window.location='${enquiry.get_absolute_url}'"
 									>
 										<td>${ enquiry.count }</td>
 										<td>${ enquiry.applicant_name }</td>
@@ -189,9 +190,9 @@
 										<td>
 										<button
 											class="button gray"
-											onclick="event.stopPropagation(); toggleEnquiryDeletion(${enquiry.slug}, ${enquiry.name})"
+											onclick="event.stopPropagation(); toggleEnquiryDeletion('${enquiry.slug}', '${enquiry.product}')"
 										>
-											Remove
+											Delete
 										</button>
 										</td>
 									</tr>`

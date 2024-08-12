@@ -1,0 +1,84 @@
+{% extends "user_base/base.html" %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'w3/admin_service/css/admin_service.css' %}">
+{% endblock styles %}
+
+{% block title_prefix %} Product Equiry {% endblock title_prefix %}
+
+{% block content %}
+<!-- Titlebar -->
+<div id="titlebar">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Product Enquiry</h2>
+            <!-- Breadcrumbs -->
+            <nav id="breadcrumbs">
+                <ul>
+                    <li><a href="{% url 'csc_admin:home' %}">Home</a></li>						
+                    <li>Product Enquiry</li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% if messages %}
+    <div id="message-div">
+        <ul class="messages">
+            {% for message in messages %}
+            <li {% if message.tags %} class="{{message.tags}}" {% endif %}>{{message}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Box Start-->
+<div id="delete-confirmation-box" style="display: none;">
+    <div class="modal-content">            
+        <h4>Deleting Product Enquiry <span id="service-enquiry"></span> . . .</h4>
+        <h5>Are you sure?</h5>                        
+    </div>
+    <br>
+    <form method="GET" action="#">
+        <button type="submit" id="confirm-deletion-btn">Delete</button>
+        <button type="button" id="cancel-deletion-btn">Cancel</button>
+    </form>
+</div>
+<!-- Delete Confirmation Box Start-->
+
+<div class="row">		
+    <!-- Listings -->
+    <div class="col-lg-12 col-md-12" id="product-card-col">
+        <div class="dashboard-list-box margin-top-0" style="background-color: #fff; padding: 10px 10px;">
+            <div class="row">
+                <div class="col-md-3">
+                    <span style="color:black;">Name: {{enquiry.applicant_name}}</span>
+                </div>
+                <div class="col-md-3">
+                    <span style="color:black;">Email: {{enquiry.applicant_email}}</span>
+                </div>
+                <div class="col-md-3">
+                    <span style="color:black;">Phone: {{enquiry.applicant_phone}}</span>
+                </div>
+                <div class="col-md-3">
+                    <span style="color:black;">Product: {{enquiry.product.name}}</span>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-md-12">
+                    <h5>Messages:</h5>
+                    <span style="color: black;">{{enquiry.message}}</span>
+                </div>
+            </div>
+            <br>
+            <div class="row" style="text-align: right;">
+                <div class="col-md-12">
+                    <span>{{enquiry.created}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

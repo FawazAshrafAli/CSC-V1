@@ -30,7 +30,6 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.ForeignKey(Category, verbose_name="Category", on_delete=models.CASCADE, related_name="product_category")
     slug = models.SlugField(unique=True, blank=True, null=True)
-    quantity = models.PositiveIntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -81,7 +80,7 @@ class ProductEnquiry(models.Model):
     
     @property
     def get_absolute_url(self):
-        return reverse("users:enquiry", kwargs={"slug": self.slug})
+        return reverse("users:product_enquiry", kwargs={"slug": self.slug})
     
     
     def __str__(self):

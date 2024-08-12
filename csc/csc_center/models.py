@@ -101,11 +101,12 @@ class CscCenter(models.Model):
     banner = models.ImageField(upload_to='csc_center_banners/')
 
     description = models.TextField()
+    owner = models.CharField(max_length=150)
+    email = models.EmailField(max_length=100)
+    website = models.URLField(max_length=100, null=True, blank=True)
     contact_number = models.CharField(max_length=20)
     mobile_number = models.CharField(max_length=20)
     whatsapp_number = models.CharField(max_length=20)
-    email = models.EmailField(max_length=100)
-    website = models.URLField(max_length=100, null=True, blank=True)
     services = models.ManyToManyField(Service)
     products = models.ManyToManyField(Product)
 

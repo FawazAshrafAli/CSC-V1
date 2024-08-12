@@ -1,5 +1,7 @@
 #delete-toggle-div {
     position:absolute;
+    display: flex;
+    align-items: center;
     right:0;
 }
 
