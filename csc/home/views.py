@@ -15,15 +15,27 @@ from csc_center.models import CscCenter, State, District, Block
 from services.models import Service, ServiceEnquiry
 from products.models import Product, ProductEnquiry
 
-
-class HomePageView(TemplateView):
-    template_name = 'home/home.html'
-
+class BaseHomeView(View):
     def get_context_data(self, **kwargs):
         context = {}
         context["services"] = Service.objects.all()
         context['states'] = State.objects.all()
+        context['home_page'] = True
+        user = self.request.user
+        if user:
+            context['username'] = user.username
+            try:
+                if user.email:
+                    user_center = CscCenter.objects.filter(email = user.email).first()        
+                    context['user_center'] = user_center
+            except Exception as e:
+                print(e)
+                pass      
         return context
+
+
+class HomePageView(BaseHomeView, TemplateView):
+    template_name = 'home/home.html'
     
 
 # @method_decorator(never_cache, name="dispatch")
@@ -109,17 +121,10 @@ class HomePageView(TemplateView):
 
 
 # Detail CscCenter Center
-class DetailCscView(DetailView):
+class DetailCscView(BaseHomeView, DetailView):
     model = CscCenter
     template_name = 'csc/detail_csc.html'
     context_object_name = 'csc'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        self.object = self.get_object()
-        services = self.object.services.all()
-        context['services'] = services
-        return context
     
 
 class SearchCscCenterView(HomePageView, ListView):
@@ -235,7 +240,7 @@ class FilterAndSortCscCenterView(SearchCscCenterView):
 
 
 @method_decorator(never_cache, name="dispatch")
-class NearMeCscCenterView(View):
+class NearMeCscCenterView(BaseHomeView, View):
     model = CscCenter
     template_name = 'home/list.html'
     redirect_url = reverse_lazy('home:view')
@@ -274,7 +279,7 @@ class NearMeCscCenterView(View):
             return redirect(self.redirect_url)  
 
 
-class CscCenterDetailView(DetailView):
+class CscCenterDetailView(BaseHomeView, DetailView):
     model = CscCenter
     template_name = 'home/detail.html'
     context_object_name = 'center'

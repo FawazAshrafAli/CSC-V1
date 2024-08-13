@@ -249,6 +249,8 @@
 						<li><a href="{% url 'csc_admin:services' %}" {% if service_page %} class="current" {% endif %}>Services</a></li>
 
 						<li><a href="{% url 'csc_admin:products' %}" {% if product_page %} class="current" {% endif %}>Products</a></li>
+
+                        <li><a href="{% url 'csc_admin:posters' %}" {% if poster_page %} class="current" {% endif %} {% if poster_page %} class="current" {% endif %}>Posters</a></li>
 					</ul>
 				</nav>
 				<div class="clearfix"></div>
@@ -264,7 +266,7 @@
 					
 					<!-- User Menu -->
 					<div class="user-menu">
-						<div class="user-name"><span><img src="{% static 'images/dashboard-avatar.jpg' %}" alt=""></span> My Account</div>
+						<div class="user-name"><span><img src="{% static 'images/dashboard-avatar.jpg' %}" alt=""></span> {% if request.user %} {{ request.user.username }} {% else %} My Account {% endif %}</div>
 						<ul>
 							<li><a href="dashboard.html"><i class="sl sl-icon-settings"></i> Dashboard</a></li>
 							<li><a href="dashboard-messages.html"><i class="sl sl-icon-envelope-open"></i> Messages</a></li>
@@ -330,7 +332,17 @@
 					</ul>	
 				</li>
 
-				<li><a><i class="fa fa-map"></i> Locations</a>
+                <li {% if poster_page %} class="active" {% endif %} ><a><i class="fa fa-image"></i> Posters</a>
+					<ul>
+						<li><a href="{% url 'csc_admin:posters' %}">List Posters</a></li>
+						<li><a href="{% url 'csc_admin:create_poster' %}">Add Posters</a></li>						
+					</ul>	
+				</li>
+
+			</ul>
+            
+            <ul data-submenu-title="Components">
+                <li><a><i class="fa fa-map"></i> Locations</a>
 					<ul>
 						<li id="toggle-state-pop-up"><a href="#"><i class="fa fa-plus"></i> Add States</a></li>
 						<li id="toggle-district-pop-up"><a href="#"><i class="fa fa-plus"></i> Add Districts</a></li>
@@ -344,8 +356,7 @@
 						<li id="toggle-keyword-pop-up"><a href="#"><i class="fa fa-plus"></i> Add Keywords</a></li>
 					</ul>	
 				</li>
-
-			</ul>					
+            </ul>
 
 			<ul data-submenu-title="Account">
 				<li><a href="dashboard-my-profile.html"><i class="sl sl-icon-user"></i> My Profile</a></li>

@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'authentication',
     'csc_center',
     'users',
+    'posters',
 ]
 
 MIDDLEWARE = [

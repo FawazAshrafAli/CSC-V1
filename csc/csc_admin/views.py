@@ -11,8 +11,8 @@ from django.http import HttpResponse
 from django.utils import timezone
 from datetime import datetime
 import re
-import os
-from django.conf import settings
+
+from posters.forms import PosterDescriptionForm
 
 from .forms import (
     CreateServiceForm, UpdateServiceForm, CreateBlogForm,
@@ -23,6 +23,7 @@ from products.models import Product, Category as ProductCategory
 from csc_center.models import CscCenter, State, District, Block, CscKeyword, CscNameType, SocialMediaLink, Image
 from services.models import Service
 from blog.models import Blog, Category, Tag
+from posters.models import Poster
 
 class BaseAdminView(LoginRequiredMixin, View):
     login_url = reverse_lazy("authentication:login")
@@ -404,7 +405,6 @@ class CreateProductView(BaseAdminCscProductView, CreateView):
         image = request.FILES.get('image')
         description = request.POST.get('description')
         price = request.POST.get('price')
-        quantity = request.POST.get('quantity')
         category = request.POST.get('category')
 
         try:
@@ -413,7 +413,7 @@ class CreateProductView(BaseAdminCscProductView, CreateView):
             messages.error(self.request, "Failed. Invalid category")
             return redirect('csc_admin:create_product')
         
-        self.model.objects.create(name = name, image = image, description = description, price = price, quantity = quantity, category = category)
+        self.model.objects.create(name = name, image = image, description = description, price = price, category = category)
         messages.success(self.request, "Created Product")
         return redirect(self.success_url)
     
@@ -436,7 +436,7 @@ class ProductDetailView(BaseAdminCscProductView, DetailView):
 
 
 class UpdateProductView(BaseAdminCscProductView, UpdateView):
-    fields = ["image", "name", "description", "price", "category", "quantity"]
+    fields = ["image", "name", "description", "price", "category"]
     template_name = "admin_product/update.html"
     
     def get_success_url(self, *kwargs):
@@ -447,7 +447,6 @@ class UpdateProductView(BaseAdminCscProductView, UpdateView):
         image = request.FILES.get('image')
         description = request.POST.get('description')
         price = request.POST.get('price')
-        quantity = request.POST.get('quantity')
         category = request.POST.get('category')
 
         try:
@@ -464,7 +463,6 @@ class UpdateProductView(BaseAdminCscProductView, UpdateView):
         self.object.image = image
         self.object.description = description
         self.object.price = price
-        self.object.quantity = quantity
         self.object.category = category
         self.object.save()
 
@@ -1403,3 +1401,92 @@ class DeleteCscNameTypeView(BaseAdminCscCenterView, View):
         self.object.delete()
         return JsonResponse({"status": "success"}, safe=False)
 ##################################### CSC CENTER END #####################################
+
+class BasePosterView(BaseAdminView, View):
+    model = Poster
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['poster_page'] = True
+        return context
+    
+
+class PosterListView(BasePosterView, ListView):
+    template_name = 'admin_poster/list.html'
+    queryset = Poster.objects.all()
+    context_object_name = 'posters'
+
+
+class PosterDetailView(BasePosterView, DetailView):
+    template_name = 'admin_poster/detail.html'
+    context_object_name = 'poster'
+    slug_url_kwarg = 'slug'
+
+class CreatePosterView(BasePosterView, CreateView):
+    form_class = PosterDescriptionForm
+    template_name = 'admin_poster/create.html'
+    success_url = reverse_lazy('csc_admin:posters')
+    redirect_url = success_url
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        title = request.POST.get('title')
+        poster = request.FILES.get('poster')
+
+        if title:
+            self.poster = self.model.objects.create(title = title, poster = poster)
+            if form.is_valid():
+                description = form.cleaned_data['description']
+                print(description)
+                self.poster.description = description
+                self.poster.save()
+
+            messages.success(request, 'Added Poster')
+            return redirect(self.success_url)
+        else:
+            messages.warning(request, 'Please provide the poster title.')
+            return redirect(self.redirect_url)
+        
+
+class DeletePosterView(BasePosterView, View):
+    success_url = reverse_lazy('csc_admin:posters')
+    redirect_url = success_url
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = get_object_or_404(self.model, slug = self.kwargs['slug'])
+            self.object.delete()
+            messages.success(request, "Poster Deleted.")
+            return redirect(self.success_url)
+        except Http404:
+            messages.error(request, 'Invalid Poster')
+            return redirect(self.redirect_url)
+        
+
+class UpdatePosterView(BasePosterView, CreateView):
+    form_class = PosterDescriptionForm
+    template_name = 'admin_poster/update.html'
+    success_url = reverse_lazy('csc_admin:posters')
+    redirect_url = success_url
+    slug_url_kwarg = 'slug'
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        title = request.POST.get('title')
+        poster = request.FILES.get('poster')
+
+        if title:
+            self.poster = self.get_object()
+            self.poster.title = title
+            self.poster.poster = poster
+            if form.is_valid():
+                description = form.cleaned_data['description']
+                self.poster.description = description
+                self.poster.save()
+            self.poster.save()
+
+            messages.success(request, 'Updated Poster')
+            return redirect(self.success_url)
+        else:
+            messages.warning(request, 'Please provide the poster title.')
+            return redirect(self.redirect_url)

@@ -107,16 +107,16 @@
 				 <nav id="navigation" class="style-1" itemscope="" itemtype="http://www.schema.org/SiteNavigationElement">
 					<ul id="responsive">
 
-						<li itemprop="name"><a itemprop="url" class="{% block home_nav %}{% endblock home_nav %}" href="{% url 'home:view' %}">Home</a></li>
+						<li itemprop="name"><a itemprop="url" {% if home_page %} class="current" {% endif %} href="{% url 'home:view' %}">Home</a></li>
 
-						<li itemprop="name"><a itemprop="url" class="{% block about_us_nav %}{% endblock about_us_nav %}" href="{% url 'about_us:view' %}">About Us</a>
+						<li itemprop="name"><a itemprop="url" {% if about_us_page %} class="current" {% endif %} href="{% url 'about_us:view' %}">About Us</a>
 							<ul>
 								<li itemprop="name"><a itemprop="url" href="profile">Profile</a></li>
 								<li itemprop="name"><a itemprop="url" href="{% url 'blog:list' %}">Blog</a></li>
 							</ul>
 						</li>
 
-						<li itemprop="name"><a itemprop="url" class="{% block services_nav %}{% endblock services_nav %}" href="{% url 'services:services' %}">Services</a>
+						<li itemprop="name"><a itemprop="url" {% if service_page %} class="current" {% endif %} href="{% url 'services:services' %}">Services</a>
 							<div class="mega-menu mobile-styles {% if service_group_1 and service_group_2 and service_group_3 %} three-columns {% elif service_group_1 and service_group_2 %} two-columns {% elif service_group_1 %} one-columns {% endif %} ">
 									{% if services|length > 0 %}
 									<div class="mega-menu-section">
@@ -151,8 +151,8 @@
 							</div>
 						</li>
 
-						<li itemprop="name"><a itemprop="url" class="{% block products_nav %}{% endblock products_nav %}" href="{% url 'products:products' %}">Products</a></li>
-						<li itemprop="name"><a itemprop="url" class="{% block contact_us_nav %}{% endblock contact_us_nav %}" href="{% url 'contact_us:view' %}">Contact Us</a></li>
+						<li itemprop="name"><a itemprop="url" {% if product_page %} class="current" {% endif %} href="{% url 'products:products' %}">Products</a></li>
+						<li itemprop="name"><a itemprop="url" {% if contact_us_page %} class="current" {% endif %} href="{% url 'contact_us:view' %}">Contact Us</a></li>
                         
                         
 						
@@ -173,7 +173,7 @@
 					
 					<!-- User Menu -->
 					<div class="user-menu">
-                     <a href="{% url 'authentication:login' %}" class="user-name"><span><img src="{% static 'images/dashboard-avatar.jpg' %}" alt=""></span> Login</a> 
+                     <a href="{% url 'authentication:login' %}" class="user-name"><span><img src="{% if user_center.logo %} {{user_center.logo.url}} {% else %} {% static 'images/dashboard-avatar.jpg' %} {% endif %}" alt=""></span>{% if user_center %} {{user_center.name|slice:':7'}} {% elif username %} {{username|slice:':7'}} {% else %} Login {% endif %}</a> 
                     
                     <!--  
                      <div class="user-name"><span><img src="{% static 'images/dashboard-avatar.jpg' %}" alt=""></span>CSC Name</div>

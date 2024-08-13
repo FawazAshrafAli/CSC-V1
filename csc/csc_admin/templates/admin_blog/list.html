@@ -5,6 +5,39 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{% static 'w3/admin_blog/css/admin_blog.css' %}">
+
+<!-- Table Styles -->
+<style>
+    #blog-table {
+        min-width: 100%;
+        background-color: #fff;
+    }
+    #blog-table tr {
+        border-bottom: 1px solid silver;
+    }
+    #blog-table tbody tr{
+        cursor: pointer;
+    }
+    #blog-table tbody tr:hover {
+        color: blue;
+    }
+    #blog-table td:first-child,
+    #blog-table th:first-child {
+        text-align: center;
+    }
+    #blog-table img {
+        padding: 3px 0;
+        height: 50px;
+    }
+    #button-div button {
+        height: 0;
+        padding: 0 10px;
+    }
+    #blog-table tbody tr:hover #button-div button {
+        height: 100%;
+        padding: 5px 10px;
+    }
+</style>
 {% endblock styles %}
 
 {% block content %}
@@ -57,6 +90,33 @@
 	
 	#cancel-publish-btn:hover {
 		background: linear-gradient(to bottom, steelblue, blue, darkblue)
+	}
+</style>
+
+<!-- Status Button Style -->
+<style>
+	.status-btn {
+		color: #fff;
+		border: 0;
+		text-transform: uppercase;
+		width: 95px;
+		box-shadow: 0px 0px 3px 1px grey;
+	}
+
+	.draft-btn {
+		background-color: darkred;
+	}
+
+	.draft-btn:hover {
+		background: linear-gradient(to bottom, red, darkred);
+	}
+
+	.published-btn {
+		background-color: green;
+	}
+
+	.published-btn:hover {
+		background: linear-gradient(to bottom, lime, green);
 	}
 </style>
 
@@ -175,9 +235,41 @@
 	
 	<!-- Listings -->
 	<div class="col-lg-12 col-md-12">
-		<div class="dashboard-list-box margin-top-0">
+		<div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
 			<h4>Blogs</h4>
-			<ul>
+			<br>
+			<table id="blog-table">
+				<thead>
+					<tr>
+						<th>No</th>
+						<th id="th-image">Image</th>
+						<th>Title</th>
+						<th style="text-align:center;">Status</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody id="blog-tbody">
+					{% for blog in blogs %}
+					<tr class="blog-items" onclick="window.location='{% url 'csc_admin:blog' blog.slug %}'">
+						<td>{{ forloop.counter }}</td>
+						<td id="td-image">
+							<img src="{% if blog.image %} {{blog.image.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
+						</td>
+						<td>{{ blog.title }}</td>
+						<td style="text-align:center;">
+							<button type="button" class="status-btn {% if blog.status == 'Published' %} published-btn {% else %} draft-btn {% endif %}" {% if blog.status == 'Published' %} onclick="event.stopPropagation(); toggleSetDraft(`{{blog.slug}}`, `{{blog.title}}`);" {% else %} onclick="event.stopPropagation(); togglePublishBlog(`{{blog.slug}}`, `{{blog.title}}`);" {% endif %}>{{blog.status}}</button>
+						</td>
+						
+						<td>
+							<div id="button-div">
+								<button class="button gray" onclick="event.stopPropagation(); toggleBlogDeletion(`{{blog.slug}}`, `{{blog.title}}`);"><i class="sl sl-icon-close"></i> Delete</button>
+							</div>
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			{% comment %} <ul>
 				{% for blog in blogs %}
 				<li class="blog-items">				
 					<div class="list-box-listing">
@@ -201,7 +293,7 @@
 					</div>
 				</li>
 				{% endfor %}
-			</ul>
+			</ul> {% endcomment %}
 		</div>
 
 		<!-- Pagination -->

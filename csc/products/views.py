@@ -4,6 +4,7 @@ from django.views.generic import ListView, DetailView, View
 from django.http import Http404, JsonResponse
 
 from .models import Product, Category
+from services.models import Service
 
 class ProductBaseView(View):
     model = Product
@@ -11,6 +12,8 @@ class ProductBaseView(View):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
+        context['services'] = Service.objects.all()
+        context['product_page'] = True
         return context
 
 class ProductListView(ProductBaseView, ListView):

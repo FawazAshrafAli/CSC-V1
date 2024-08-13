@@ -16,6 +16,9 @@ from .views import (
     DeleteCscCenterView, RemoveCscCenterLogoView, RemoveCscCenterBannerView,
     RemoveSocialMediaLinkView,
 
+    PosterListView, CreatePosterView, PosterDetailView,
+    DeletePosterView,
+
     get_all_states, get_all_districts, get_all_blocks,
     get_csc_keywords, get_name_types,
     GetDistrictDetailsView, GetBlockDetailsView,
@@ -52,6 +55,11 @@ urlpatterns = [
     path('product/<str:slug>', ProductDetailView.as_view(), name = "product"),
     path('update_product/<str:slug>', UpdateProductView.as_view(), name = "update_product"),
     path('delete_product/<str:slug>', DeleteProductView.as_view(), name = "delete_product"),
+
+    path('posters/', PosterListView.as_view(), name="posters"),
+    path('poster/<str:slug>', PosterDetailView.as_view(), name="poster"),
+    path('create_poster/', CreatePosterView.as_view(), name="create_poster"),
+    path('delete_poster/<str:slug>', DeletePosterView.as_view(), name = "delete_poster"),
 
     path('csc_centers/', ListCscCenterView.as_view(), name = "csc_centers"),
     path('add_csc/', AddCscCenterView.as_view(), name = "add_csc"),

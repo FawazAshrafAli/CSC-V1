@@ -1,41 +1,41 @@
 {% extends "admin_base/base.html" %}
 {% load static %}
 
-{% block title_prefix %} Services {% endblock title_prefix %}
+{% block title_prefix %} Posters {% endblock title_prefix %}
 
 {% block styles %}
 <link rel="stylesheet" href="{% static 'w3/admin_service/css/admin_service.css' %}">
 
 <!-- Table Styles -->
 <style>
-    #service-table {
+    #poster-table {
         min-width: 100%;
         background-color: #fff;
     }
-    #service-table tr {
+    #poster-table tr {
         border-bottom: 1px solid silver;
     }
-    #service-table tbody tr{
+    #poster-table tbody tr{
         cursor: pointer;
     }
-    #service-table tbody tr:hover {
+    #poster-table tbody tr:hover {
         color: blue;
     }
-    #service-table td:first-child,
-    #service-table th:first-child,
+    #poster-table td:first-child,
+    #poster-table th:first-child,
     #td-image,
     #th-image {
         text-align: center;
     }
-    #service-table img {
+    #poster-table img {
         padding: 3px 0;
         height: 50px;
     }
-    #service-table button {
+    #poster-table button {
         height: 0;
         padding: 0 10px;
     }
-    #service-table tbody tr:hover button {
+    #poster-table tbody tr:hover button {
         height: 100%;
         padding: 5px 10px;
     }
@@ -48,12 +48,12 @@
 	<div id="titlebar">
 		<div class="row">
 			<div class="col-md-12">
-				<h2>Services</h2>
+				<h2>Posters</h2>
 				<!-- Breadcrumbs -->
 				<nav id="breadcrumbs">
 					<ul>
 						<li><a href="{% url 'csc_admin:home' %}">Home</a></li>						
-						<li>Services</li>
+						<li>Posters</li>
 					</ul>
 				</nav>
 			</div>
@@ -72,7 +72,7 @@
 	<!-- Delete Confirmation Box Start-->
     <div id="delete-confirmation-box" style="display: none;">
         <div class="modal-content">            
-            <h4><span>Deleting</span> Service <span id="service-name"></span> . . .</h4>
+            <h4><span>Deleting</span> Service <span id="poster-name"></span> . . .</h4>
             <h5>Are you sure?</h5>                        
         </div>
         <br>
@@ -88,26 +88,26 @@
 		<!-- Listings -->
 		<div class="col-lg-12 col-md-12">
 			<div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
-				<h4>Services</h4>
+				<h4>Posters</h4>
 				<br>
-				<table id="service-table">
+				<table id="poster-table">
 					<thead>
 						<tr>
 							<th>No</th>
 							<th id="th-image">Image</th>
-							<th>Service</th>
+							<th style="text-align:center">Title</th>
 							<th></th>
 						</tr>
 					</thead>
-					<tbody id="service-tbody">
-						{% for service in services %}
-						<tr class="service-items" onclick="window.location='{% url 'csc_admin:service' service.pk %}'">
+					<tbody id="poster-tbody">
+						{% for poster in posters %}
+						<tr class="poster-items" onclick="window.location='{% url 'csc_admin:poster' poster.slug %}'">
 							<td>{{ forloop.counter }}</td>
 							<td id="td-image">
-								<img src="{% if service.image %} {{service.image.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
+								<img src="{% if poster.poster %} {{poster.poster.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
 							</td>
-							<td>{{ service.name }}</td>
-							<td><button class="button gray" onclick="event.stopPropagation(); toggleServiceDeletion(`{{service.slug}}`, `{{service.name}}`)"><i class="sl sl-icon-close"></i> Delete</button></td>
+							<td style="text-align:center">{{ poster.title }}</td>
+							<td style="text-align: right; padding-right: 10px;"><button class="button gray" onclick="event.stopPropagation(); toggleServiceDeletion(`{{poster.slug}}`, `{{poster.title}}`)"><i class="sl sl-icon-close"></i> Delete</button></td>
 						</tr>
 						{% endfor %}
 					</tbody>
@@ -148,9 +148,9 @@
 
 {% block scripts %}
 <script>
-	function toggleServiceDeletion(serviceId, serviceName) {
-		$('#delete-confirmation-box form').prop('action', `/admin/delete_service/${serviceId}`);
-		$('#service-name').html(serviceName);
+	function toggleServiceDeletion(posterId, posterTitle) {
+		$('#delete-confirmation-box form').prop('action', `/admin/delete_poster/${posterId}`);
+		$('#poster-name').html(posterTitle);
 		$('#delete-confirmation-box').show();
 	}	
 	
@@ -165,7 +165,7 @@
       function paginator () {
         let itemsPerPage = 10;
         let currentPage = 1;
-        let totalItems = $('.service-items').length;
+        let totalItems = $('.poster-items').length;
         let totalPages = Math.ceil(totalItems / itemsPerPage);
   
         $('.prev-page').hide();      
@@ -220,8 +220,8 @@
         paginationBtnVisibility();
   
         function renderPage(page) {
-            $('.service-items').hide();
-            $('.service-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
+            $('.poster-items').hide();
+            $('.poster-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
             $('#pagination a').removeClass('active');
             $('#pagination a').eq(page).addClass('active');
             $('.prev-page').toggleClass('disabled', page === 1);

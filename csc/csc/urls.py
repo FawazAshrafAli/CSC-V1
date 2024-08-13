@@ -26,6 +26,7 @@ urlpatterns = [
     path('about_us/', include('about_us.urls', namespace='about_us')), # About_us app url
     path('services/', include('services.urls', namespace='services')), # Services app url
     path('products/', include('products.urls', namespace='products')), # Products app url
+    path('posters/', include('posters.urls', namespace='posters')), # Poster app url
     path('contact_us/', include('contact_us.urls', namespace='contact_us')), # Contact_us app url
     path('blog/', include('blog.urls', namespace='blog')), # Blog app url
     path('csc_center/', include('csc_center.urls', namespace = "csc_center")), # CSC Center app url
