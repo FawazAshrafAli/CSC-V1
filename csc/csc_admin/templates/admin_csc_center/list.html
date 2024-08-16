@@ -145,7 +145,7 @@
                         </thead>
                         <tbody id="center-tbody">
                             {% for center in centers %}
-                            <tr class="center-items" onclick="window.location='{% url 'csc_admin:csc_center' center.slug %}'" id="tbody-tr-{{center.pk}}">
+                            <tr class="-items" onclick="window.location='{% url 'csc_admin:csc_center' center.slug %}'" id="tbody-tr-{{center.pk}}">
                                 <td><small>&nbsp;{{ forloop.counter }}</small></td>
                                 <td><small>&nbsp;{{ center.name }}</small></td>
                                 <td><small>{{center.owner}}</small></td>
@@ -268,7 +268,7 @@
 
                     $('#center-tbody').html('');
                     response.centers.forEach(center => {
-                        let html = `<tr class="center-items" onclick="window.location='/admin/csc_center/${center.slug}'" id="tbody-tr-${center.pk}">
+                        let html = `<tr class="-items" onclick="window.location='/admin/csc_center/${center.slug}'" id="tbody-tr-${center.pk}">
                                     <td><small>&nbsp;${ center.count }</small></td>
                                     <td><small>&nbsp;${ center.name }</small></td>
                                     <td><small>&nbsp;${ center.owner }</small></td>
@@ -300,7 +300,7 @@
       function paginator () {
         let itemsPerPage = 10;
         let currentPage = 1;
-        let totalItems = $('.center-items').length;
+        let totalItems = $('.-items').length;
         let totalPages = Math.ceil(totalItems / itemsPerPage);
   
         $('.prev-page').hide();      
@@ -355,8 +355,8 @@
         paginationBtnVisibility();
   
         function renderPage(page) {
-            $('.center-items').hide();
-            $('.center-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
+            $('.-items').hide();
+            $('.-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
             $('#pagination a').removeClass('active');
             $('#pagination a').eq(page).addClass('active');
             $('.prev-page').toggleClass('disabled', page === 1);

@@ -1,10 +1,19 @@
 from django.urls import path
-from .views import (HomeView, ServiceListView, RemoveServiceView, 
-                    AddServiceView, ServiceEnquiryListView, DeleteServiceEnquiryView,
-                    ServiceEnquiryDetailView, ProductListView, RemoveProductView,
-                    AddProductView, ProductEnquiryListView, DeleteProductEnquiryView, 
-                    ProductEnquiryDetailView, CscCenterListView, AddCscCenterView, 
-                    DetailCscCenterView, UpdateCscCenterView)
+from .views import (
+    HomeView, 
+    
+    ServiceListView, RemoveServiceView, AddServiceView, 
+    ServiceEnquiryListView, DeleteServiceEnquiryView,
+    ServiceEnquiryDetailView, 
+    
+    ProductListView, RemoveProductView, AddProductView, 
+    ProductEnquiryListView, DeleteProductEnquiryView, ProductEnquiryDetailView, 
+    
+    CscCenterListView, AddCscCenterView, DetailCscCenterView, 
+    UpdateCscCenterView,
+
+    AvailablePosterView, CreatePosterView,
+    )
 
 app_name = "users"
 
@@ -24,6 +33,9 @@ urlpatterns = [
     path('product_enquiries/', ProductEnquiryListView.as_view(), name="product_enquiries"),
     path('delete_product_enquiry/<str:slug>', DeleteProductEnquiryView.as_view(), name="delete_product_enquiry"),
     path('product_enquiry/<str:slug>', ProductEnquiryDetailView.as_view(), name="product_enquiry"),
+
+    path('available_posters/', AvailablePosterView.as_view(), name="available_posters"),
+    path('create_poster/<str:slug>', CreatePosterView.as_view(), name="create_poster"),
 
     path('csc_centers/', CscCenterListView.as_view(), name="csc_centers"),
     path('add_csc/', AddCscCenterView.as_view(), name="add_csc"),

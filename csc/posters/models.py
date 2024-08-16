@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from ckeditor.fields import RichTextField
+from csc_center.models import CscCenter
 
 class Poster(models.Model):
     title = models.CharField(max_length=100)
@@ -31,3 +32,8 @@ class Poster(models.Model):
 
     def __str__(self):
         return self.title
+    
+
+# def CustomPoster(models.Model):
+#     csc_center = models.ForeignKey(CscCenter, on_delete=models.CASCADE)
+#     poster = poste

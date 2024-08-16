@@ -250,7 +250,7 @@
 				</thead>
 				<tbody id="blog-tbody">
 					{% for blog in blogs %}
-					<tr class="blog-items" onclick="window.location='{% url 'csc_admin:blog' blog.slug %}'">
+					<tr class="row-items" onclick="window.location='{% url 'csc_admin:blog' blog.slug %}'">
 						<td>{{ forloop.counter }}</td>
 						<td id="td-image">
 							<img src="{% if blog.image %} {{blog.image.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
@@ -271,7 +271,7 @@
 			</table>
 			{% comment %} <ul>
 				{% for blog in blogs %}
-				<li class="blog-items">				
+				<li class="row-items">				
 					<div class="list-box-listing">
 						<div class="list-box-listing-img" style="display: flex; flex-direction: column;">
 							<a href="#"><img src={% if blog.image %} {{blog.image.url}} {% else %} "images/listing-item-01.jpg" {% endif %} alt=""></a>
@@ -406,7 +406,7 @@
 		function paginator () {
 			let itemsPerPage = 10;
 			let currentPage = 1;
-			let totalItems = $('.blog-items').length;
+			let totalItems = $('.row-items').length;
 			let totalPages = Math.ceil(totalItems / itemsPerPage);
 			
 			$('.prev-page').hide();      
@@ -461,8 +461,8 @@
 			paginationBtnVisibility();
 	  
 			function renderPage(page) {
-				$('.blog-items').hide();
-				$('.blog-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
+				$('.row-items').hide();
+				$('.row-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
 				$('#pagination a').removeClass('active');
 				$('#pagination a').eq(page).addClass('active');
 				$('.prev-page').toggleClass('disabled', page === 1);

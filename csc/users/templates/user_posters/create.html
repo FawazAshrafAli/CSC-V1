@@ -1,0 +1,369 @@
+{% extends "user_base/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title_prefix %}Create Poster{% endblock title_prefix %}
+
+{% block content %}
+<style>
+    #create-poster-btns-div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    #create-poster-btns-div button {
+        text-transform: uppercase;
+    }
+    
+</style>
+
+<style>
+    #poster-pop-up-box {
+        display: none;
+        position:fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 999;                
+        background: #f7f7f7;
+        box-shadow: 0 0 5px;
+        min-width: 390px;
+    }
+
+    #poster-pop-up-box-heading {
+        text-transform: uppercase;
+        background-color: #fff;
+        padding: 10px;
+        margin: 0 0 10px 0;
+    }
+
+    .poster-close-btn {
+        position: absolute;
+        top: 5px; 
+        right: 5px;
+        font-size: 24px;
+        color: red;
+        background-color: #fff;
+        border: none;
+        box-shadow: 0 0 1px #777;
+        padding: 0 7px;        
+    }
+
+    .poster-close-btn:hover {
+        color: #fff;
+        background-color: rgba(255, 0, 0, 0.485);
+    }
+
+    #poster-pop-up-form {
+        padding: 0 10px;
+        padding-bottom: 5px;
+    }
+
+    #poster-pop-up-add-btn-div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    #poster-pop-up-submit-btn {
+        color: #fff;
+        text-transform: uppercase;
+        background: linear-gradient(to bottom, darkgreen, green, darkgreen);
+        border: none;
+        margin-bottom: 5px;
+    }            
+
+    #pop-up-add-btn:hover {
+        background: linear-gradient(to bottom, lime, green, darkgreen);
+    }
+
+    #poster-pop-up-cancel-btn {
+        color: #fff;
+        text-transform: uppercase;
+        background: linear-gradient(to bottom, darkblue, blue, darkblue);
+        border: none;
+        margin-bottom: 5px;
+    }
+
+    #poster-pop-up-cancel-btn:hover {
+        background: linear-gradient(to bottom, steelblue, blue, darkblue);
+    }
+
+    #pop-up-dropdown {                
+        min-height: 150px;                
+    }
+
+    #form-choice button {
+        border: 1px solid #777;
+    }
+    .active-btn {
+       background-color: #777;
+       color: #fff;
+    }
+    #poster-pop-up-form {
+        overflow-y: auto;
+        max-height: 360px;
+    }
+</style>
+
+<div id="titlebar">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h2><i class="sl sl-icon-plus"></i> Create Poster</h2>
+                <!-- Breadcrumbs -->
+                <nav id="breadcrumbs">
+                    <ul>
+                        <li><a href="{% url 'home:view' %}">Home</a></li>
+                        <li>Create Poster</li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "admin_components/message.html" %}
+<!-- Content
+================================================== -->
+<!-- Container -->
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12">
+
+            <!-- Model End-->
+            <div id="poster-pop-up-box">
+                <h4 id="poster-pop-up-box-heading" class="text-center">Add Footer</h4>
+                <button class="poster-close-btn" aria-label="Close" title="Close">&times;</button>
+                <div style="display: flex; padding: 0 10px;" id="form-choice">
+                    <button class="active-btn" id="image-btn" type="button" style="width: 100%;">Image</button>
+                    <button type="button" id="text-btn" style="width: 100%;">Text</button>
+                </div>            
+                <form id="poster-pop-up-form" method="post" action="#">
+                    <div class="row submit-section" id="poster-footer-image">
+                        <div class="col-md-12">
+                            <h5>Upload Footer</h5>
+                            <input type="file" name="logo">
+                        </div>
+                    </div>   
+                    <div id="poster-footer-text" style="display: none;">
+                        {{form|crispy}}
+                        {{form.media}}
+                    </div>                  
+                    <div id="poster-pop-up-add-btn-div">
+                        <button id="poster-pop-up-submit-btn" type="submit">Add Footer</button>
+                        <button id="poster-pop-up-cancel-btn" type="button">Cancel</button>
+                    </div>
+                </form>                
+            </div>
+            <!-- Model Start-->
+
+            <form method="post" action="{% url 'csc_admin:create_poster' %}" enctype="multipart/form-data" id="create-poster-form">
+                {% csrf_token %}
+                <div id="add-listing" class="separated-form">
+                    <!-- Section -->
+                    <div class="add-listing-section">
+                        <!-- Headline -->
+                        <div class="add-listing-headline">
+                            <h3><i class="sl sl-icon-doc"></i> Poster Informations</h3>
+                        </div>
+                        <!-- Title -->
+
+                        <style>
+                            #poster-footer-div {
+                                position: absolute;
+                                bottom:0;
+                                height: 75px;
+                                width: 240px;
+                                border-top: 1px dashed #777;
+
+                                display: flex;
+                                justify-content: center;
+                            }
+                            #poster-footer-div:hover {
+                                background-color: rgb(0, 0, 0, 0.5);
+                            }
+                            #poster-footer-div button i {
+                                color: black;
+                            }
+                            #poster-footer-div:hover button i {
+                                color: #fff;
+                            }
+                            #poster-footer-div button:active i {
+                                color: black;
+                            }
+                        </style>
+                        
+                        <div class="row with-forms">
+                            <div class="col-md-12">
+                                <div style="width: 240px; height: 360px;" title="Add Footer">
+                                    <canvas id="poster-canvas" width="240" height="360" style="border:1px solid #000000;"></canvas>
+                                    <div id="poster-footer-div">
+                                        <button type="button" style="border: none; background-color: transparent; width: 100%;" onclick="$('#poster-pop-up-box').show();"><i class="fa fa-plus">&nbsp;ADD FOOTER</i></button>
+                                        <input type="file" name="poster" id="poster-footer" hidden required>
+                                    </div> 
+                                </div>                        
+                            </div>                                                       
+                        </div>                           
+                    </div>
+                    
+                    <!-- Section / End -->                    
+                                        
+                    <div id="create-poster-btns-div">
+                    <button class="button preview" type="submit">Create Poster</button>
+                    </div>
+            </form>
+            <br>
+        </div>
+        <!-- Switcher ON-OFF Content / End -->
+    </div>
+    <!-- Section / End -->
+</div>
+<!-- Content / End -->
+<!-- Container / End -->
+{% endblock content %}
+
+{% block scripts %}
+<!-- DropZone | Documentation: http://dropzonejs.com -->
+<script type="text/javascript" src="{% static 'scripts/dropzone.js' %}"></script>
+
+
+<!-- Style Switcher
+================================================== -->
+<script src="{% static 'scripts/switcher.js' %}"></script>
+
+<div id="style-switcher">
+    <h2>Color Switcher <a href="#"><i class="sl sl-icon-settings"></i></a></h2>
+
+    <div>
+        <ul class="colors" id="color1">
+            <li><a href="#" class="main" title="Main"></a></li>
+            <li><a href="#" class="blue" title="Blue"></a></li>
+            <li><a href="#" class="green" title="Green"></a></li>
+            <li><a href="#" class="orange" title="Orange"></a></li>
+            <li><a href="#" class="navy" title="Navy"></a></li>
+            <li><a href="#" class="yellow" title="Yellow"></a></li>
+            <li><a href="#" class="peach" title="Peach"></a></li>
+            <li><a href="#" class="beige" title="Beige"></a></li>
+            <li><a href="#" class="purple" title="Purple"></a></li>
+            <li><a href="#" class="celadon" title="Celadon"></a></li>
+            <li><a href="#" class="red" title="Red"></a></li>
+            <li><a href="#" class="brown" title="Brown"></a></li>
+            <li><a href="#" class="cherry" title="Cherry"></a></li>
+            <li><a href="#" class="cyan" title="Cyan"></a></li>
+            <li><a href="#" class="gray" title="Gray"></a></li>
+            <li><a href="#" class="olive" title="Olive"></a></li>
+        </ul>
+    </div>
+
+</div>
+<!-- Style Switcher / End -->
+
+<script>
+    $(document).ready(function() {
+    var canvas = $('#poster-canvas')[0];
+    var context = canvas.getContext('2d');
+    var mainImage = new Image();
+    mainImage.src = `{{poster.poster.url}}`; // URL of the pre-existing image
+
+    mainImage.onload = function() {
+        context.drawImage(mainImage, 0, 0, canvas.width, canvas.height);
+    };
+
+    $('#poster-footer-image').on('change', function(event) {
+        var footerImageFile = event.target.files[0];
+        if (footerImageFile) {
+            var footerImage = new Image();
+            var footerReader = new FileReader();
+
+            footerReader.onload = function(e) {
+                footerImage.src = e.target.result;
+                footerImage.onload = function() {
+                    // Clear previous footer image if any
+                    context.clearRect(0, canvas.height - 75, canvas.width, 100);
+                    
+                    // Draw the footer image at the bottom of the canvas
+                    var footerHeight = 75; // Adjust the height as needed
+                    var y = canvas.height - footerHeight;
+                    context.drawImage(footerImage, 0, y, canvas.width, footerHeight);
+                };
+            };
+            footerReader.readAsDataURL(footerImageFile);
+        }
+    });
+
+
+    // Apply HTML content to canvas
+    $('#poster-pop-up-form').on('submit', function(event) {
+        event.preventDefault();
+
+        var formData = new FormData(this);
+
+        // Get the value of the 'text' field
+        var footerText = formData.get('text');
+
+        var htmlContent = footerText;
+
+        console.log(htmlContent)
+
+        html2canvas(htmlContent).then(function(contentCanvas) {
+            // Convert canvas to image data URL
+            var contentImage = contentCanvas.toDataURL('image/png');
+            
+            // Create a new Image object and set its source to the data URL
+            var img = new Image();
+            img.src = contentImage;
+            
+            img.onload = function() {
+                // Draw the image onto the main canvas
+                ctx.drawImage(img, 50, 50); // Adjust position as needed
+            };
+        }).catch(function(error) {
+            console.error('Error rendering HTML to canvas:', error);
+        });
+    });
+
+});
+
+</script>
+
+<!-- Poster Pop Up Box -->
+<script>
+    $('#form-choice button').click(function () {
+        $('#form-choice button').removeClass('active-btn');
+        $(this).addClass('active-btn');
+    })
+
+    $('#image-btn').click(() => {
+        $('#poster-footer-image').show();
+        $('#poster-footer-text').hide();
+    })
+
+    $('#text-btn').click(() => {
+        $('#poster-footer-image').hide();
+        $('#poster-footer-text').show();
+    })
+
+    $('.poster-close-btn, #poster-pop-up-cancel-btn').click(() => $('#poster-pop-up-box').hide());
+</script>
+
+<script>
+    $(document).ready(() => {
+
+        // // Handle form submission
+        // $('#poster-pop-up-form').on('submit', function(event) {
+        //     // Prevent the default form submission
+        //     event.preventDefault();
+
+        //     // Create FormData object
+        //     var formData = new FormData(this);
+
+        //     // Get the value of the 'text' field
+        //     var footerText = formData.get('text'); // Make sure this matches the field name in your form
+
+        //     // Print the data to the console
+        //     console.log("Footer Text:", footerText);                    
+        // })
+    })
+</script>
+{% endblock scripts %}

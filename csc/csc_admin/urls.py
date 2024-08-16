@@ -17,7 +17,7 @@ from .views import (
     RemoveSocialMediaLinkView,
 
     PosterListView, CreatePosterView, PosterDetailView,
-    DeletePosterView,
+    DeletePosterView, UpdatePosterView,
 
     get_all_states, get_all_districts, get_all_blocks,
     get_csc_keywords, get_name_types,
@@ -59,6 +59,7 @@ urlpatterns = [
     path('posters/', PosterListView.as_view(), name="posters"),
     path('poster/<str:slug>', PosterDetailView.as_view(), name="poster"),
     path('create_poster/', CreatePosterView.as_view(), name="create_poster"),
+    path('update_poster/<str:slug>', UpdatePosterView.as_view(), name = "update_poster"),
     path('delete_poster/<str:slug>', DeletePosterView.as_view(), name = "delete_poster"),
 
     path('csc_centers/', ListCscCenterView.as_view(), name = "csc_centers"),

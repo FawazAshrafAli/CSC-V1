@@ -1,56 +1,59 @@
 {% extends "user_base/base.html" %}
 {% load static %}
 
+{% block title_prefix %} Available Posters {% endblock title_prefix %}
+
 {% block styles %}
 <link rel="stylesheet" href="{% static 'w3/admin_service/css/admin_service.css' %}">
-{% endblock styles %}
 
-{% block title_prefix %} CSC Centers {% endblock title_prefix %}
-
-{% block content %}
+<!-- Table Styles -->
 <style>
-    #csc-center-table {
+    #poster-table {
         min-width: 100%;
         background-color: #fff;
     }
-    #csc-center-table tr {
+    #poster-table tr {
         border-bottom: 1px solid silver;
     }
-    #csc-center-table tbody tr{
+    #poster-table tbody tr{
         cursor: pointer;
     }
-    #csc-center-table tbody tr:hover {
+    #poster-table tbody tr:hover {
         color: blue;
     }
-    #csc-center-table td:first-child,
-    #csc-center-table th:first-child,
+    #poster-table td:first-child,
+    #poster-table th:first-child,
     #td-image,
     #th-image {
         text-align: center;
     }
-    #csc-center-table img {
+    #poster-table img {
         padding: 3px 0;
         height: 50px;
     }
-    #csc-center-table button {
+    #poster-table button {
         height: 0;
         padding: 0 10px;
     }
-    #csc-center-table tbody tr:hover button {
+    #poster-table tbody tr:hover button {
         height: 100%;
         padding: 5px 10px;
     }
 </style>
+{% endblock styles %}
+
+{% block content %}
+
 	<!-- Titlebar -->
 	<div id="titlebar">
 		<div class="row">
 			<div class="col-md-12">
-				<h2>CSC Centers</h2>
+				<h2>Available Posters</h2>
 				<!-- Breadcrumbs -->
 				<nav id="breadcrumbs">
 					<ul>
-						<li><a href="{% url 'users:home' %}">Home</a></li>						
-						<li>CSC Centers</li>
+						<li><a href="{% url 'csc_admin:home' %}">Home</a></li>						
+						<li>Available Available Posters</li>
 					</ul>
 				</nav>
 			</div>
@@ -66,77 +69,90 @@
 		{% endif %}
 	</div>
 
+
 	<div class="row">
-		
+
 		<!-- Listings -->
 		<div class="col-lg-12 col-md-12">
 			<div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
-				<h4>CSC Centers</h4>
+				<h4>Available Posters</h4>
 				<br>
-				<table id="csc-center-table">
+				<table id="poster-table">
 					<thead>
 						<tr>
 							<th>No</th>
 							<th id="th-image">Image</th>
-							<th>CSC Center</th>
+							<th style="text-align:center">Title</th>
 							<th></th>
 						</tr>
 					</thead>
-					<tbody>
-						{% for center in centers %}
-						<tr class="row-items" onclick="window.location='{% url 'users:csc_center' center.slug %}'">
+					<tbody id="poster-tbody">
+						{% for poster in posters %}
+						<tr class="poster-items" onclick="window.location='{% url 'csc_admin:poster' poster.slug %}'">
 							<td>{{ forloop.counter }}</td>
 							<td id="td-image">
-								<img src="{% if center.logo %} {{center.logo.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
+								<img src="{% if poster.poster %} {{poster.poster.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
 							</td>
-							<td>{{ center.full_name }}</td>
-							<td><a href="{% url 'users:update_csc' center.slug %}" class="button gray">Update</a></td>
+							<td style="text-align:center">{{ poster.title }}</td>
+							<td style="text-align: right; padding-right: 10px;"><a href="{% url 'users:create_poster' poster.slug %}" class="button gray"><i class="sl sl-icon-plus"></i> Create Poster</a></td>
 						</tr>
 						{% endfor %}
 					</tbody>
-				</table>            				
+				</table>                        				
+			</div>
+			<!-- Pagination -->
+			<div class="clearfix"></div>
+			<div class="row" id="pagination-row">
+			  <div class="col-md-12">
+				<!-- Pagination -->
+				<div class="pagination-container margin-top-20 margin-bottom-40">
+				  <nav class="pagination" id="pagination-nav">
+					<ul>
+					  <li>
+						<a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
+					  </li>                
+					  <li><a href="#" id="first-page">1</a></li>
+					  <li><a href="#" id="second-page">2</a></li>
+					  <li><a href="#" id="third-page" >3</a></li>
+					  <li>
+						<a href="#" class="next-page" id="next-page"><i class="sl sl-icon-arrow-right"></i></a>
+					  </li>
+					</ul>
+				  </nav>
+				</div>
+			  </div>
 			</div>
 		</div>
 
-		<!-- Pagination -->
-		<div class="clearfix"></div>
-		<div class="row" id="pagination-row">
-		  <div class="col-md-12">
-			<!-- Pagination -->
-			<div class="pagination-container margin-top-20 margin-bottom-40">
-			  <nav class="pagination" id="pagination-nav">
-				<ul>
-				  <li>
-					<a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
-				  </li>                
-				  <li><a href="#" id="first-page">1</a></li>
-				  <li><a href="#" id="second-page">2</a></li>
-				  <li><a href="#" id="third-page" >3</a></li>
-				  <li>
-					<a href="#" class="next-page" id="next-page"><i class="sl sl-icon-arrow-right"></i></a>
-				  </li>
-				</ul>
-			  </nav>
-			</div>
-		  </div>
-		</div>
-	</div>
 
 		<!-- Copyrights -->
 		<div class="col-md-12">
 			<div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
 		</div>
 	</div>
+
 {% endblock content %}
 
 {% block scripts %}
+<script>
+	function toggleServiceDeletion(posterId, posterTitle) {
+		$('#delete-confirmation-box form').prop('action', `/admin/delete_poster/${posterId}`);
+		$('#poster-name').html(posterTitle);
+		$('#delete-confirmation-box').show();
+	}	
+	
+	$('#cancel-deletion-btn').click(() => {
+		$('#delete-confirmation-box').hide();		
+	})
+</script>
+
 <script>
     $(document).ready(() => {
         // Pagination
       function paginator () {
         let itemsPerPage = 10;
         let currentPage = 1;
-        let totalItems = $('.row-items').length;
+        let totalItems = $('.poster-items').length;
         let totalPages = Math.ceil(totalItems / itemsPerPage);
   
         $('.prev-page').hide();      
@@ -191,8 +207,8 @@
         paginationBtnVisibility();
   
         function renderPage(page) {
-            $('.row-items').hide();
-            $('.row-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
+            $('.poster-items').hide();
+            $('.poster-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
             $('#pagination a').removeClass('active');
             $('#pagination a').eq(page).addClass('active');
             $('.prev-page').toggleClass('disabled', page === 1);

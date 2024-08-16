@@ -205,5 +205,48 @@ CKEDITOR_CONFIGS = {
     },
 }
 
-
 AUTH_USER_MODEL = 'authentication.User'
+
+# Celery configuration
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Redis as a broker
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Kolkata'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+
+# Email Response
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Replace with your SMTP server
+EMAIL_PORT = 587  # You can also try using port 465 with SSL/TLS
+EMAIL_USE_TLS = True  # Use TLS (True/False)
+EMAIL_HOST_USER = 'w3digitalpmna@gmail.com'  # Replace with your email
+EMAIL_HOST_PASSWORD = 'kznq nfik tmpc fqlj'  # Replace with your email password
+
+# CELERY BEAT SCHEDULER
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+#Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'celery': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}

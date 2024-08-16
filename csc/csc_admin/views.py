@@ -1463,7 +1463,7 @@ class DeletePosterView(BasePosterView, View):
             return redirect(self.redirect_url)
         
 
-class UpdatePosterView(BasePosterView, CreateView):
+class UpdatePosterView(BasePosterView, UpdateView):
     form_class = PosterDescriptionForm
     template_name = 'admin_poster/update.html'
     success_url = reverse_lazy('csc_admin:posters')
@@ -1471,22 +1471,28 @@ class UpdatePosterView(BasePosterView, CreateView):
     slug_url_kwarg = 'slug'
 
     def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
         form = self.get_form()
         title = request.POST.get('title')
         poster = request.FILES.get('poster')
 
-        if title:
-            self.poster = self.get_object()
-            self.poster.title = title
-            self.poster.poster = poster
-            if form.is_valid():
-                description = form.cleaned_data['description']
-                self.poster.description = description
-                self.poster.save()
-            self.poster.save()
-
-            messages.success(request, 'Updated Poster')
-            return redirect(self.success_url)
-        else:
-            messages.warning(request, 'Please provide the poster title.')
+        if not title:
+            messages.warning(request, 'Please provide the poster title.')            
             return redirect(self.redirect_url)
+        
+        if not poster:
+            poster = self.object.poster
+
+        self.object.title = title
+        self.object.poster = poster
+        if form.is_valid():
+            description = form.cleaned_data['description']
+            self.object.description = description
+            self.object.save()
+        else:
+            form = self.get_form(instance = self.object)
+        self.object.save()
+
+        messages.success(request, 'Updated Poster')
+        return redirect(self.get_success_url())
+            

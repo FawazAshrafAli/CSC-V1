@@ -169,6 +169,8 @@
 						<li><a href="{% url 'users:services' %}" {% if service_page %} class="current" {% endif %}>Services</a></li>
 
 						<li><a href="{% url 'users:products' %}" {% if product_page %} class="current" {% endif %}>Products</a></li>
+
+						<li><a href="{% url 'users:available_posters' %}" {% if poster_page %} class="current" {% endif %}>Posters</a></li>
 					</ul>
 				</nav>
 				<div class="clearfix"></div>
@@ -243,6 +245,15 @@
 						<li><a href="{% url 'users:products' %}">List Products</a></li>
 						<li><a href="#" id="add-products" >Add Product</a></li>
 						<li><a href="{% url 'users:product_enquiries' %}" >Product Enquiries</a></li>
+					</ul>	
+				</li>
+
+				<li {% if poster_page %} class="active" {% endif %} ><a><i class="fa fa-image"></i> Posters</a>
+					<ul>
+						<li><a href="#">My Posters</a></li>
+						<li><a href="{% url 'users:available_posters' %}">Available Posters</a></li>
+						{% comment %} <li><a href="#" id="add-products" >Add Product</a></li> {% endcomment %}
+						{% comment %} <li><a href="{% url 'users:product_enquiries' %}" >Product Enquiries</a></li> {% endcomment %}
 					</ul>	
 				</li>
 
@@ -357,6 +368,8 @@
 		$('#pop-up-cancel-btn, .close-btn').click(() => $('#pop-up-box').hide())
 	});
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 {% block scripts %}{% endblock scripts %}
 

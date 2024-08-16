@@ -19,3 +19,12 @@ class PosterDescriptionForm(forms.ModelForm):
                 'ckeditor/ckeditor-init.js',
                 'ckeditor/ckeditor/ckeditor.js',
             )
+
+
+
+class PosterFooterTextForm(forms.Form):
+    text = forms.CharField(
+        widget=CKEditorWidget(),
+        label='Footer Text'
+    )
+    

@@ -11,6 +11,9 @@ from django.http import JsonResponse
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 
+from posters.forms import PosterFooterTextForm
+
+from posters.models import Poster
 from products.models import Product, ProductEnquiry
 from services.models import Service, ServiceEnquiry
 from csc_center.models import (CscCenter, SocialMediaLink, State,
@@ -741,3 +744,65 @@ class UpdateCscCenterView(CscCenterBaseView, UpdateView):
                 print(f"Error on field - {field}: {error}")
         return super().form_invalid(form)
         
+
+
+###################### Posters ################################
+
+class BasePosterView(BaseUserView, View):
+    model = Poster
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['poster_page'] = True
+        return context
+
+
+class AvailablePosterView(BasePosterView, ListView):
+    queryset = Poster.objects.all()
+    context_object_name = 'posters'
+    template_name = "user_posters/available_list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context[f"{self.context_object_name}"] = self.queryset
+        return context
+
+    
+class CreatePosterView(BasePosterView, CreateView):
+    template_name = "user_posters/create.html"
+    success_url = reverse_lazy('users:available_posters')
+    redirect_url = success_url
+
+    def get_object(self, **kwargs):
+        try:
+            return get_object_or_404(self.model, slug = self.kwargs['slug'])
+        except Http404:
+            return redirect(self.redirect_url)
+        
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['poster'] = self.get_object()
+        context['form'] = PosterFooterTextForm()
+        return context
+
+    # def get(self, request, *args, **kwargs):
+    #     poster = self.get_object()
+    #     context = self.get_context_data(**kwargs)
+    #     return render(request, self.template_name, context)
+    
+    def post(self, request, *args, **kwargs):
+        form = PosterFooterTextForm()
+
+        print(form)
+        if form.is_valid():
+            text = form.cleaned_data['text']
+            # self.object.description = description
+            # self.object.save()
+        else:
+            form = PosterFooterTextForm()
+        # self.object.save()
+
+        messages.success(request, 'Updated Poster')
+        return redirect(self.get_success_url())
+
+
+
