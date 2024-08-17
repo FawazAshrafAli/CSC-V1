@@ -187,7 +187,7 @@
                         
 					</div>
 
-						<a target="_blank" href="{% url 'csc_center:create' %}" class="button border with-icon">ADD CSC CENTER <i class="sl sl-icon-plus"></i></a>
+						<a target="_blank" href="{% url 'csc_center:add_csc' %}" class="button border with-icon">ADD CSC CENTER <i class="sl sl-icon-plus"></i></a>
 				</div>
 				<!-- Header Widget / End -->
 			</div>
@@ -308,7 +308,7 @@
 					<li><a href="{% url 'authentication:login' %}">Login</a></li>
 					<li><a href="#">Sign Up</a></li>
 					<li><a href="#">My Account</a></li>
-					<li><a href="{% url 'csc_center:create' %}">Add CSC Centers</a></li>
+					<li><a href="{% url 'csc_center:add_csc' %}">Add CSC Centers</a></li>
 					<li><a href="#">Services</a></li>
 				</ul>
 
@@ -381,7 +381,7 @@
 <script type="text/javascript" src="{% static 'scripts/custom.js' %}"></script>
 
 
-<!-- Leaflet // Docs: https://leafletjs.com/ -->
+{% comment %} <!-- Leaflet // Docs: https://leafletjs.com/ -->
 <script src="{% static 'scripts/leaflet.min.js' %}"></script>
 
 <!-- Leaflet Maps Scripts -->
@@ -391,7 +391,7 @@
 
 <!-- Leaflet Geocoder + Search Autocomplete // Docs: https://github.com/perliedman/leaflet-control-geocoder -->
 <script src="{% static 'scripts/leaflet-autocomplete.js' %}"></script>
-<script src="{% static 'scripts/leaflet-control-geocoder.js' %}"></script>
+<script src="{% static 'scripts/leaflet-control-geocoder.js' %}"></script> {% endcomment %}
 
 
 

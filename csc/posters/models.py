@@ -34,6 +34,26 @@ class Poster(models.Model):
         return self.title
     
 
-# def CustomPoster(models.Model):
-#     csc_center = models.ForeignKey(CscCenter, on_delete=models.CASCADE)
-#     poster = poste
+class CustomPoster(models.Model):
+    csc_center = models.ForeignKey(CscCenter, on_delete=models.CASCADE)
+    poster = models.ImageField(upload_to="custom_posters/", null=False, blank=False)
+    title =  models.CharField(max_length=100)
+    description = models.TextField(null=False, blank=False)
+    slug = models.SlugField(null=True, blank=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            count = 1
+            while Poster.objects.filter(slug = slug).exists():
+                slug = f"{base_slug}-{count}"
+                count += 1
+
+            self.slug = slug
+        
+        super().save(*args, **kwargs)

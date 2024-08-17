@@ -1,8 +1,8 @@
 from django.urls import path
-from .views import CreateCscCenterView
+from .views import AddCscCenterView
 
 app_name = "csc_center"
 
 urlpatterns = [
-    path('', CreateCscCenterView.as_view(), name="create"),
+    path('', AddCscCenterView.as_view(), name="add_csc"),
 ]

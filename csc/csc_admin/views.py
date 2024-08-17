@@ -13,7 +13,7 @@ from datetime import datetime
 import re
 
 from posters.forms import PosterDescriptionForm
-
+from authentication.models import User
 from .forms import (
     CreateServiceForm, UpdateServiceForm, CreateBlogForm,
     UpdateBlogForm
@@ -688,6 +688,9 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
             sat_closing_time = sat_closing_time, sun_closing_time = sun_closing_time, 
             latitude = latitude, longitude = longitude
         )
+
+        if not User.objects.filter(email = email).exists():
+            User.objects.create_user(username = email, email = email, password = contact_number)            
 
         messages.success(request, "Added CSC center")      
         

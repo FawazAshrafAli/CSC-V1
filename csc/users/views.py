@@ -10,10 +10,13 @@ from datetime import datetime
 from django.http import JsonResponse
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
+from django.core.files.base import ContentFile
+import base64
 
 from posters.forms import PosterFooterTextForm
 
-from posters.models import Poster
+from authentication.models import User
+from posters.models import Poster, CustomPoster
 from products.models import Product, ProductEnquiry
 from services.models import Service, ServiceEnquiry
 from csc_center.models import (CscCenter, SocialMediaLink, State,
@@ -407,11 +410,12 @@ class AddCscCenterView(CscCenterBaseView, CreateView):
         logo = request.FILES.get('logo') # dropzone
         banner = request.FILES.get('banner') # dropzone
         description = request.POST.get('description')
-        contact_number = request.POST.get('contact_number')
-        mobile_number = request.POST.get('mobile_number')
-        whatsapp_number = request.POST.get('whatsapp_number')
+        owner = request.POST.get('owner')
         email = request.POST.get('email')
         website = request.POST.get('website') # optional
+        contact_number = request.POST.get('contact_number')
+        mobile_number = request.POST.get('mobile_number')
+        whatsapp_number = request.POST.get('whatsapp_number')        
         services = request.POST.getlist('services')
         products = request.POST.getlist('products')
 
@@ -487,7 +491,7 @@ class AddCscCenterView(CscCenterBaseView, CreateView):
             zipcode = zipcode, landmark_or_building_name = landmark_or_building_name,
             street = street, logo = logo, banner = banner,
             description = description, contact_number = contact_number,
-            mobile_number = mobile_number, whatsapp_number = whatsapp_number,
+            mobile_number = mobile_number, whatsapp_number = whatsapp_number, owner = owner,
             email = email, website = website, mon_opening_time = mon_opening_time, 
             tue_opening_time = tue_opening_time, wed_opening_time = wed_opening_time, 
             thu_opening_time = thu_opening_time, fri_opening_time = fri_opening_time, 
@@ -498,6 +502,9 @@ class AddCscCenterView(CscCenterBaseView, CreateView):
             sun_closing_time = sun_closing_time, latitude = latitude,
             longitude = longitude
         )
+
+        if not User.objects.filter(email = email).exists():
+            User.objects.create_user(username = email, email = email, password = contact_number)
 
         messages.success(request, "Added CSC center")      
         
@@ -585,11 +592,12 @@ class UpdateCscCenterView(CscCenterBaseView, UpdateView):
         logo = request.FILES.get('logo') # dropzone
         banner = request.FILES.get('banner') # dropzone
         description = request.POST.get('description')
-        contact_number = request.POST.get('contact_number')
-        mobile_number = request.POST.get('mobile_number')
-        whatsapp_number = request.POST.get('whatsapp_number')
+        owner = request.POST.get('owner')
         email = request.POST.get('email')
         website = request.POST.get('website') # optional
+        contact_number = request.POST.get('contact_number')
+        mobile_number = request.POST.get('mobile_number')
+        whatsapp_number = request.POST.get('whatsapp_number')        
         services = request.POST.getlist('services')
         products = request.POST.getlist('products')
 
@@ -680,11 +688,12 @@ class UpdateCscCenterView(CscCenterBaseView, UpdateView):
         self.object.banner = banner
 
         self.object.description = description
+        self.object.owner = owner
+        self.object.email = email
+        self.object.website = website
         self.object.contact_number = contact_number
         self.object.mobile_number = mobile_number
         self.object.whatsapp_number = whatsapp_number
-        self.object.email = email
-        self.object.website = website
 
         self.object.show_opening_hours = True if show_opening_hours else False
         self.object.show_social_media_links = True if show_social_media_links else False
@@ -766,6 +775,21 @@ class AvailablePosterView(BasePosterView, ListView):
         context[f"{self.context_object_name}"] = self.queryset
         return context
 
+
+class MyPosterView(BasePosterView, ListView):
+    context_object_name = 'posters'
+    template_name = "user_posters/my_list.html"
+
+    def get_queryset(self):
+        csc_center = CscCenter.objects.filter(email = self.request.user.email).first()
+        return CustomPoster.objects.filter(csc_center = csc_center)
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context[f"{self.context_object_name}"] = self.get_queryset()
+        return context
+
     
 class CreatePosterView(BasePosterView, CreateView):
     template_name = "user_posters/create.html"
@@ -804,5 +828,47 @@ class CreatePosterView(BasePosterView, CreateView):
         messages.success(request, 'Updated Poster')
         return redirect(self.get_success_url())
 
+
+class SavePosterView(BasePosterView, View):
+    success_url = reverse_lazy('users:my_posters')
+    redirect_url = reverse_lazy('users:available_posters')
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            image = request.POST.get('image')
+            title =request.POST.get('title')
+            description = request.POST.get('description')
+            csc_center = CscCenter.objects.filter(email = request.user.email).first()
+
+            format, imgstr = image.split(';base64,')
+            ext = format.split('/')[-1]  # Get the file extension (e.g., 'png')
+
+            # Decode the base64 string
+            image = ContentFile(base64.b64decode(imgstr), name='my_1poster_image.' + ext)
+
+            CustomPoster.objects.create(csc_center = csc_center, poster = image, title = title, description = description)
+
+            return JsonResponse({'message': 'Success', 'success_url': '/users/my_posters'})
+        except Exception as e:
+            print(e)
+            pass
+
+
+class DeleteMyPosterView(BasePosterView, View):
+    success_url = reverse_lazy('users:my_posters')
+    redirect_url = success_url
+
+    def get_object(self):
+        try:
+            return get_object_or_404(CustomPoster, slug = self.kwargs.get('slug'))
+        except Http404:
+            messages.error(self.request, "Invalid poster")
+            return redirect(self.redirect_url)
+        
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        messages.success(request, "Deleted Poster")
+        return redirect(self.success_url)
 
 

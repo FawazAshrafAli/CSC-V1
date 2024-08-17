@@ -10,9 +10,10 @@ from .views import (
     ProductEnquiryListView, DeleteProductEnquiryView, ProductEnquiryDetailView, 
     
     CscCenterListView, AddCscCenterView, DetailCscCenterView, 
-    UpdateCscCenterView,
+    UpdateCscCenterView, SavePosterView,
 
-    AvailablePosterView, CreatePosterView,
+    AvailablePosterView, CreatePosterView, MyPosterView,
+    DeleteMyPosterView, 
     )
 
 app_name = "users"
@@ -35,7 +36,10 @@ urlpatterns = [
     path('product_enquiry/<str:slug>', ProductEnquiryDetailView.as_view(), name="product_enquiry"),
 
     path('available_posters/', AvailablePosterView.as_view(), name="available_posters"),
+    path('my_posters/', MyPosterView.as_view(), name="my_posters"),
     path('create_poster/<str:slug>', CreatePosterView.as_view(), name="create_poster"),
+    path('save_poster/', SavePosterView.as_view(), name="save_poster"),
+    path('delete_poster/<str:slug>', DeleteMyPosterView.as_view(), name="delete_poster"),
 
     path('csc_centers/', CscCenterListView.as_view(), name="csc_centers"),
     path('add_csc/', AddCscCenterView.as_view(), name="add_csc"),

@@ -204,36 +204,39 @@
                                     spellcheck="true">{{center_obj.description}}</textarea>
                             </div>
                             <!-- Row -->
-                            <div class="row with-forms">
-                                <!-- Phone -->
-                                <div class="col-md-4">
-                                    <h5>Contact Number</h5>
-                                    <input type="text" name="contact_number" placeholder="Contact Number" value="{{center_obj.contact_number}}" required>
-                                </div>
-                                <!-- Website -->
-                                <div class="col-md-4">
-                                    <h5>Mobile Number</h5>
-                                    <input type="text" name="mobile_number" placeholder="Mobile Number" value="{{center_obj.mobile_number}}" required>
-                                </div>
-                                <!-- Email Address -->
-                                <div class="col-md-4">
-                                    <h5>WhatsApp Number</h5>
-                                    <input type="text" name="whatsapp_number" placeholder="WhatsApp Number" value="{{center_obj.whatsapp_number}}" required>
-                                </div>
+                        <div class="row with-forms">
+                            <!-- Owner Name -->
+                            <div class="col-md-4">
+                                <h5>Owner Name</h5>
+                                <input type="text" name="owner" placeholder="Owner Name" value="{{center.owner}}" required>
                             </div>
-                            <!-- Row / End -->
-                            <!-- Row -->
-                            <div class="row with-forms">
-                                <!-- Phone -->
-                                <div class="col-md-6">
-                                    <h5>E-Mail ID</h5>
-                                    <input type="email" name="email" placeholder="E-Mail ID" value="{{center_obj.email}}" required>
-                                </div>
-                                <!-- Website -->
-                                <div class="col-md-6">
-                                    <h5>Website <span>(optional)</span></h5>
-                                    <input type="text" name="website" placeholder="www.domainname.com" value="{{center_obj.website}}" >
-                                </div>
+                            <!-- Email Address -->
+                            <div class="col-md-4">
+                                <h5>E-Mail ID</h5>
+                                <input type="email" name="email" placeholder="E-Mail ID" value="{{center.email}}" readonly required>
+                            </div>
+                            <!-- Website -->
+                            <div class="col-md-4">
+                                <h5>Website <span>(optional)</span></h5>
+                                <input type="text" name="website" placeholder="www.domainname.com" value="{{center.website}}" >
+                            </div>
+                        </div>
+                        <!-- Row / End -->
+                        <!-- Row -->
+                        <div class="row with-forms">
+                            <!-- Phone -->
+                            <div class="col-md-4">
+                                <h5>Contact Number</h5>
+                                <input type="text" name="contact_number" placeholder="Contact Number" value="{{center.contact_number}}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>Mobile Number</h5>
+                                <input type="text" name="mobile_number" placeholder="Mobile Number" value="{{center.mobile_number}}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>WhatsApp Number</h5>
+                                <input type="text" name="whatsapp_number" placeholder="WhatsApp Number" value="{{center.whatsapp_number}}" required>
+                            </div>
                                 <div class="col-md-12">
                                     <h5>Select Services</h5>
                                     <select data-placeholder="Select Services" name="services" class="chosen-select"

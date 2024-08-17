@@ -143,7 +143,7 @@
                     <div class="row submit-section" id="poster-footer-image">
                         <div class="col-md-12">
                             <h5>Upload Footer</h5>
-                            <input type="file" name="logo">
+                            <input type="file" name="logo" id="footer-image">
                         </div>
                     </div>   
                     <div id="poster-footer-text" style="display: none;">
@@ -195,7 +195,7 @@
                         </style>
                         
                         <div class="row with-forms">
-                            <div class="col-md-12">
+                            <div class="col-md-4">
                                 <div style="width: 240px; height: 360px;" title="Add Footer">
                                     <canvas id="poster-canvas" width="240" height="360" style="border:1px solid #000000;"></canvas>
                                     <div id="poster-footer-div">
@@ -203,14 +203,30 @@
                                         <input type="file" name="poster" id="poster-footer" hidden required>
                                     </div> 
                                 </div>                        
-                            </div>                                                       
+                            </div>
+                            <div class="col-md-8">
+                                <div class="row with-forms">
+                                    <div class="col-md-12">
+                                        <h5>Poster Title <i class="tip" data-tip-content="Title of Poster"></i></h5>
+                                        <input class="search-field" type="text" name="title"
+                                            placeholder="Title of Poster" id="poster-title-input" value={{poster.title}} required/>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form">
+                                            <h5>Description</h5>
+                                            <textarea class="WYSIWYG" name="description" cols="40" rows="3" id="poster-description-input"
+                                                spellcheck="true">{{poster.description}}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>                           
                     </div>
                     
                     <!-- Section / End -->                    
                                         
                     <div id="create-poster-btns-div">
-                    <button class="button preview" type="submit">Create Poster</button>
+                    <button class="button preview" type="button" id="create-poster-btn">Create Poster</button>
                     </div>
             </form>
             <br>
@@ -270,8 +286,14 @@
         context.drawImage(mainImage, 0, 0, canvas.width, canvas.height);
     };
 
-    $('#poster-footer-image').on('change', function(event) {
-        var footerImageFile = event.target.files[0];
+    $('#poster-pop-up-form').on('submit', function(event) {
+        event.preventDefault();
+        // var footerImageFile = event.target.files[0];
+
+        var footerImageFile = $('#footer-image')[0].files[0];
+
+        $('#poster-pop-up-box').hide();
+
         if (footerImageFile) {
             var footerImage = new Image();
             var footerReader = new FileReader();
@@ -349,6 +371,35 @@
 
 <script>
     $(document).ready(() => {
+        $('#create-poster-btn').click(function () {
+
+            const canvas = $('#poster-canvas')[0];
+            const imageData = canvas.toDataURL('image/png');
+            const title = $('#poster-title-input').val();
+            const description = $('#poster-description-input').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '/users/save_poster/',
+                dataType: 'json',
+                data: {
+                    'image': imageData,
+                    'csrfmiddlewaretoken': '{{csrf_token}}',
+                    'title': title,
+                    'description': description             
+                },
+                success: response => {
+                    if (response.message) {
+                        console.log('Image created and saved to the database.')
+                    }
+                    if (response.success_url) {
+                        window.location=`${response.success_url}`;
+                    }
+                },
+                error: error => console.error('Error: ', error),
+            })
+        })
+
 
         // // Handle form submission
         // $('#poster-pop-up-form').on('submit', function(event) {

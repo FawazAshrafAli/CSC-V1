@@ -1,7 +1,7 @@
 {% extends "user_base/base.html" %}
 {% load static %}
 
-{% block title_prefix %} Available Posters {% endblock title_prefix %}
+{% block title_prefix %} My Posters {% endblock title_prefix %}
 
 {% block styles %}
 <link rel="stylesheet" href="{% static 'w3/admin_service/css/admin_service.css' %}">
@@ -48,12 +48,12 @@
 	<div id="titlebar">
 		<div class="row">
 			<div class="col-md-12">
-				<h2>Available Posters</h2>
+				<h2>My Posters</h2>
 				<!-- Breadcrumbs -->
 				<nav id="breadcrumbs">
 					<ul>
 						<li><a href="{% url 'csc_admin:home' %}">Home</a></li>						
-						<li>Available Available Posters</li>
+						<li>My Posters</li>
 					</ul>
 				</nav>
 			</div>
@@ -69,13 +69,26 @@
 		{% endif %}
 	</div>
 
+    <!-- Delete Confirmation Box Start-->
+    <div id="delete-confirmation-box" style="display: none;">
+        <div class="modal-content">            
+            <h4><span>Deleting</span> Poster: <span id="poster-name" style="color: black"></span> . . .</h4>
+            <h5>Are you sure?</h5>                        
+        </div>
+        <br>
+        <form method="GET" action="#">
+            <button type="submit" id="confirm-deletion-btn">Delete</button>
+            <button class="cancel-btn" type="button" id="cancel-deletion-btn">Cancel</button>
+        </form>
+    </div>
+    <!-- Delete Confirmation Box Start-->
 
 	<div class="row">
 
 		<!-- Listings -->
 		<div class="col-lg-12 col-md-12">
 			<div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
-				<h4>Available Posters</h4>
+				<h4>My Posters</h4>
 				<br>
 				<table id="poster-table">
 					<thead>
@@ -94,7 +107,7 @@
 								<img src="{% if poster.poster %} {{poster.poster.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
 							</td>
 							<td style="text-align:center">{{ poster.title }}</td>
-							<td style="text-align: right; padding-right: 10px;"><a href="{% url 'users:create_poster' poster.slug %}" class="button gray"><i class="sl sl-icon-plus"></i> Create Poster</a></td>
+							<td style="text-align: right; padding-right: 10px;"><button type="button" class="button gray" onclick="event.stopPropagation(); togglePosterDeletion(`{{poster.slug}}`, `{{poster.title}}`)"><i class="sl sl-icon-plus"></i> Delete</button></td>
 						</tr>
 						{% endfor %}
 					</tbody>
@@ -135,8 +148,8 @@
 
 {% block scripts %}
 <script>
-	function toggleServiceDeletion(posterId, posterTitle) {
-		$('#delete-confirmation-box form').prop('action', `/admin/delete_poster/${posterId}`);
+	function togglePosterDeletion(posterId, posterTitle) {
+		$('#delete-confirmation-box form').prop('action', `/users/delete_poster/${posterId}`);
 		$('#poster-name').html(posterTitle);
 		$('#delete-confirmation-box').show();
 	}	

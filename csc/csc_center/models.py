@@ -2,6 +2,8 @@ from django.db import models
 from django.utils.text import slugify
 from services.models import Service
 from products.models import Product
+import qrcode
+from io import BytesIO
 
 from django.urls import reverse
 
@@ -192,6 +194,29 @@ class CscCenter(models.Model):
             return keyword_list
         return None
     
+    @property
+    def qr_code(self):
+        link = self.get_absolute_url()  # Default link if none provided
+
+        # Generate the QR code
+        qr = qrcode.QRCode(
+            version=1,  # controls the size of the QR code
+            error_correction=qrcode.constants.ERROR_CORRECT_L,  # controls the error correction used for the QR code
+            box_size=10,  # controls how many pixels each “box” of the QR code is
+            border=4,  # controls how many boxes thick the border should be
+        )
+        qr.add_data(link)
+        qr.make(fit=True)
+
+        img = qr.make_image(fill='black', back_color='white')
+
+        # Save the image to a BytesIO object
+        img_io = BytesIO()
+        img.save(img_io, 'PNG')
+        img_io.seek(0)
+
+        # Return the image as an HTTP response
+        return HttpResponse(img_io, content_type='image/png')
 
     class Meta:
         db_table = 'csc_center'

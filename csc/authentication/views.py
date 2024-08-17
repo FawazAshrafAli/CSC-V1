@@ -53,7 +53,7 @@ class ResetPasswordWithOtpView(UpdateView):
     template_name = 'authentication/forgot_password.html'
     success_url = reverse_lazy('authentication:login')
     pk_url_kwarg = 'email'
-    redirect_url = reverse_lazy('authentication:login')
+    redirect_url = success_url
 
     def get_object(self):
         try:
@@ -67,8 +67,12 @@ class ResetPasswordWithOtpView(UpdateView):
         return context
     
     def post(self, request, *args, **kwargs):
-        user = User.objects.filter(email = self.kwargs.get('email'))
-        user_otp = UserOtp.objects.get(email = self.kwargs.get('email'))
+        self.object = self.get_object()
+        try:            
+            user_otp = get_object_or_404(UserOtp, user = self.object)
+        except Http404:
+            messages.error(request, 'No otp has been generated for your account')
+            return redirect(self.redirect_url)
 
         otp = request.POST.get('otp')
         password = request.POST.get('password')
@@ -86,7 +90,13 @@ class ResetPasswordWithOtpView(UpdateView):
             messages.error(request, "Password not matching.")
             return redirect(self.redirect_url)
         
-        user = User.objects.filter(email = email)
+        self.object.set_password(password)
+        self.object.save()
+
+        user_otp.delete()
+        messages.success(request, "Successfully resetted password")
+        return redirect(self.get_success_url())
+        
 
 
 
@@ -102,38 +112,43 @@ class ForgotPasswordView(View):
     
 
     def post(self, request, *args, **kwargs):
-        email = request.POST.get('email')
-        user = None
-
         try:
-            user = get_object_or_404(User, email = email)
-        except Http404:
-            pass
+            email = request.POST.get('email')
+            user = None
 
-        if not email:
-            messages.warning(request, "Please provide your email id.")
-            return redirect(self.redirect_url)
+            try:
+                user = get_object_or_404(User, email = email)
+            except Http404:
+                pass
 
-        if not User.objects.filter(email = email).exists():
-            messages.error(request, "Invalid Email Id")
-            return redirect(self.redirect_url)
+            if not email:
+                messages.warning(request, "Please provide your email id.")
+                return redirect(self.redirect_url)
 
-        otp = get_random_string(length=6, allowed_chars='1234567890')
+            if not User.objects.filter(email = email).exists():
+                messages.error(request, "Invalid Email Id")
+                return redirect(self.redirect_url)
 
-        UserOtp.objects.update_or_create(user = user, defaults={'otp': otp})
+            otp = get_random_string(length=6, allowed_chars='1234567890')
 
-        # send_otp_email.delay(email, otp)
+            UserOtp.objects.update_or_create(user = user, defaults={'otp': otp})
 
-        subject = 'OTP for setting password'
-        message = f'Your OTP code is {otp}. It is valid for the next 10 minutes.'
-        from_email = 'w3digitalpmna@gmail.com'
-        receipient_list = [email]
+            # send_otp_email.delay(email, otp)
 
-        try:
-            send_mail(subject, message, from_email, receipient_list)
+            subject = 'OTP for setting password'
+            message = f'Your OTP code is {otp}. It is valid for the next 5 minutes.'
+            from_email = 'w3digitalpmna@gmail.com'
+            receipient_list = [email]
+
+            try:
+                send_mail(subject, message, from_email, receipient_list)
+            except Exception as e:
+                print(e)
+                pass
+
+            messages.success(request, "OTP has been sent to your email.")
+            return redirect(reverse('authentication:reset_password_with_otp', kwargs={'email': email}))
+
         except Exception as e:
             print(e)
-            pass
-
-        messages.success(request, "OTP has been sent to your email.")
-        return redirect(reverse('authentication:reset_password_with_otp', kwargs={'email': email}))
+            return redirect(self.redirect_url)

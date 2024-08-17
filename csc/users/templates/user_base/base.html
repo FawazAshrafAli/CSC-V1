@@ -170,7 +170,7 @@
 
 						<li><a href="{% url 'users:products' %}" {% if product_page %} class="current" {% endif %}>Products</a></li>
 
-						<li><a href="{% url 'users:available_posters' %}" {% if poster_page %} class="current" {% endif %}>Posters</a></li>
+						<li><a href="{% url 'users:my_posters' %}" {% if poster_page %} class="current" {% endif %}>Posters</a></li>
 					</ul>
 				</nav>
 				<div class="clearfix"></div>
@@ -250,7 +250,7 @@
 
 				<li {% if poster_page %} class="active" {% endif %} ><a><i class="fa fa-image"></i> Posters</a>
 					<ul>
-						<li><a href="#">My Posters</a></li>
+						<li><a href="{% url 'users:my_posters' %}">My Posters</a></li>
 						<li><a href="{% url 'users:available_posters' %}">Available Posters</a></li>
 						{% comment %} <li><a href="#" id="add-products" >Add Product</a></li> {% endcomment %}
 						{% comment %} <li><a href="{% url 'users:product_enquiries' %}" >Product Enquiries</a></li> {% endcomment %}
