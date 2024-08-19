@@ -353,156 +353,31 @@
 	<!-- Carousel / Start -->
 	<div class="simple-fw-slick-carousel dots-nav">
 
-
-
+		{% for product in products %}
 		<!-- Listing Item -->
 		<div class="fw-carousel-item">
 			<div class="product-grid">
 				<div class="product-image">
-					<a href="#" class="image">
-						<img class="pic-1" src="{% static 'images/img-3.jpg' %}">
-						<img class="pic-2" src="{% static 'images/img-4.jpg' %}">
+					<a href="{% url 'products:product' product.slug %}" class="image">
+						<img class="pic-1" src="{% if product.image %} {{product.image.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}">
+						<img class="pic-2" src="{% if product.image %} {{product.image.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}">
 					</a>
 					 <span class="product-sale-label">sale!</span>
 					 
 					<div class="product-rating">
  
-						<a class="add-to-cart" href="#"> ORDER NOW </a>
+						<a class="add-to-cart" href="{% url 'products:product' product.slug %}"> ORDER NOW </a>
 					</div>
 				</div>
 				<div class="product-content">
-					<h3 class="title"><a href="#">Men's Shirt</a></h3>
-					<div class="price">₹20.00</div>
+					<h3 class="title"><a href="{% url 'products:product' product.slug %}">{{product.name}}</a></h3>
+					<div class="price">₹ {{product.price}}</div>
 					
 				</div>
 			</div>
 		</div>
 		<!-- Listing Item / End -->
-
-		
-		<!-- Listing Item -->
-		<div class="fw-carousel-item">
-			<div class="product-grid">
-				<div class="product-image">
-					<a href="#" class="image">
-						<img class="pic-1" src="{% static 'images/img-3.jpg' %}">
-						<img class="pic-2" src="{% static 'images/img-4.jpg' %}">
-					</a>
-					 <span class="product-sale-label">sale!</span>
-					 
-					<div class="product-rating">
- 
-						<a class="add-to-cart" href="#"> ORDER NOW </a>
-					</div>
-				</div>
-				<div class="product-content">
-					<h3 class="title"><a href="#">Men's Shirt</a></h3>
-					<div class="price">₹20.00</div>
-					
-				</div>
-			</div>
-		</div>
-		<!-- Listing Item / End -->
-
-		
-		<!-- Listing Item -->
-		<div class="fw-carousel-item">
-			<div class="product-grid">
-				<div class="product-image">
-					<a href="#" class="image">
-						<img class="pic-1" src="{% static 'images/img-3.jpg' %}">
-						<img class="pic-2" src="{% static 'images/img-4.jpg' %}">
-					</a>
-					 <span class="product-sale-label">sale!</span>
-					 
-					<div class="product-rating">
- 
-						<a class="add-to-cart" href="#"> ORDER NOW </a>
-					</div>
-				</div>
-				<div class="product-content">
-					<h3 class="title"><a href="#">Men's Shirt</a></h3>
-					<div class="price">₹20.00</div>
-					
-				</div>
-			</div>
-		</div>
-		<!-- Listing Item / End -->
-
-		
-		<!-- Listing Item -->
-		<div class="fw-carousel-item">
-			<div class="product-grid">
-				<div class="product-image">
-					<a href="#" class="image">
-						<img class="pic-1" src="{% static 'images/img-3.jpg' %}">
-						<img class="pic-2" src="{% static 'images/img-4.jpg' %}">
-					</a>
-					 <span class="product-sale-label">sale!</span>
-					 
-					<div class="product-rating">
- 
-						<a class="add-to-cart" href="#"> ORDER NOW </a>
-					</div>
-				</div>
-				<div class="product-content">
-					<h3 class="title"><a href="#">Men's Shirt</a></h3>
-					<div class="price">₹20.00</div>
-					
-				</div>
-			</div>
-		</div>
-		<!-- Listing Item / End -->
-
-		
-		<!-- Listing Item -->
-		<div class="fw-carousel-item">
-			<div class="product-grid">
-				<div class="product-image">
-					<a href="#" class="image">
-						<img class="pic-1" src="{% static 'images/img-3.jpg' %}">
-						<img class="pic-2" src="{% static 'images/img-4.jpg' %}">
-					</a>
-					 <span class="product-sale-label">sale!</span>
-					 
-					<div class="product-rating">
- 
-						<a class="add-to-cart" href="#"> ORDER NOW </a>
-					</div>
-				</div>
-				<div class="product-content">
-					<h3 class="title"><a href="#">Men's Shirt</a></h3>
-					<div class="price">₹20.00</div>
-					
-				</div>
-			</div>
-		</div>
-		<!-- Listing Item / End -->
-
-		
-		<!-- Listing Item -->
-		<div class="fw-carousel-item">
-			<div class="product-grid">
-				<div class="product-image">
-					<a href="#" class="image">
-						<img class="pic-1" src="{% static 'images/img-3.jpg' %}">
-						<img class="pic-2" src="{% static 'images/img-4.jpg' %}">
-					</a>
-					 <span class="product-sale-label">sale!</span>
-					 
-					<div class="product-rating">
- 
-						<a class="add-to-cart" href="#"> ORDER NOW </a>
-					</div>
-				</div>
-				<div class="product-content">
-					<h3 class="title"><a href="#">Men's Shirt</a></h3>
-					<div class="price">₹20.00</div>
-					
-				</div>
-			</div>
-		</div>
-		<!-- Listing Item / End -->
+		 {% endfor %}		
 
 	</div>
 	<!-- Carousel / End -->
@@ -518,6 +393,7 @@
 <section class="fullwidth margin-top-0 padding-top-75 padding-bottom-75" data-background-color="#fff">
 	<div class="container">
 
+		{% if blogs %}
 		<div class="row">
 			<div class="col-md-12">
 				<h3 class="headline centered margin-bottom-55">
@@ -527,65 +403,32 @@
 		</div>
 
 		<div class="row">
+			{% for blog in blogs %}
 			<!-- Blog Post Item -->
 			<div class="col-md-4">
-				<a href="pages-blog-post.html" class="blog-compact-item-container">
+				<a href="{% url 'blog:detail' blog.slug %}" class="blog-compact-item-container">
 					<div class="blog-compact-item">
-						<img src="{% static 'images/blog-post-02.jpg' %}" alt="">
+						<img src="{% if blog.image %} {{blog.image.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Image of blog: {{blog.title}}">
 						<span class="blog-item-tag">Tips</span>
 						<div class="blog-compact-item-content">
 							<ul class="blog-post-tags">
-								<li>22 August 2019</li>
+								<li>{{blog.created}}</li>
 							</ul>
-							<h3>Hotels for All Budgets</h3>
-							<p>Sed sed tristique nibh iam porta volutpat finibus. Donec in aliquet urneget mattis lorem. Pellentesque pellentesque.</p>
+							<h3>{{blog.title}}</h3>
+							<p>{{blog.summary|slice:":45"}}..</p>
 						</div>
 					</div>
 				</a>
 			</div>
 			<!-- Blog post Item / End -->
-
-			<!-- Blog Post Item -->
-			<div class="col-md-4">
-				<a href="pages-blog-post.html" class="blog-compact-item-container">
-					<div class="blog-compact-item">
-						<img src="{% static 'images/blog-post-02.jpg' %}" alt="">
-						<span class="blog-item-tag">Tips</span>
-						<div class="blog-compact-item-content">
-							<ul class="blog-post-tags">
-								<li>22 August 2019</li>
-							</ul>
-							<h3>Hotels for All Budgets</h3>
-							<p>Sed sed tristique nibh iam porta volutpat finibus. Donec in aliquet urneget mattis lorem. Pellentesque pellentesque.</p>
-						</div>
-					</div>
-				</a>
-			</div>
-			<!-- Blog post Item / End -->
-
-			<!-- Blog Post Item -->
-			<div class="col-md-4">
-				<a href="pages-blog-post.html" class="blog-compact-item-container">
-					<div class="blog-compact-item">
-						<img src="{% static 'images/blog-post-02.jpg' %}" alt="">
-						<span class="blog-item-tag">Tips</span>
-						<div class="blog-compact-item-content">
-							<ul class="blog-post-tags">
-								<li>22 August 2019</li>
-							</ul>
-							<h3>Hotels for All Budgets</h3>
-							<p>Sed sed tristique nibh iam porta volutpat finibus. Donec in aliquet urneget mattis lorem. Pellentesque pellentesque.</p>
-						</div>
-					</div>
-				</a>
-			</div>
-			<!-- Blog post Item / End -->
-
+			{% endfor %}
+			
 			<div class="col-md-12 centered-content">
 				<a href="pages-blog.html" class="button border margin-top-10">View Blog</a>
 			</div>
 
 		</div>
+		{% endif %}
 
 	</div>
 </section>

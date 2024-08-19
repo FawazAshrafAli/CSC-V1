@@ -250,3 +250,7 @@ LOGGING = {
         },
     },
 }
+
+
+SITE_PROTOCOL = 'https'
+SITE_DOMAIN = 'cscindia.info'

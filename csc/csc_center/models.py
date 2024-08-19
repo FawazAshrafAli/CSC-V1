@@ -4,6 +4,9 @@ from services.models import Service
 from products.models import Product
 import qrcode
 from io import BytesIO
+from django.core.files import File
+import base64
+from django.conf import settings
 
 from django.urls import reverse
 
@@ -195,28 +198,26 @@ class CscCenter(models.Model):
         return None
     
     @property
-    def qr_code(self):
-        link = self.get_absolute_url()  # Default link if none provided
+    def qr_code(self):            
+        url = self.get_absolute_url
+        protocol = settings.SITE_PROTOCOL  # e.g., 'http' or 'https'
+        domain = settings.SITE_DOMAIN     # e.g., 'example.com'
+        full_url = f"{protocol}://{domain}{url}"
 
-        # Generate the QR code
         qr = qrcode.QRCode(
-            version=1,  # controls the size of the QR code
-            error_correction=qrcode.constants.ERROR_CORRECT_L,  # controls the error correction used for the QR code
-            box_size=10,  # controls how many pixels each “box” of the QR code is
-            border=4,  # controls how many boxes thick the border should be
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
         )
-        qr.add_data(link)
+        qr.add_data(full_url)
         qr.make(fit=True)
 
-        img = qr.make_image(fill='black', back_color='white')
-
-        # Save the image to a BytesIO object
-        img_io = BytesIO()
-        img.save(img_io, 'PNG')
-        img_io.seek(0)
-
-        # Return the image as an HTTP response
-        return HttpResponse(img_io, content_type='image/png')
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        qr_code_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        return qr_code_base64
 
     class Meta:
         db_table = 'csc_center'

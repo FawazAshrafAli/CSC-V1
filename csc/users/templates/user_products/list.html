@@ -93,7 +93,9 @@
 			</div>
 		</div>
             <h4>Products</h4>
-            <br>
+            <div style="float: right; padding: 5px 20px;">
+                <button class="button gray" id="add-products">Add Products</button>
+            </div>
             <table id="product-table">
                 <thead>
                     <tr>
@@ -333,6 +335,40 @@
       };
   
       paginator();
+    })
+  </script>
+
+  <script>
+    $(document).ready(() => {        
+        $('#add-products').click((event) => {
+            const center = $('#center-dropdown').val();			
+			$('#pop-up-form').prop('action', `{% url 'users:add_products' center %}`);
+			$('#pop-up-box-heading, #pop-up-add-btn').html('Add Products');
+
+            $.ajax({
+                type: 'GET',
+                url: `/users/leftover_products/${center}`,
+                dataType: 'json',
+                success: response => {
+                    $('#pop-up-dropdown').html('<option value="" hidden disabled selected>Select Product</option>').prop('name', 'products');
+                    $('#pop-up-box').show();
+                    response.products.forEach(product => {
+                        let html = `<option value="${product.slug}">${product.name}</option>`
+                        
+                        $('#pop-up-dropdown').append(html);
+                    })
+                },
+                error: error => console.error('Error: ', error),
+            })
+		});
+
+		$('#pop-up-dropdown').on('change', function () {		
+			if ($(this).val().length > 0) {
+				$('#pop-up-add-btn').prop('disabled', false);
+			} else {
+				$('#pop-up-add-btn').prop('disabled', true);
+			}
+		});
     })
   </script>
 {% endblock scripts %}

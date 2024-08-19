@@ -32,6 +32,7 @@ class BaseUserView(LoginRequiredMixin, View):
             centers = CscCenter.objects.filter(email = self.request.user.email)
             context['centers'] = centers
             context['center'] = centers[0]
+            context['services_left'] = Service.objects.all()
 
         except Exception as e:
             print(e)
@@ -46,6 +47,8 @@ class HomeView(BaseUserView, TemplateView):
 
 # Service
 class BaseServiceView(BaseUserView):
+    model = CscCenter
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['service_page'] = True
@@ -95,17 +98,25 @@ class RemoveServiceView(BaseServiceView, View):
         return redirect(self.success_url)
     
 
-class AddServiceView(BaseServiceView, View):
+class AddServiceView(BaseServiceView, UpdateView):
     success_url = reverse_lazy('users:services')
     redirect_url = success_url
 
     def post(self, request, *args, **kwargs):
         center = super().get_object()
 
-        services = request.POST.getlist('services')
+        service_slugs = request.POST.getlist('services')
+        service_ids = []
 
-        for service in services:
-            center.services.add(service)
+        for service_slug in service_slugs:
+            try:
+                service = get_object_or_404(Service, slug = service_slug)
+                service_ids.append(service.pk)
+            except Http404:
+                return redirect(self.redirect_url)
+
+        for service_id in service_ids:
+            center.services.add(service_id)
             center.save()
         
         messages.success(request, 'Added Services')
@@ -186,11 +197,31 @@ class DeleteServiceEnquiryView(BaseServiceView, View):
         return redirect(self.success_url)
 
 
+class LeftoverServiceView(BaseServiceView, ListView):
+    model = Service
+
+    def get_queryset(self):
+        try:
+            center = get_object_or_404(CscCenter, slug = self.kwargs.get('slug'))
+            center_services = center.services.all()
+            return Service.objects.exclude(id__in = center_services.values_list('id', flat=True))
+        except Http404:
+            pass
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        services = list(queryset.values('slug', 'name'))
+        print(services)
+        return JsonResponse({'services': services})
+
+
 # Products
 class ProductBaseView(BaseUserView):
+    model = CscCenter
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['product_page'] = True
+        context['products'] = Product.objects.all()
         return context  
     
     
@@ -242,21 +273,47 @@ class RemoveProductView(ProductBaseView, View):
         return redirect(self.success_url)
     
 
-class AddProductView(ProductBaseView, View):
+class AddProductView(ProductBaseView, UpdateView):
+    slug_url_kwarg = 'slug'
     success_url = reverse_lazy('users:products')
     redirect_url = success_url
 
     def post(self, request, *args, **kwargs):
         center = super().get_object()
 
-        products = request.POST.getlist('products')
+        products_slugs = request.POST.getlist('products')
+        product_ids = []
 
-        for product in products:
-            center.products.add(product)
+        for product_slug in products_slugs:
+            try:
+                product = get_object_or_404(Product, slug = product_slug)
+                product_ids.append(product.pk)
+            except Http404:
+                pass
+
+        for product_id in product_ids:
+            center.products.add(product_id)
             center.save()
         
         messages.success(request, 'Added Products')
         return redirect(self.success_url)
+    
+
+class LeftoverProductView(ProductBaseView, ListView):
+    model = Product
+
+    def get_queryset(self):
+        try:
+            center = get_object_or_404(CscCenter, slug = self.kwargs.get('slug'))
+            center_products = center.products.all()
+            return Product.objects.exclude(id__in = center_products.values_list('id', flat=True))
+        except Http404:
+            pass
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        products = list(queryset.values('slug', 'name'))
+        return JsonResponse({'products': products})
     
 
 class ProductEnquiryListView(ProductBaseView, ListView):

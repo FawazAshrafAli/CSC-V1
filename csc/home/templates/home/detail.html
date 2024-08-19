@@ -1,6 +1,8 @@
 {% extends "base/base.html" %}
 {% load static %}
 
+{% block title_prefix %} {{center.name}} {% endblock title_prefix %}
+
 {% block csc_page %} current {% endblock csc_page %}
 
 {% block content %}
@@ -182,8 +184,7 @@
             </form>
         </div>
 
-        {% include "components/message.html" %}
-
+        {% include "components/message.html" %}        
         <div class="col-md-12">
             <h3 class="headline centered margin-bottom-45">
                 <strong class="headline-with-separator">Our Services</strong>
@@ -408,7 +409,7 @@
             <!-- Opening Hours / End -->
             {% endif %}
             
-            {% if center.show_social_media_links %}
+            {% if center.show_social_media_links and center.social_media_links.all|length > 0 %}
             <div class="widget margin-top-40">
                 <h3 class="margin-bottom-25">Social Media</h3>
                 <ul class="social-icons rounded">

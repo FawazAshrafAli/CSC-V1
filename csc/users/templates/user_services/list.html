@@ -104,7 +104,9 @@
         </div>
       </div>
       <h4>Services</h4>
-      <br />
+      <div style="float: right; padding: 5px 20px;">
+        <button class="button gray" id="add-services">Add Services</button>
+      </div>
       <table id="service-table">
         <thead>
           <tr>
@@ -359,5 +361,33 @@
 
     paginator();
   })
+</script>
+<script>
+  $(document).ready(() => {
+    $('#add-services').click((event) => {
+
+      const center = $('#center-dropdown').val();
+
+			$('#pop-up-form').prop('action', `{% url 'users:add_services' center %}`);
+			$('#pop-up-box-heading, #pop-up-add-btn').html('Add Services');
+			
+      $.ajax({
+        type: 'GET',
+        url: `/users/leftover_services/${center}`,
+        dataType: 'json',
+        success: response => {
+          $('#pop-up-dropdown').html('<option value="" hidden disabled selected>Select Service</option>').prop('name', 'services');
+          $('#pop-up-box').show();
+          console.log(response.services)
+          response.services.forEach(service => {
+            let html = `<option value="${service.slug}">${service.name}</option>`
+
+            $('#pop-up-dropdown').append(html);
+          })
+        },
+        error: error => console.log('Error: ', error),
+      })	
+		});
+  });
 </script>
 {% endblock scripts %}

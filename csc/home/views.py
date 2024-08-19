@@ -11,6 +11,7 @@ from django.urls import reverse_lazy
 from django.core.paginator import Paginator
 from django.contrib import messages
 
+from blog.models import Blog
 from csc_center.models import CscCenter, State, District, Block
 from services.models import Service, ServiceEnquiry
 from products.models import Product, ProductEnquiry
@@ -36,6 +37,12 @@ class BaseHomeView(View):
 
 class HomePageView(BaseHomeView, TemplateView):
     template_name = 'home/home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['products'] = Product.objects.all()
+        context['blogs'] = Blog.objects.all()
+        return context
     
 
 # @method_decorator(never_cache, name="dispatch")
@@ -121,10 +128,6 @@ class HomePageView(BaseHomeView, TemplateView):
 
 
 # Detail CscCenter Center
-class DetailCscView(BaseHomeView, DetailView):
-    model = CscCenter
-    template_name = 'csc/detail_csc.html'
-    context_object_name = 'csc'
     
 
 class SearchCscCenterView(HomePageView, ListView):
@@ -148,7 +151,6 @@ class SearchCscCenterView(HomePageView, ListView):
             context['pincode'] = pincode
 
             if len(centers) > 0 or (not state and not district and not block):
-                print("Worked")
                 return centers, context
 
         if state:
@@ -285,6 +287,12 @@ class CscCenterDetailView(BaseHomeView, DetailView):
     context_object_name = 'center'
     slug_url_kwarg = 'slug'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['center'] = self.get_object()
+        print(context['center'])
+        return context
+
 
 class ServiceRequestView(CreateView):
     model = ServiceEnquiry
@@ -334,7 +342,6 @@ class ProductRequestView(CreateView):
         applicant_email = request.POST.get('applicant_email')
         applicant_phone = request.POST.get('applicant_phone')
         product = request.POST.get('product')
-        print(product)
         message = request.POST.get('message')
         try:
             product = get_object_or_404(Product, slug = product)
