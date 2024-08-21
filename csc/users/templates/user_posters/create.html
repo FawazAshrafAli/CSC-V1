@@ -206,16 +206,28 @@
                             </div>
                             <div class="col-md-8">
                                 <div class="row with-forms">
-                                    <div class="col-md-12">
+                                    <div class="{% if multi_center_owner %} col-md-6 {% else %} col-md-12 {% endif %}">
                                         <h5>Poster Title <i class="tip" data-tip-content="Title of Poster"></i></h5>
                                         <input class="search-field" type="text" name="title"
-                                            placeholder="Title of Poster" id="poster-title-input" value={{poster.title}} required/>
+                                            placeholder="Title of Poster" id="poster-title-input" value="{{poster.title}}" required/>
                                     </div>
+                                    {% if multi_center_owner %}
+                                    <div class="col-md-6">
+                                        <h5>CSC Center</h5>
+                                        <select class="chosen-select" name="csc_center"
+                                            data-placeholder="Select CSC Center" required>
+                                            <option label="Select CSC Center"></option>
+                                            {% for center in centers %}
+                                            <option value="{{center.slug}}">{{center.name}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    {% endif %}
                                     <div class="col-md-12">
                                         <div class="form">
                                             <h5>Description</h5>
                                             <textarea class="WYSIWYG" name="description" cols="40" rows="3" id="poster-description-input"
-                                                spellcheck="true">{{poster.description}}</textarea>
+                                                spellcheck="true">"{{poster.description}}"</textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -330,7 +342,7 @@
 
         html2canvas(htmlContent).then(function(contentCanvas) {
             // Convert canvas to image data URL
-            var contentImage = contentCanvas.toDataURL('image/png');
+            var contentImage = contentCanvas.toDataURL('image/jpg');
             
             // Create a new Image object and set its source to the data URL
             var img = new Image();
@@ -374,7 +386,7 @@
         $('#create-poster-btn').click(function () {
 
             const canvas = $('#poster-canvas')[0];
-            const imageData = canvas.toDataURL('image/png');
+            const imageData = canvas.toDataURL('image/jpg');
             const title = $('#poster-title-input').val();
             const description = $('#poster-description-input').val();
 

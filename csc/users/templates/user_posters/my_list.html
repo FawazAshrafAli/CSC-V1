@@ -52,7 +52,7 @@
 				<!-- Breadcrumbs -->
 				<nav id="breadcrumbs">
 					<ul>
-						<li><a href="{% url 'csc_admin:home' %}">Home</a></li>						
+						<li><a href="{% url 'users:home' %}">Home</a></li>						
 						<li>My Posters</li>
 					</ul>
 				</nav>
@@ -88,6 +88,24 @@
 		<!-- Listings -->
 		<div class="col-lg-12 col-md-12">
 			<div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
+        {% if multi_center_owner %}
+        <div class="sort-by">
+          <div class="sort-by-select">
+            <select
+            data-placeholder="List By Category"
+            class="chosen-select-no-single"
+            id="center-dropdown"
+            >
+              <option value="" selected hidden disabled>
+              Select CSC Center
+              </option>
+              {% for center_obj in centers %}
+              <option value="{{center_obj.slug}}" {% if center_obj.slug == center.slug %} selected {% endif %}>{{center_obj.name}}</option>
+              {% endfor %}
+              </select>
+          </div>
+        </div>
+        {% endif %}
 				<h4>My Posters</h4>
 				<br>
 				<table id="poster-table">
@@ -101,7 +119,7 @@
 					</thead>
 					<tbody id="poster-tbody">
 						{% for poster in posters %}
-						<tr class="poster-items" onclick="window.location='#'">
+						<tr class="poster-items" onclick="window.location='{% url 'users:my_poster' poster.slug %}'">
 							<td>{{ forloop.counter }}</td>
 							<td id="td-image">
 								<img src="{% if poster.poster %} {{poster.poster.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
@@ -161,6 +179,51 @@
 
 <script>
     $(document).ready(() => {
+      
+      // get posters on the basis of the current center
+      function getPosters(center) {
+        $.ajax({
+          type: 'GET',
+          url: `/users/my_posters/`,
+          dataType: 'json',
+          data: {'center_slug': center},
+          success: response => {
+            $('#poster-tbody').html('');
+                      $(`#center-dropdown option[value='${center}']`).prop('selected', true).trigger('chosen:updated');
+
+            response.posters.forEach(poster => {
+              let html = `<tr class="poster-items" onclick="window.location='${poster.get_absolute_url}'">
+							<td>${ poster.count }</td>
+							<td id="td-image">
+								<img src="${poster.poster ? poster.poster : '/static/w3/images/no_image.png'}" alt="Product Image">
+							</td>
+							<td style="text-align:center">${ poster.title }</td>
+							<td style="text-align: right; padding-right: 10px;"><button type="button" class="button gray" onclick="event.stopPropagation(); togglePosterDeletion('${poster.slug}', '${poster.title}')"><i class="sl sl-icon-plus"></i> Delete</button></td>
+						</tr>`
+              $('#poster-tbody').append(html);
+            })
+          },
+          error: error => console.error("Error: ", error),
+        })
+      };
+
+      const center =  localStorage.getItem('centerSlug');
+      const user = localStorage.getItem('cscUser');
+
+      if (user == `{{request.user.username}}`) {
+              if ($('#center-dropdown').val() != center) {
+                  getPosters(center);
+              }
+      }
+
+      $('#center-dropdown').on('change', function () {
+        const center = $(this).val();
+        localStorage.setItem('centerSlug', center)
+        localStorage.setItem('cscUser', `{{request.user.username}}`)
+
+        getPosters(center);
+      });
+
         // Pagination
       function paginator () {
         let itemsPerPage = 10;

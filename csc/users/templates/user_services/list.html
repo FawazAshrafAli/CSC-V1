@@ -105,7 +105,7 @@
       </div>
       <h4>Services</h4>
       <div style="float: right; padding: 5px 20px;">
-        <button class="button gray" id="add-services">Add Services</button>
+        <button class="button gray" type="button" id="add-services">Add Services</button>
       </div>
       <table id="service-table">
         <thead>
@@ -368,7 +368,7 @@
 
       const center = $('#center-dropdown').val();
 
-			$('#pop-up-form').prop('action', `{% url 'users:add_services' center %}`);
+			$('#pop-up-form').prop('action', `/users/add_services/${center}`);
 			$('#pop-up-box-heading, #pop-up-add-btn').html('Add Services');
 			
       $.ajax({
@@ -378,16 +378,23 @@
         success: response => {
           $('#pop-up-dropdown').html('<option value="" hidden disabled selected>Select Service</option>').prop('name', 'services');
           $('#pop-up-box').show();
-          console.log(response.services)
           response.services.forEach(service => {
             let html = `<option value="${service.slug}">${service.name}</option>`
 
             $('#pop-up-dropdown').append(html);
           })
         },
-        error: error => console.log('Error: ', error),
+        error: error => console.error('Error: ', error),
       })	
 		});
+  });
+
+  $('#pop-up-dropdown').on('change', function () {		
+    if ($(this).val().length > 0) {
+      $('#pop-up-add-btn').prop('disabled', false);
+    } else {
+      $('#pop-up-add-btn').prop('disabled', true);
+    }
   });
 </script>
 {% endblock scripts %}

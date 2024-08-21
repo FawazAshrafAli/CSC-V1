@@ -11,6 +11,7 @@ from django.http import JsonResponse
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 from django.core.files.base import ContentFile
+from django.http import HttpResponse
 import base64
 
 from posters.forms import PosterFooterTextForm
@@ -211,7 +212,6 @@ class LeftoverServiceView(BaseServiceView, ListView):
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         services = list(queryset.values('slug', 'name'))
-        print(services)
         return JsonResponse({'services': services})
 
 
@@ -395,7 +395,7 @@ class CscCenterBaseView(BaseUserView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['center_page'] = True
+        context['center_page'] = True        
         return context
 
 class CscCenterListView(CscCenterBaseView, ListView):
@@ -819,6 +819,8 @@ class BasePosterView(BaseUserView, View):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['poster_page'] = True
+        if CscCenter.objects.filter(email = self.request.user.email).count() > 1:
+            context['multi_center_owner'] = True
         return context
 
 
@@ -829,11 +831,11 @@ class AvailablePosterView(BasePosterView, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[f"{self.context_object_name}"] = self.queryset
+        context[f"{self.context_object_name}"] = self.queryset        
         return context
 
 
-class MyPosterView(BasePosterView, ListView):
+class MyPosterListView(BasePosterView, ListView):
     context_object_name = 'posters'
     template_name = "user_posters/my_list.html"
 
@@ -841,13 +843,55 @@ class MyPosterView(BasePosterView, ListView):
         csc_center = CscCenter.objects.filter(email = self.request.user.email).first()
         return CustomPoster.objects.filter(csc_center = csc_center)
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context[f"{self.context_object_name}"] = self.get_queryset()
         return context
+    
+    def get(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            center_slug = request.GET.get('center_slug')
+            try:
+                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email)
+
+                posters = CustomPoster.objects.filter(csc_center = center)
+
+                poster_list = []
+                for count, poster in enumerate(posters):
+                    poster_list.append({
+                        'title': poster.title, 
+                        'poster': poster.poster.url if poster.poster else None, 
+                        'slug': poster.slug, 
+                        'count': count+1,
+                        'get_absolute_url': poster.get_absolute_url if poster.get_absolute_url else '#',
+                        })
+                return JsonResponse({'posters': poster_list})
+            except Http404:
+                pass
+        return super().get(request, *args, **kwargs)
 
     
+class MyPosterDetailView(BasePosterView, DetailView):
+    model = CustomPoster
+    context_object_name = 'poster'
+    template_name = "user_posters/my_detail.html"
+    success_url = reverse_lazy('users:my_posters')
+    redirect_url = success_url
+    slug_url_kwarg = 'slug'
+
+    def get_object(self):
+        try:
+            return get_object_or_404(self.model, slug = self.kwargs.get('slug'))
+        except Http404:
+            messages.error(self.request, "Invalid Poster")
+            return redirect(self.redirect_url)
+        
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['poster'] = self.get_object()
+        return context
+
+
 class CreatePosterView(BasePosterView, CreateView):
     template_name = "user_posters/create.html"
     success_url = reverse_lazy('users:available_posters')
@@ -862,7 +906,7 @@ class CreatePosterView(BasePosterView, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['poster'] = self.get_object()
-        context['form'] = PosterFooterTextForm()
+        context['form'] = PosterFooterTextForm()        
         return context
 
     # def get(self, request, *args, **kwargs):
@@ -873,7 +917,6 @@ class CreatePosterView(BasePosterView, CreateView):
     def post(self, request, *args, **kwargs):
         form = PosterFooterTextForm()
 
-        print(form)
         if form.is_valid():
             text = form.cleaned_data['text']
             # self.object.description = description
@@ -895,10 +938,14 @@ class SavePosterView(BasePosterView, View):
             image = request.POST.get('image')
             title =request.POST.get('title')
             description = request.POST.get('description')
-            csc_center = CscCenter.objects.filter(email = request.user.email).first()
+            if CscCenter.objects.filter(email = request.user.email).count() > 1:
+                csc_center = request.POST.get('csc_center')
+            else:
+                csc_center = CscCenter.objects.filter(email = request.user.email).first()
 
             format, imgstr = image.split(';base64,')
-            ext = format.split('/')[-1]  # Get the file extension (e.g., 'png')
+            # ext = format.split('/')[-1]  # Get the file extension (e.g., 'png')
+            ext = 'jpg'
 
             # Decode the base64 string
             image = ContentFile(base64.b64decode(imgstr), name='my_1poster_image.' + ext)
@@ -927,5 +974,33 @@ class DeleteMyPosterView(BasePosterView, View):
         self.object.delete()
         messages.success(request, "Deleted Poster")
         return redirect(self.success_url)
+    
+
+class DownloadPosterView(BasePosterView, View):
+    model = CustomPoster
+
+    def get_object(self):
+        try:
+            return get_object_or_404(self.model, slug = self.kwargs.get('slug'))
+        except Http404:
+            pass
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        print(self.object)
+
+        if self.object.poster:
+            print(self.object.title)
+            image_file = self.object.poster.file
+            image_content = image_file.read()
+            print(image_file)
+
+            response = HttpResponse(image_content, content_type='image/jpeg')
+
+            response['Content-Disposition'] = f'attachment; filename="{self.object.title}.jpg"'
+            
+            return response
+
 
 

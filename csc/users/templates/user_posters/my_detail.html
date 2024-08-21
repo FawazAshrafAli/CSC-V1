@@ -1,0 +1,144 @@
+{% extends "user_base/base.html" %}
+{% load static %}
+
+{% block title_prefix %}{{poster.title}}{% endblock title_prefix %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'w3/admin_product/css/admin_product.css' %}">
+{% endblock styles %}
+
+{% block content %}
+<!-- Titlebar -->
+<div id="titlebar">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- <h2>{{poster.name}}</h2> -->
+            <!-- Breadcrumbs -->
+            <nav id="breadcrumbs">
+                <ul>
+                    <li><a href="{% url 'users:home' %}">Home</a></li>
+                    <li><a href="{% url 'users:my_posters' %}">My Posters</a></li>
+                    <li>{{poster.title}}</li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div id="delete-toggle-div">
+        <button type="button" id="delete-toggle-btn">DELETE<button>
+        <button type="button" id="poster-more-option-btn"><i class="fas fa-ellipsis-v"></i></button>
+    </div>
+    {% if messages %}
+    <div id="message-div">
+        <ul class="messages">
+            {% for message in messages %}
+            <li {% if message.tags %} class="{{message.tags}}" {% endif %}>{{message}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Box Start-->
+<div id="delete-confirmation-box" style="display: none;">
+    <div class="modal-content">            
+        <h4><span>Deleting</span> Poster '{{poster.name}}' . . .</h4>
+        <h5>Are you sure?</h5>                        
+    </div>
+    <br>
+    <form method="GET" action="#">
+        <button type="submit" id="confirm-deletion-btn">Delete</button>
+        <button type="button" id="cancel-deletion-btn">Cancel</button>
+    </form>
+</div>
+<!-- Delete Confirmation Box Start-->
+
+<div class="row">		
+    <!-- Listings -->
+    <div class="col-lg-12 col-md-12" id="poster-card-col">
+        <div class="dashboard-list-box margin-top-0">
+            <div class="row">
+                <div class="col-lg-4 col-md-6" style="display:flex; justify-content: center;">
+                    <div class="poster-grid">
+                        <div class="poster-image" style="box-shadow: 0 0 5px #777;">
+                            <div class="image">
+                                <img class="pic-1" src="{% if poster.poster %} {{poster.poster.url}} {% else %} {% static 'w3/images/no_image.png' %}  {% endif %}">
+                                {% comment %} <img class="pic-2" src="{% if poster.image %} {{poster.image.url}} {% else %} {% static 'w3/images/no_image.png' %}  {% endif %}"> {% endcomment %}
+                            </div>                                                    
+                        </div>
+                        <div class="poster-content">
+                            <h3 class="title text-center">{{poster.title}}</h3>					
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8" id="poster-description-div">
+                    <br>
+                    <table>
+                        <tr>
+                            <th>Title</th>
+                            <th>:</th>
+                            <td>{{poster.title}}</td>
+                        </tr>                                                
+                        <tr>
+                            <th>Description</th>
+                        </tr>
+                        <tr>
+                            <td colspan="3">{{poster.description}}</td>
+                        </tr>
+                    </table>
+                    <br>
+                    <div>
+                        <button class="button" type="button" id="download-poster-btn">Download Poster</button>
+                    </div>
+                    <br>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+<script>    
+        $('#poster-more-option-btn').click(() => {
+            $('#delete-toggle-btn').show();
+            $('#update-toggle-btn').show();
+            setTimeout(() => {
+                $('#delete-toggle-btn').hide();
+                $('#update-toggle-btn').hide();
+            }, 5000)
+        });
+
+        $('#delete-toggle-btn').click(() => {
+            $('#delete-confirmation-box').show();
+            $('#delete-toggle-btn').hide()
+            $('#update-toggle-btn').hide()
+        });
+
+        $('#cancel-deletion-btn').click(() => {
+            $('#delete-confirmation-box').hide();            
+        });
+
+</script>
+
+<script>
+    $(document).ready(() => {
+        $('#download-poster-btn').click(() => {
+            const posterSlug = `{{poster.slug}}`
+            console.log(posterSlug)
+            window.location = `/users/download_poster/${posterSlug}`;
+            // $.ajax({
+            //     type: 'GET',
+            //     url: `/users/download_poster/${posterSlug}`,
+            //     dataType: 'json',
+            //     success: response => {
+            //         if (response.message) {
+            //             console.log(response.message);
+            //         }
+            //     },
+            //     error: error => console.error("Error: ", error),
+            // })
+        });
+    });
+</script>
+{% endblock scripts %}

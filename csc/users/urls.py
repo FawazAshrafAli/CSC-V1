@@ -7,14 +7,14 @@ from .views import (
     ServiceEnquiryDetailView, LeftoverServiceView,
     
     ProductListView, RemoveProductView, AddProductView, 
-    ProductEnquiryListView, DeleteProductEnquiryView, ProductEnquiryDetailView, 
-    LeftoverProductView,
+    ProductEnquiryListView, DeleteProductEnquiryView, 
+    ProductEnquiryDetailView, LeftoverProductView,
     
     CscCenterListView, AddCscCenterView, DetailCscCenterView, 
     UpdateCscCenterView, SavePosterView,
 
-    AvailablePosterView, CreatePosterView, MyPosterView,
-    DeleteMyPosterView,
+    AvailablePosterView, CreatePosterView, MyPosterListView,
+    DeleteMyPosterView, MyPosterDetailView, DownloadPosterView
     )
 
 app_name = "users"
@@ -36,12 +36,14 @@ urlpatterns = [
     path('product_enquiries/', ProductEnquiryListView.as_view(), name="product_enquiries"),
     path('delete_product_enquiry/<str:slug>', DeleteProductEnquiryView.as_view(), name="delete_product_enquiry"),
     path('product_enquiry/<str:slug>', ProductEnquiryDetailView.as_view(), name="product_enquiry"),
-    path('leftover_products/<str:slug>', LeftoverServiceView.as_view(), name="leftover_products"),
+    path('leftover_products/<str:slug>', LeftoverProductView.as_view(), name="leftover_products"),
 
     path('available_posters/', AvailablePosterView.as_view(), name="available_posters"),
-    path('my_posters/', MyPosterView.as_view(), name="my_posters"),
+    path('my_posters/', MyPosterListView.as_view(), name="my_posters"),
+    path('my_poster/<str:slug>', MyPosterDetailView.as_view(), name="my_poster"),
     path('create_poster/<str:slug>', CreatePosterView.as_view(), name="create_poster"),
     path('save_poster/', SavePosterView.as_view(), name="save_poster"),
+    path('download_poster/<str:slug>', DownloadPosterView.as_view(), name="download_poster"),
     path('delete_poster/<str:slug>', DeleteMyPosterView.as_view(), name="delete_poster"),
 
     path('csc_centers/', CscCenterListView.as_view(), name="csc_centers"),

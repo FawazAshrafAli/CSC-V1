@@ -342,7 +342,7 @@
     $(document).ready(() => {        
         $('#add-products').click((event) => {
             const center = $('#center-dropdown').val();			
-			$('#pop-up-form').prop('action', `{% url 'users:add_products' center %}`);
+			$('#pop-up-form').prop('action', `/users/add_products/${center}`);
 			$('#pop-up-box-heading, #pop-up-add-btn').html('Add Products');
 
             $.ajax({
