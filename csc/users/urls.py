@@ -11,10 +11,13 @@ from .views import (
     ProductEnquiryDetailView, LeftoverProductView,
     
     CscCenterListView, AddCscCenterView, DetailCscCenterView, 
-    UpdateCscCenterView, SavePosterView,
+    UpdateCscCenterView, SavePosterView, GetCurrentCscCenterView,
+    GetCenterDataView,
 
     AvailablePosterView, CreatePosterView, MyPosterListView,
-    DeleteMyPosterView, MyPosterDetailView, DownloadPosterView
+    DeleteMyPosterView, MyPosterDetailView, DownloadPosterView,
+
+    MyProfileView, UpdateProfileView, ChangePasswordView,
     )
 
 app_name = "users"
@@ -50,4 +53,10 @@ urlpatterns = [
     path('add_csc/', AddCscCenterView.as_view(), name="add_csc"),
     path('csc_center/<str:slug>', DetailCscCenterView.as_view(), name="csc_center"),
     path('update_csc/<str:slug>', UpdateCscCenterView.as_view(), name="update_csc"),
+    path('get_current_csc/', GetCurrentCscCenterView.as_view(), name="get_current_csc"),
+    path('get_center_data/', GetCenterDataView.as_view(), name="get_center_data"),
+
+    path('my_profile/', MyProfileView.as_view(), name = 'my_profile'),
+    path('update_profile/', UpdateProfileView.as_view(), name='update_profile'),
+    path('change_password/', ChangePasswordView.as_view(), name='change_password'),
 ]

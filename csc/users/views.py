@@ -12,6 +12,7 @@ from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
+from django.contrib.auth import authenticate, logout
 import base64
 
 from posters.forms import PosterFooterTextForm
@@ -34,6 +35,7 @@ class BaseUserView(LoginRequiredMixin, View):
             context['centers'] = centers
             context['center'] = centers[0]
             context['services_left'] = Service.objects.all()
+            context['user_csc_centers'] = CscCenter.objects.filter(email = self.request.user.email)
 
         except Exception as e:
             print(e)
@@ -44,6 +46,45 @@ class BaseUserView(LoginRequiredMixin, View):
 
 class HomeView(BaseUserView, TemplateView):
     template_name = 'user_home/home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        csc_center = CscCenter.objects.filter(email = self.request.user.email).first()
+        context["csc_center"] = csc_center
+        context["service_enquiries"] = ServiceEnquiry.objects.filter(csc_center = csc_center).order_by('-created')
+        context["product_enquiries"] = ProductEnquiry.objects.filter(csc_center = csc_center).order_by('-created')
+        context["home_page"] = True
+        return context
+
+class GetCenterDataView(BaseUserView, View):
+    def get(self, request, *args, **kwargs):
+        center_slug = request.GET.get('center_slug')
+
+        try:
+            center = get_object_or_404(CscCenter, slug = center_slug)
+        except Http404:
+            pass
+
+        service_enquiries = ServiceEnquiry.objects.filter(csc_center = center)
+        product_enquiries = ProductEnquiry.objects.filter(csc_center = center)
+
+        service_enquiry_list = []
+        for enquiry in service_enquiries:
+            service_enquiry_list.append({
+                "applicant_name": enquiry.applicant_name,
+                "service": enquiry.service.first_name
+            })
+
+        data = {
+            'services_count': center.services.all().count(),
+            'products_count': center.products.all().count(),
+            "service_enquiries_count" : service_enquiries.count(),
+            "product_enquiries_count" : product_enquiries.count(),
+            'service_enquiries': service_enquiry_list,
+            'product_enquiries': list(product_enquiries.values('applicant_name', 'product__name'))
+            }
+
+        return JsonResponse(data)
 
 
 # Service
@@ -397,6 +438,24 @@ class CscCenterBaseView(BaseUserView):
         context = super().get_context_data(**kwargs)
         context['center_page'] = True        
         return context
+    
+
+class GetCurrentCscCenterView(CscCenterBaseView, View):
+    def get(self, request, *args, **kwargs):
+        center_slug = request.GET.get('center_slug')
+
+        try:
+            center = get_object_or_404(CscCenter, slug = center_slug)
+        except Http404:
+            pass
+
+        data = {
+            'current_center_logo': center.logo.url if center.logo else None,
+            'current_center_name': center.name
+            }
+
+        return JsonResponse(data)
+
 
 class CscCenterListView(CscCenterBaseView, ListView):
     template_name = 'user_csc_center/list.html'
@@ -940,6 +999,10 @@ class SavePosterView(BasePosterView, View):
             description = request.POST.get('description')
             if CscCenter.objects.filter(email = request.user.email).count() > 1:
                 csc_center = request.POST.get('csc_center')
+                try:
+                    csc_center = get_object_or_404(CscCenter, slug = csc_center)
+                except Http404:
+                    return JsonResponse({"message": "Invalid csc center"})
             else:
                 csc_center = CscCenter.objects.filter(email = request.user.email).first()
 
@@ -954,8 +1017,8 @@ class SavePosterView(BasePosterView, View):
 
             return JsonResponse({'message': 'Success', 'success_url': '/users/my_posters'})
         except Exception as e:
-            print(e)
-            pass
+            print(f"Exception: {e}")
+            return JsonResponse({"message": 'Poster creation failed'})
 
 
 class DeleteMyPosterView(BasePosterView, View):
@@ -988,19 +1051,140 @@ class DownloadPosterView(BasePosterView, View):
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        print(self.object)
-
         if self.object.poster:
-            print(self.object.title)
             image_file = self.object.poster.file
             image_content = image_file.read()
-            print(image_file)
 
             response = HttpResponse(image_content, content_type='image/jpeg')
 
             response['Content-Disposition'] = f'attachment; filename="{self.object.title}.jpg"'
             
             return response
+        
 
 
+########## Poster End ##########
 
+########## My Profile Start ##########
+
+class BaseMyProfileView(BaseUserView, View):
+    model = User
+
+
+class MyProfileView(BaseMyProfileView, TemplateView):
+    template_name = 'user_profile/my_profile.html'
+    redirect_url = reverse_lazy('authentication:login')
+
+    def get_object(self):
+        try:
+            return get_object_or_404(self.model, email = self.request.user.email)
+        except Http404:
+            return redirect(self.redirect_url)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.get_object()
+        print(context['user'].first_name)
+        return context
+    
+
+class UpdateProfileView(MyProfileView, UpdateView):
+    success_url = reverse_lazy('users:my_profile')
+    redirect_url = success_url
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+
+            image = request.FILES.get('image')
+            name = request.POST.get('name').strip().title()
+            phone = request.POST.get('phone').strip()
+            email = request.POST.get('email').strip().lower()
+            notes = request.POST.get('notes').strip()
+            twitter = request.POST.get('twitter').strip().lower()
+            facebook = request.POST.get('facebook').strip().lower()
+            google = request.POST.get('google').strip().lower()
+
+            required_fields = {
+                "Name": name,
+                "Phone": phone,
+                "Email": email
+            }
+
+            for field_name, field_value in required_fields.items():
+                if not field_value:
+                    messages.error(request, f"{field_name} is required")
+                    return redirect(self.redirect_url)
+
+            name_parts = name.split(' ')
+
+            first_name = name_parts[0] if len(name_parts) > 0 else None
+            last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else None
+
+            self.object.first_name = first_name
+            self.object.last_name = last_name            
+            self.object.notes = notes
+            self.object.twitter = twitter
+            self.object.facebook = facebook
+            self.object.google = google
+
+            
+            if  phone.isnumeric():
+                self.object.phone = phone
+            
+            if image:
+                self.object.image = image
+
+            self.object.save()
+
+            current_email = self.object.email
+
+            if email != current_email:
+                user_csc_centers = CscCenter.objects.filter(email = current_email)
+                for csc_center in user_csc_centers:
+                    csc_center.email = email
+                    csc_center.save()
+                self.object.email = email
+                self.object.save()
+
+            messages.success(request, "Updated user profile details.")
+            return redirect(self.get_success_url())
+        except Exception as e:
+            print(f"Exception: {e}")
+            return redirect(self.redirect_url)
+        
+
+class ChangePasswordView(MyProfileView, UpdateView):
+    success_url = reverse_lazy('authentication:login')
+    redirect_url = reverse_lazy('users:my_profile')
+
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+
+            current_password = request.POST.get('current_password')
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+
+            user = authenticate(request, username = request.user.username, password = current_password)
+
+            if user is not None and new_password == confirm_password:
+                self.object.set_password(new_password)
+                self.object.save()
+                messages.success(request, "Password Updated. Please login again with your new password")
+                logout(request)
+                return redirect(self.get_success_url())
+            
+            if user is None:
+                error_msg = "The current password you entered is incorrect"
+            elif new_password != confirm_password:
+                error_msg = "New passwords are not matching"
+            else:
+                error_msg = "Something went wrong."
+
+            messages.error(request, error_msg)
+            return redirect(self.redirect_url)
+        
+        except Exception as e:
+            print(f"Exception: {e}")
+            return redirect(self.redirect_url)

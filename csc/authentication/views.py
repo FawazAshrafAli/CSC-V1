@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404
-from django.views.generic import View, UpdateView
+from django.views.generic import View, UpdateView, TemplateView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
@@ -12,29 +12,35 @@ from datetime import timedelta
 from .tasks import send_otp_email
 from .models import User, UserOtp
 
-class AuthenticationView(View):
+class AuthenticationView(TemplateView):
     template_name = 'authentication/login.html'
-    success_url = reverse_lazy('csc_admin:home')
+    admin_success_url = reverse_lazy('csc_admin:home')
+    user_success_url = reverse_lazy('users:home')
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             if request.user.is_superuser:
-                return redirect(self.success_url)
+                return redirect(self.admin_success_url)
             else:
-                return redirect(reverse_lazy('users:home'))
-        
-        username = request.GET.get('username')
-        password = request.GET.get('password')
+                return redirect(self.user_success_url)
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
 
         if username and password:
             user = authenticate(request, username = username, password = password)
             if user is not None:
                 login(request, user)
-                return redirect(self.success_url)
+                if request.user.is_superuser:
+                    return redirect(self.admin_success_url)
+                else:
+                    return redirect(self.user_success_url)
             else:
                 messages.error(request, 'Invalid username or password.')
                 
-        return render(request, self.template_name)
+        return super().get(request, *args, **kwargs)
 
 
 class LogoutView(View):
@@ -96,8 +102,6 @@ class ResetPasswordWithOtpView(UpdateView):
         user_otp.delete()
         messages.success(request, "Successfully resetted password")
         return redirect(self.get_success_url())
-        
-
 
 
 class ForgotPasswordView(View):

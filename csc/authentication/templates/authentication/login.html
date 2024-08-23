@@ -127,7 +127,6 @@
 	</div>
 </div>
 
-
 <div id="pop-up-box">
 	<h4 id="pop-up-box-heading" class="text-center">Forgot Password ?</h4>
 	<button class="close-btn" aria-label="Close" title="Close">&times;</button>
@@ -142,27 +141,29 @@
 	</form>	
 </div>
 
+<div style="padding: 0 10px">
+	{% include "components/message.html" %}
+</div>
 <!-- Pricing Tables
 ================================================== -->
 
 <div id="sign-in-dialog">
-	{% include "admin_components/message.html" %}
 	<div class="tabs-container alt">
 		<!-- Login -->
 		<div class="tab-content" id="tab1">	
 			<h3>Login</h3>		
-			<form method="get" class="login">
+			<form method="post" action="{% url 'authentication:login' %}" class="login">
 				{% csrf_token %}
 				<p class="form-row form-row-wide">
 					<label for="username">Username:
 						<i class="im im-icon-Male"></i>
-						<input type="text" class="input-text" name="username" id="username" value="" />
+						<input type="text" class="input-text" name="username" id="username" required />
 					</label>
 				</p>
 				<p class="form-row form-row-wide">
 					<label for="password">Password:
 						<i class="im im-icon-Lock-2"></i>
-						<input class="input-text" type="password" name="password" id="password"/>
+						<input class="input-text" type="password" name="password" id="password" required />
 					</label>
 					<span class="lost_password">
 						<a href="#" tabindex="-1" id="forgot-password" >Lost Your Password?</a>

@@ -121,6 +121,9 @@
             </div>
         </div>
     </div>
+
+    {% include "components/message.html" %}
+
 </div>
 
 {% include "admin_components/message.html" %}
@@ -214,7 +217,7 @@
                                     {% if multi_center_owner %}
                                     <div class="col-md-6">
                                         <h5>CSC Center</h5>
-                                        <select class="chosen-select" name="csc_center"
+                                        <select class="chosen-select" name="csc_center" id="csc-center-dropdown"
                                             data-placeholder="Select CSC Center" required>
                                             <option label="Select CSC Center"></option>
                                             {% for center in centers %}
@@ -389,6 +392,7 @@
             const imageData = canvas.toDataURL('image/jpg');
             const title = $('#poster-title-input').val();
             const description = $('#poster-description-input').val();
+            const csc_center = $('#csc-center-dropdown').val();
 
             $.ajax({
                 type: 'POST',
@@ -398,11 +402,12 @@
                     'image': imageData,
                     'csrfmiddlewaretoken': '{{csrf_token}}',
                     'title': title,
-                    'description': description             
+                    'description': description,
+                    'csc_center': csc_center
                 },
                 success: response => {
                     if (response.message) {
-                        console.log('Image created and saved to the database.')
+                        console.log(response.message)
                     }
                     if (response.success_url) {
                         window.location=`${response.success_url}`;

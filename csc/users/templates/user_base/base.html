@@ -30,7 +30,7 @@
 		padding: 0;
 	}
 	#message-div ul li {
-		list-style: none;		
+		list-style: none;			
 	}
 	.alert {
 		z-index: 1500;
@@ -162,7 +162,7 @@
 				 <nav id="navigation" class="style-1" itemscope="" itemtype="http://www.schema.org/SiteNavigationElement">
 					<ul id="responsive">
 
-						<li><a href="{% url 'users:home' %}" {% if request.path == '/admin/' %} class="current" {% endif %}>Home</a></li>
+						<li><a href="{% url 'users:home' %}" {% if home_page %} class="current" {% endif %}>Home</a></li>
 
 						<li><a href="{% url 'users:csc_centers' %}" {% if center_page %} class="current" {% endif %}>CSC Centers</a></li>
 
@@ -186,11 +186,10 @@
 					
 					<!-- User Menu -->
 					<div class="user-menu">
-						<div class="user-name"><span><img src="{% if center.logo %} {{center.logo.url}} {% else %} {% static 'images/dashboard-avatar.jpg' %} {% endif %}" alt="Account Logo"></span> {{center.name}}</div>
+						<div class="user-name" id="current-csc-center"><span><img src="{% static 'w3/images/no_image.png' %}" alt="Account Logo"></span> Loading . . .</div>
 						<ul>
-							<li><a href="dashboard.html"><i class="sl sl-icon-settings"></i> Dashboard</a></li>
-							<li><a href="dashboard-messages.html"><i class="sl sl-icon-envelope-open"></i> Messages</a></li>
-							<li><a href="dashboard-bookings.html"><i class="fa fa-calendar-check-o"></i> Bookings</a></li>
+							<li><a href="#" id="switch-csc-btn"><i class="fa fa-exchange-alt"></i> Switch Center</a></li>							
+							<li><a href="{% url 'users:my_profile' %}"><i class="sl sl-icon-user"></i> My Profile</a></li>
 							<li><a href="{% url 'authentication:logout' %}"><i class="sl sl-icon-power"></i> Logout</a></li>
 						</ul>
 					</div>
@@ -223,7 +222,7 @@
 		<div class="dashboard-nav-inner">
 
 			<ul data-submenu-title="Main">
-				<li {% if request.path == '/admin/' %} class="active" {% endif %}><a href="{% url 'users:home' %}"><i class="sl sl-icon-home"></i> Home</a></li>
+				<li {% if home_page %} class="active" {% endif %}><a href="{% url 'users:home' %}"><i class="sl sl-icon-home"></i> Home</a></li>
 
 				<li {% if center_page %} class="active" {% endif %} ><a><i class="fa fa-building"></i> CSC Centers</a>
 					<ul>
@@ -235,7 +234,6 @@
 				<li {% if service_page %} class="active" {% endif %} ><a><i class="fa fa-handshake"></i> Services</a>
 					<ul>
 						<li><a href="{% url 'users:services' %}">List Services</a></li>
-						<li><a href="#" >Add Services</a></li>
 						<li><a href="{% url 'users:service_enquiries' %}" >Service Enquiries</a></li>
 					</ul>	
 				</li>
@@ -259,7 +257,7 @@
 			</ul>					
 
 			<ul data-submenu-title="Account">
-				<li><a href="dashboard-my-profile.html"><i class="sl sl-icon-user"></i> My Profile</a></li>
+				<li><a href="{% url 'users:my_profile' %}"><i class="sl sl-icon-user"></i> My Profile</a></li>
 				<li><a href="{% url 'authentication:logout' %}"><i class="sl sl-icon-power"></i> Logout</a></li>
 			</ul>
 			
@@ -274,7 +272,7 @@
             <button class="close-btn" aria-label="Close" title="Close">&times;</button>
             <form id="pop-up-form" method="post" action="#">
                 {% csrf_token %}
-                <select name="services" id="pop-up-dropdown" multiple required>                    
+                <select name="services" id="pop-up-dropdown" multiple required>
                 </select>
                 <div id="pop-up-add-btn-div">
                     <button id="pop-up-add-btn" type="submit" disabled></button>
@@ -321,6 +319,66 @@
 	$(document).ready(() => {
 		// Close | Cancel add service pop up box
 		$('#pop-up-cancel-btn, .close-btn').click(() => $('#pop-up-box').hide())
+
+		// Switch CSC Center
+		$('#switch-csc-btn').click(() => {
+			
+			$('#pop-up-form').remove('{{csrf}}')
+
+			$('#pop-up-form').prop('action', '#').prop('method', '');
+			$('#pop-up-box-heading').html('Select CSC Center');
+			$('#pop-up-dropdown').html(`
+			{% for center in user_csc_centers %}
+			<option value="{{center.slug}}">{{center.full_name}}</option>
+			{% endfor %}
+			`);
+			$('#pop-up-add-btn').html('Select Center');
+			$('#pop-up-box').show();						
+		})
+
+		$('#pop-up-dropdown').on('change', () => {
+			console.log('Worked')
+			$('#pop-up-add-btn').prop('disabled', false);
+		})
+
+		// Save the current csc name along with user when switched
+		$('#pop-up-form').on('submit', () => {
+			console.log("Worked")
+			if ($('#pop-up-box-heading').html() == 'Select CSC Center') {
+					const center = $('#pop-up-dropdown').val();
+					localStorage.setItem('centerSlug', center);
+					localStorage.setItem('cscUser', `{{request.user.username}}`);					
+			}
+		})
+
+		function defaultCurrentCsc() {
+			$('#current-csc-center').html(`<span><img src="{% if center.logo %} {{center.logo.url}} {% else %} {% static 'images/dashboard-avatar.jpg' %} {% endif %}" alt="Account Logo"></span> {{center.name}}`);
+		}
+
+		// Get the logo and name of the current center
+		function getCurrentCsc() {
+			const centerSlug = localStorage.getItem('centerSlug');
+
+			$.ajax({
+				type: 'get',
+				url: '/users/get_current_csc/',
+				dataType: 'json',
+				data: {'center_slug': centerSlug},
+				success: response => {
+					if (response) {
+						$('#current-csc-center').html(`<span><img src="${response.current_center_logo ? response.current_center_logo : '/static/images/dashboard-avatar.jpg'}" alt="Account Logo"></span> ${response.current_center_name}`);
+					} else {
+						defaultCurrentCsc();
+					}
+				},
+				error: error => {
+					console.error('Error: ', error);
+					defaultCurrentCsc();
+				},				
+			});
+		};
+
+		getCurrentCsc();
 	});
 </script>
 

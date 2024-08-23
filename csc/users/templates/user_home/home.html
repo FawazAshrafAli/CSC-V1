@@ -4,22 +4,194 @@
 
 {% block content %}
 <!-- Titlebar -->
+<!-- Titlebar -->
 <div id="titlebar">
     <div class="row">
         <div class="col-md-12">
-            <h2>Home</h2>
+            <h2>Hello, {% if request.user.first_name %}{{request.user.first_name}}{% else %}User{% endif %}!</h2>
             <!-- Breadcrumbs -->
             <nav id="breadcrumbs">
                 <ul>
-                    <li>Home</li>
+                    <li>Home</a></li>
                 </ul>
             </nav>
         </div>
     </div>
-    {% include "admin_components/message.html" %}
 </div>
 
+<!-- Notice -->
 <div class="row">
-    <h3 style="text-transform: uppercase;">Welcome to User Home Page</h3>
+    <div class="col-md-12">
+        {% include "components/message.html" %}
+    </div>
+</div>
+
+<!-- Content -->
+<div class="row">
+
+    <!-- Item -->
+    <div class="col-lg-3 col-md-6">
+        <div class="dashboard-stat color-1">
+            <div class="dashboard-stat-content"><h4 id="services-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Services</span></div>
+            <div class="dashboard-stat-icon"><i class="im im-icon-Map2"></i></div>
+        </div>
+    </div>
+
+    <!-- Item -->
+    <div class="col-lg-3 col-md-6">
+        <div class="dashboard-stat color-2">
+            <div class="dashboard-stat-content"><h4 id="products-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Products</span></div>
+            <div class="dashboard-stat-icon"><i class="im im-icon-Line-Chart"></i></div>
+        </div>
+    </div>
+
+    
+    <!-- Item -->
+    <div class="col-lg-3 col-md-6">
+        <div class="dashboard-stat color-3">
+            <div class="dashboard-stat-content"><h4 id="service-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Service Enquiries</span></div>
+            <div class="dashboard-stat-icon"><i class="im im-icon-Add-UserStar"></i></div>
+        </div>
+    </div>
+
+    <!-- Item -->
+    <div class="col-lg-3 col-md-6">
+        <div class="dashboard-stat color-4">
+            <div class="dashboard-stat-content"><h4 id="product-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Product Enquiries</span></div>
+            <div class="dashboard-stat-icon"><i class="im im-icon-Heart"></i></div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    
+    <!-- Recent Activity -->
+    <div class="col-lg-6 col-md-12">
+        <div class="dashboard-list-box with-icons margin-top-20">
+            <h4>Service Enquiries</h4>
+            <ul id="service-enquiries">
+                <li>Loading . . .</li>                
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Invoices -->
+    <div class="col-lg-6 col-md-12">
+        <div class="dashboard-list-box invoices with-icons margin-top-20">
+            <h4>Product Enquiries</h4>
+            <ul id="product-enquiries">
+                <li>Loading . . .</li>                              
+            </ul>
+        </div>
+    </div>
+
+
+    <!-- Copyrights -->
+    <div class="col-md-12">
+        <div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
+    </div>
 </div>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+    $(document).ready(() => {
+        function defaultServiceEnquiries() {
+            $('#service-enquiries').html(`
+                {% for service_enquiry in service_enquiries %}
+                <li>
+                    <i class="list-box-icon sl sl-icon-layers"></i><a href="#"> <strong>{{service_enquiry.applicant_name}}</strong> enquired about <strong>{{service_enquiry.service.first_name}}</strong>!</a>
+                    <a href="#" class="close-list-item"><i class="fa fa-close"></i></a>
+                </li>
+                {% endfor %}
+            `);
+        };
+
+        function defaultProductEnquiries() {
+            $('#product-enquiries').html(`
+                {% for product_enquiry in product_enquiries %}
+                <li>
+                    <i class="list-box-icon sl sl-icon-layers"></i><a href="#"> <strong>{{product_enquiry.applicant_name}}</strong> is interested in <strong>{{product_enquiry.product.name}}</strong>!</a>
+                    <a href="#" class="close-list-item"><i class="fa fa-close"></i></a>
+                </li>
+                {% endfor %}
+            `);
+        }
+
+        function defaultHomeView() {
+            $('#services-count').html(`{{csc_center.services.all|length}}`);
+            $('#products-count').html(`{{csc_center.products.all|length}}`);
+            defaultServiceEnquiries();
+            defaultProductEnquiries();
+        }
+
+        function getCenterData() {
+            const centerSlug = localStorage.getItem('centerSlug');
+
+            $.ajax({
+                type: 'get',
+                url: '/users/get_center_data/',
+                dataType: 'json',
+                data: {'center_slug': centerSlug},
+                success: response => {
+                    $('#services-count').html(`${response.services_count ? response.services_count : '{{csc_center.services.all|length}}' }`);
+                    $('#products-count').html(`${response.products_count ? response.products_count : '{{csc_center.products.all|length}}' }`)
+
+                    $('#service-enquiries-count').html(`${response.service_enquiries_count ? response.service_enquiries_count : 0}`);
+                    $('#product-enquiries-count').html(`${response.product_enquiries_count ? response.product_enquiries_count : 0}`)
+
+                    if (response.service_enquiries) {
+                        $('#service-enquiries').html('');
+                        response.service_enquiries.forEach(service_enquiry => {
+                            let html = `
+                                <li>
+                                    <i class="list-box-icon sl sl-icon-layers"></i><a href="#"> <strong>${service_enquiry.applicant_name}</strong> enquired about <strong>${service_enquiry.service}</strong>!</a>
+                                    <a href="#" class="close-list-item"><i class="fa fa-close"></i></a>
+                                </li>
+                            `
+                            $('#service-enquiries').append(html)
+                        })
+                    } else {
+                        defaultServiceEnquiries();
+                    }
+
+                    if (response.product_enquiries) {
+                        $('#product-enquiries').html('');
+                        response.product_enquiries.forEach(product_enquiry => {
+                            let html = `
+                                <li>
+                                    <i class="list-box-icon sl sl-icon-layers"></i><a href="#"> <strong>${product_enquiry.applicant_name}</strong> is interested in <strong>${product_enquiry.product__name}</strong>!</a>
+                                    <a href="#" class="close-list-item"><i class="fa fa-close"></i></a>
+                                </li>
+                            `
+                            $('#product-enquiries').append(html)
+                        })
+                    } else {
+                        defaultProductEnquiries();
+                    }
+
+                },
+                error: error => {
+                    console.error('Error: ', error);
+
+                    defaultHomeView();
+                },
+            });
+        };
+
+        var currentUser = `{{request.user.username}}`;
+        var storedUser = localStorage.getItem('cscUser');
+
+        var currentCsc = $('#switch-csc-btn').val();
+        var storedCsc = localStorage.getItem('centerSlug');
+
+
+        if (currentUser == storedUser) {
+            getCenterData();
+        } else {
+            defaultHomeView();
+        }
+    })
+</script>
+{% endblock scripts %}

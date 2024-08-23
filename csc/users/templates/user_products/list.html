@@ -178,7 +178,6 @@
 	$(document).ready(function() {
 
 		function getProducts(center) {
-            console.log("called")
 			$.ajax({
 				type: 'GET',
 				url: `/users/products/`,
@@ -214,13 +213,13 @@
             }
 		}
 
-		$('#center-dropdown').on('change', function () {
-			const center = $(this).val();
-			localStorage.setItem('centerSlug', center)
-			localStorage.setItem('cscUser', `{{request.user.username}}`)
+		// $('#center-dropdown').on('change', function () {
+		// 	const center = $(this).val();
+		// 	localStorage.setItem('centerSlug', center)
+		// 	localStorage.setItem('cscUser', `{{request.user.username}}`)
 
-			getProducts(center);
-		});
+		// 	getProducts(center);
+		// });
 	});
 </script>
 
