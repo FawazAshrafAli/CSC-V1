@@ -33,7 +33,7 @@
     <div class="col-lg-3 col-md-6">
         <div class="dashboard-stat color-1">
             <div class="dashboard-stat-content"><h4 id="services-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Services</span></div>
-            <div class="dashboard-stat-icon"><i class="im im-icon-Map2"></i></div>
+            <div class="dashboard-stat-icon"><i class="fa fa-handshake"></i></div>
         </div>
     </div>
 
@@ -41,7 +41,7 @@
     <div class="col-lg-3 col-md-6">
         <div class="dashboard-stat color-2">
             <div class="dashboard-stat-content"><h4 id="products-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Products</span></div>
-            <div class="dashboard-stat-icon"><i class="im im-icon-Line-Chart"></i></div>
+            <div class="dashboard-stat-icon"><i class="fa fa-box"></i></div>
         </div>
     </div>
 
@@ -50,7 +50,7 @@
     <div class="col-lg-3 col-md-6">
         <div class="dashboard-stat color-3">
             <div class="dashboard-stat-content"><h4 id="service-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Service Enquiries</span></div>
-            <div class="dashboard-stat-icon"><i class="im im-icon-Add-UserStar"></i></div>
+            <div class="dashboard-stat-icon"><i class="fa fa-question-circle"></i></div>
         </div>
     </div>
 
@@ -58,7 +58,7 @@
     <div class="col-lg-3 col-md-6">
         <div class="dashboard-stat color-4">
             <div class="dashboard-stat-content"><h4 id="product-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Product Enquiries</span></div>
-            <div class="dashboard-stat-icon"><i class="im im-icon-Heart"></i></div>
+            <div class="dashboard-stat-icon"><i class="fa fa-cart-plus"></i></div>
         </div>
     </div>
 </div>
@@ -101,8 +101,8 @@
             $('#service-enquiries').html(`
                 {% for service_enquiry in service_enquiries %}
                 <li>
-                    <i class="list-box-icon sl sl-icon-layers"></i><a href="#"> <strong>{{service_enquiry.applicant_name}}</strong> enquired about <strong>{{service_enquiry.service.first_name}}</strong>!</a>
-                    <a href="#" class="close-list-item"><i class="fa fa-close"></i></a>
+                    <i class="list-box-icon sl sl-icon-layers"></i><a href="{{service_enquiry.get_absolute_url}}"> <strong>{{service_enquiry.applicant_name}}</strong> enquired about <strong>{{service_enquiry.service.first_name}}</strong>!</a>
+                    <a href="#" class="close-list-item" onclick="markServiceEnquiryViewed('{{service_enquiry.slug}}')"><i class="fa fa-close"></i></a>
                 </li>
                 {% endfor %}
             `);
@@ -112,8 +112,8 @@
             $('#product-enquiries').html(`
                 {% for product_enquiry in product_enquiries %}
                 <li>
-                    <i class="list-box-icon sl sl-icon-layers"></i><a href="#"> <strong>{{product_enquiry.applicant_name}}</strong> is interested in <strong>{{product_enquiry.product.name}}</strong>!</a>
-                    <a href="#" class="close-list-item"><i class="fa fa-close"></i></a>
+                    <i class="list-box-icon sl sl-icon-layers"></i><a href="{{product_enquiry.get_absolute_url}}"> <strong>{{product_enquiry.applicant_name}}</strong> is interested in <strong>{{product_enquiry.product.name}}</strong>!</a>
+                    <a href="#" class="close-list-item" onclick="markProductEnquiryViewed('{{product_enquiry.slug}}');"><i class="fa fa-close"></i></a>
                 </li>
                 {% endfor %}
             `);
@@ -142,31 +142,40 @@
                     $('#product-enquiries-count').html(`${response.product_enquiries_count ? response.product_enquiries_count : 0}`)
 
                     if (response.service_enquiries) {
-                        $('#service-enquiries').html('');
-                        response.service_enquiries.forEach(service_enquiry => {
-                            let html = `
-                                <li>
-                                    <i class="list-box-icon sl sl-icon-layers"></i><a href="#"> <strong>${service_enquiry.applicant_name}</strong> enquired about <strong>${service_enquiry.service}</strong>!</a>
-                                    <a href="#" class="close-list-item"><i class="fa fa-close"></i></a>
-                                </li>
-                            `
-                            $('#service-enquiries').append(html)
-                        })
+                        if (response.service_enquiries.length == 0) {
+                            $('#service-enquiries').html('<li>No new service enquiries.</li>');
+                        } else {
+                            $('#service-enquiries').html('');
+                            response.service_enquiries.forEach(service_enquiry => {
+                                let html = `
+                                    <li>
+                                        <i class="list-box-icon fa fa-question-circle"></i><a href="${service_enquiry.get_absolute_url}"> <strong>${service_enquiry.applicant_name}</strong> enquired about <strong>${service_enquiry.service}</strong>!</a>
+                                        <a href="#" class="close-list-item" onclick="markServiceEnquiryViewed('${service_enquiry.slug}');"><i class="fa fa-close"></i></a>
+                                    </li>
+                                `
+                                $('#service-enquiries').append(html)
+                            });
+                        }                            
                     } else {
                         defaultServiceEnquiries();
                     }
 
                     if (response.product_enquiries) {
-                        $('#product-enquiries').html('');
-                        response.product_enquiries.forEach(product_enquiry => {
-                            let html = `
-                                <li>
-                                    <i class="list-box-icon sl sl-icon-layers"></i><a href="#"> <strong>${product_enquiry.applicant_name}</strong> is interested in <strong>${product_enquiry.product__name}</strong>!</a>
-                                    <a href="#" class="close-list-item"><i class="fa fa-close"></i></a>
-                                </li>
-                            `
-                            $('#product-enquiries').append(html)
-                        })
+                        if (response.product_enquiries.length == 0) {
+                            $('#product-enquiries').html('<li>No new product enquiries.</li>');
+                        } else {
+                            $('#product-enquiries').html('');
+                            response.product_enquiries.forEach(product_enquiry => {
+                                let html = `
+                                    <li>
+                                        <i class="list-box-icon fa fa-cart-plus"></i><a href="${product_enquiry.get_absolute_url}"> <strong>${product_enquiry.applicant_name}</strong> is interested in <strong>${product_enquiry.product}</strong>!</a>
+                                        <a href="#" class="close-list-item" onclick="markProductEnquiryViewed('${product_enquiry.slug}');"><i class="fa fa-close"></i></a>
+                                    </li>
+                                `
+                                $('#product-enquiries').append(html)
+                            });
+                        }
+                        
                     } else {
                         defaultProductEnquiries();
                     }
@@ -192,6 +201,70 @@
         } else {
             defaultHomeView();
         }
-    })
+
+        
+    });    
+    
+    // Remove service enquiry from home dashboard defaultHomeView
+    function markServiceEnquiryViewed(serviceEnquirySlug) {
+        $.ajax({
+            type: 'POST',
+            url: `/users/viewed_service_enquiry/${serviceEnquirySlug}`,
+            dataType: 'json',
+
+            success: response => {
+                if (response.service_enquiries) {
+                    if (response.service_enquiries.length == 0) {
+                        $('#service-enquiries').html('<li>No new service enquiries.</li>');
+                    } else {
+                        $('#service-enquiries').html('');
+                        response.service_enquiries.forEach(service_enquiry => {
+                            let html = `
+                                <li>
+                                    <i class="list-box-icon fa fa-question-circle"></i><a href="${service_enquiry.get_absolute_url}"> <strong>${service_enquiry.applicant_name}</strong> enquired about <strong>${service_enquiry.service}</strong>!</a>
+                                    <a href="#" class="close-list-item" onclick="markServiceEnquiryViewed('${service_enquiry.slug}');"><i class="fa fa-close"></i></a>
+                                </li>
+                            `
+                            $('#service-enquiries').append(html)
+                        });
+                    }                            
+                } else {
+                    defaultServiceEnquiries();
+                }
+            },
+            error: error => console.error("Error: ", error),
+        });
+    };
+
+    // Remove product enquiry from home dashboard defaultHomeView
+    function markProductEnquiryViewed(productEnquirySlug) {
+        $.ajax({
+            type: 'POST',
+            url: `/users/viewed_product_enquiry/${productEnquirySlug}`,
+            dataType: 'json',
+
+            success: response => {
+                if (response.product_enquiries) {
+                    if (response.product_enquiries.length == 0) {
+                        $('#product-enquiries').html('<li>No new product enquiries.</li>');
+                    } else {
+                        $('#product-enquiries').html('');
+                        response.product_enquiries.forEach(product_enquiry => {
+                            let html = `
+                                <li>
+                                    <i class="list-box-icon fa fa-question-circle"></i><a href="${product_enquiry.get_absolute_url}"> <strong>${product_enquiry.applicant_name}</strong> enquired about <strong>${product_enquiry.product}</strong>!</a>
+                                    <a href="#" class="close-list-item" onclick="markServiceEnquiryViewed('${product_enquiry.slug}');"><i class="fa fa-close"></i></a>
+                                </li>
+                            `
+                            $('#product-enquiries').append(html)
+                        });
+                    }                            
+                } else {
+                    defaultServiceEnquiries();
+                }
+            },
+            error: error => console.error("Error: ", error),
+        });
+    };
 </script>
 {% endblock scripts %}

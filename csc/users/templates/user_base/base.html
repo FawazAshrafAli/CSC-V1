@@ -145,8 +145,8 @@
 				
 				<!-- Logo -->
 				<div id="logo">
-					<a href="index.html"><img src="{% static 'images/logo.png' %}" alt="CSC Centers in India"></a>
-					<a href="index.html" class="dashboard-logo"><img src="{% static 'images/logo2.png' %}" alt=""></a>
+					<a href="{% url 'home:view' %}"><img src="{% static 'images/logo.png' %}" alt="CSC Centers in India"></a>
+					<a href="{% url 'home:view' %}" class="dashboard-logo"><img src="{% static 'images/logo2.png' %}" alt=""></a>
 				</div>
 
 				<!-- Mobile Navigation -->
@@ -323,15 +323,13 @@
 		// Switch CSC Center
 		$('#switch-csc-btn').click(() => {
 			
-			$('#pop-up-form').remove('{{csrf}}')
-
-			$('#pop-up-form').prop('action', '#').prop('method', '');
+			$('#pop-up-form').prop('action', "{% url 'users:home' %}").prop('method', 'get');
 			$('#pop-up-box-heading').html('Select CSC Center');
 			$('#pop-up-dropdown').html(`
 			{% for center in user_csc_centers %}
 			<option value="{{center.slug}}">{{center.full_name}}</option>
 			{% endfor %}
-			`);
+			`).prop('name', 'center_slug');
 			$('#pop-up-add-btn').html('Select Center');
 			$('#pop-up-box').show();						
 		})

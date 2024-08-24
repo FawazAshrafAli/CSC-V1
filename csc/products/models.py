@@ -60,6 +60,8 @@ class ProductEnquiry(models.Model):
     product = models.ForeignKey("products.Product", on_delete=models.CASCADE)
     message = models.TextField()
     
+    is_viewed = models.BooleanField(default= False)
+
     slug = models.SlugField(blank=True, null=True, max_length=150)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

@@ -13,6 +13,7 @@ from django.utils.decorators import method_decorator
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, logout
+from django.views.decorators.csrf import csrf_exempt
 import base64
 
 from posters.forms import PosterFooterTextForm
@@ -50,9 +51,18 @@ class HomeView(BaseUserView, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         csc_center = CscCenter.objects.filter(email = self.request.user.email).first()
+
+        center_slug = self.request.GET.get('center_slug')        
+        if center_slug:
+            try:
+                csc_center = get_object_or_404(CscCenter, slug = center_slug)
+                print(csc_center)
+            except Http404:
+                pass
+
         context["csc_center"] = csc_center
-        context["service_enquiries"] = ServiceEnquiry.objects.filter(csc_center = csc_center).order_by('-created')
-        context["product_enquiries"] = ProductEnquiry.objects.filter(csc_center = csc_center).order_by('-created')
+        context["service_enquiries"] = ServiceEnquiry.objects.filter(csc_center = csc_center, is_viewed = False).order_by('-created')
+        context["product_enquiries"] = ProductEnquiry.objects.filter(csc_center = csc_center, is_viewed = False).order_by('-created')
         context["home_page"] = True
         return context
 
@@ -65,14 +75,25 @@ class GetCenterDataView(BaseUserView, View):
         except Http404:
             pass
 
-        service_enquiries = ServiceEnquiry.objects.filter(csc_center = center)
-        product_enquiries = ProductEnquiry.objects.filter(csc_center = center)
+        service_enquiries = ServiceEnquiry.objects.filter(csc_center = center, is_viewed = False)
+        product_enquiries = ProductEnquiry.objects.filter(csc_center = center, is_viewed = False)
 
         service_enquiry_list = []
         for enquiry in service_enquiries:
             service_enquiry_list.append({
                 "applicant_name": enquiry.applicant_name,
-                "service": enquiry.service.first_name
+                "service": enquiry.service.first_name,
+                "get_absolute_url": enquiry.get_absolute_url,
+                "slug": enquiry.slug
+            })
+
+        product_enquiry_list = []
+        for enquiry in product_enquiries:
+            product_enquiry_list.append({
+                "applicant_name": enquiry.applicant_name,
+                "product": enquiry.product.name,
+                "get_absolute_url": enquiry.get_absolute_url,
+                "slug": enquiry.slug
             })
 
         data = {
@@ -81,7 +102,7 @@ class GetCenterDataView(BaseUserView, View):
             "service_enquiries_count" : service_enquiries.count(),
             "product_enquiries_count" : product_enquiries.count(),
             'service_enquiries': service_enquiry_list,
-            'product_enquiries': list(product_enquiries.values('applicant_name', 'product__name'))
+            'product_enquiries': product_enquiry_list
             }
 
         return JsonResponse(data)
@@ -210,6 +231,8 @@ class ServiceEnquiryDetailView(BaseServiceView, DetailView):
     def get_object(self):
         try:
             enquiry = get_object_or_404(ServiceEnquiry, slug = self.kwargs['slug'])
+            enquiry.is_viewed = True
+            enquiry.save()
             return enquiry
         except Http404:
             return redirect(reverse_lazy('users:service_enquiries'))
@@ -220,6 +243,29 @@ class ServiceEnquiryDetailView(BaseServiceView, DetailView):
         return context
 
     
+@method_decorator(csrf_exempt, name='dispatch')
+class MarkServiceEnquiryAsViewedView(BaseServiceView, UpdateView):
+    model = ServiceEnquiry
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.is_viewed = True
+        self.object.save()
+
+        service_enquiries = ServiceEnquiry.objects.filter(csc_center = self.object.csc_center, is_viewed = False)
+
+        service_enquiry_list = []
+        for enquiry in service_enquiries:
+            service_enquiry_list.append({
+                "applicant_name": enquiry.applicant_name,
+                "service": enquiry.service.first_name,
+                "get_absolute_url": enquiry.get_absolute_url,
+            })
+
+        return JsonResponse({'service_enquiries': service_enquiry_list})
+
+
+
 
 class DeleteServiceEnquiryView(BaseServiceView, View):
     model = ServiceEnquiry
@@ -402,8 +448,10 @@ class ProductEnquiryDetailView(ProductBaseView, DetailView):
     
     def get_object(self, **kwargs):
         try:
-            self.object = get_object_or_404(ProductEnquiry, slug = self.kwargs['slug'])
-            return self.object
+            enquiry = get_object_or_404(ProductEnquiry, slug = self.kwargs['slug'])
+            enquiry.is_viewed = True
+            enquiry.save()
+            return enquiry
         except Http404:
             return redirect(reverse_lazy('users:product_enquiries'))
         
@@ -412,6 +460,28 @@ class ProductEnquiryDetailView(ProductBaseView, DetailView):
         context['enquiry'] = self.get_object()
         return context
     
+
+@method_decorator(csrf_exempt, name='dispatch')
+class MarkProductEnquiryAsViewedView(ProductBaseView, UpdateView):
+    model = ProductEnquiry
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.is_viewed = True
+        self.object.save()
+
+        product_enquiries = ProductEnquiry.objects.filter(csc_center = self.object.center, is_viewed = False)
+
+        product_enquiry_list = []
+        for enquiry in product_enquiries:
+            product_enquiry_list.append({
+                "applicant_name": enquiry.applicant_name,
+                "product": enquiry.product.first_name,
+                "get_absolute_url": enquiry.get_absolute_url,
+            })
+
+        return JsonResponse({'product_enquiries': product_enquiry_list})
+
 
 class DeleteProductEnquiryView(ProductBaseView, View):
     model = ProductEnquiry

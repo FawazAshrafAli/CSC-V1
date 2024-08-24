@@ -44,6 +44,8 @@ class ServiceEnquiry(models.Model):
     applicant_phone = models.CharField(max_length=20)
     service = models.ForeignKey("services.Service", on_delete=models.CASCADE)
     message = models.TextField()
+
+    is_viewed = models.BooleanField(default= False)
     
     slug = models.SlugField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
