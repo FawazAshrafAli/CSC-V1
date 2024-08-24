@@ -18,7 +18,7 @@
 </style>
 
 <style>
-    #poster-pop-up-box {
+    #poster-pop-up-box, #qr-pop-up-box {
         display: none;
         position:fixed;
         left: 50%;
@@ -30,14 +30,14 @@
         min-width: 390px;
     }
 
-    #poster-pop-up-box-heading {
+    #poster-pop-up-box-heading, #qr-pop-up-box-heading {
         text-transform: uppercase;
         background-color: #fff;
         padding: 10px;
         margin: 0 0 10px 0;
     }
 
-    .poster-close-btn {
+    .poster-close-btn, .qr-close-btn {
         position: absolute;
         top: 5px; 
         right: 5px;
@@ -49,23 +49,23 @@
         padding: 0 7px;        
     }
 
-    .poster-close-btn:hover {
+    .poster-close-btn:hover, .qr-close-btn:hover {
         color: #fff;
         background-color: rgba(255, 0, 0, 0.485);
     }
 
-    #poster-pop-up-form {
+    #poster-pop-up-form, #qr-pop-up-form {
         padding: 0 10px;
         padding-bottom: 5px;
     }
 
-    #poster-pop-up-add-btn-div {
+    #poster-pop-up-add-btn-div, #qr-pop-up-add-btn-div {
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
 
-    #poster-pop-up-submit-btn {
+    #poster-pop-up-submit-btn, #qr-pop-up-submit-btn {
         color: #fff;
         text-transform: uppercase;
         background: linear-gradient(to bottom, darkgreen, green, darkgreen);
@@ -77,7 +77,7 @@
         background: linear-gradient(to bottom, lime, green, darkgreen);
     }
 
-    #poster-pop-up-cancel-btn {
+    #poster-pop-up-cancel-btn, #qr-pop-up-cancel-btn {
         color: #fff;
         text-transform: uppercase;
         background: linear-gradient(to bottom, darkblue, blue, darkblue);
@@ -85,7 +85,7 @@
         margin-bottom: 5px;
     }
 
-    #poster-pop-up-cancel-btn:hover {
+    #poster-pop-up-cancel-btn:hover, #qr-pop-up-cancel-btn:hover {
         background: linear-gradient(to bottom, steelblue, blue, darkblue);
     }
 
@@ -100,9 +100,46 @@
        background-color: #777;
        color: #fff;
     }
-    #poster-pop-up-form {
+    #poster-pop-up-form, #qr-pop-up-form {
         overflow-y: auto;
         max-height: 360px;
+    }    
+</style>
+
+<style>
+    #poster-qr-div {
+        position: absolute;
+        top:0;
+        right: 0;
+        height: 75px;
+        width: 75px;
+        border-top: 1px dashed #777;
+
+        display: flex;
+        justify-content: center;
+    }
+
+    #poster-footer-div {
+        position: absolute;
+        bottom:0;
+        height: 75px;
+        width: 240px;
+        border-top: 1px dashed #777;
+
+        display: flex;
+        justify-content: center;
+    }
+    #poster-footer-div:hover, #poster-qr-div:hover {
+        background-color: rgb(0, 0, 0, 0.5);
+    }
+    #poster-footer-div button i, #poster-qr-div button i {
+        color: black;
+    }
+    #poster-footer-div:hover button i, #poster-qr-div:hover button i {
+        color: #fff;
+    }
+    #poster-footer-div button:active i, #poster-qr-div button:active i {
+        color: black;
     }
 </style>
 
@@ -159,6 +196,34 @@
                     </div>
                 </form>                
             </div>
+
+            <!-- QR Code Upload -->
+            <div id="qr-pop-up-box">
+                <h4 id="qr-pop-up-box-heading" class="text-center">Add QR Code</h4>
+                <button class="qr-close-btn" aria-label="Close" title="Close">&times;</button>                   
+                <form id="qr-pop-up-form" method="post" action="#">
+                    <div class="row submit-section" id="qr-header-image">
+                        <div class="col-md-12">
+                            <h5>Select CSC Center</h5>
+                            <select name="" id="qr-form-center-dropdown" required>
+                                <option value="" selected disabled hidden>Select CSC Center</option>
+                                {% for center in centers %}
+                                <option value="{{center.slug}}">{{center.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-12" id="qr-code-div">
+                            
+                        </div>
+                        
+                    </div>                                 
+                    <div id="qr-pop-up-add-btn-div">
+                        <button id="qr-pop-up-submit-btn" type="submit">Add QR Code</button>
+                        <button id="qr-pop-up-cancel-btn" type="button">Cancel</button>
+                    </div>
+                </form>                
+            </div>
+
             <!-- Model Start-->
 
             <form method="post" action="{% url 'csc_admin:create_poster' %}" enctype="multipart/form-data" id="create-poster-form">
@@ -170,39 +235,17 @@
                         <div class="add-listing-headline">
                             <h3><i class="sl sl-icon-doc"></i> Poster Informations</h3>
                         </div>
-                        <!-- Title -->
-
-                        <style>
-                            #poster-footer-div {
-                                position: absolute;
-                                bottom:0;
-                                height: 75px;
-                                width: 240px;
-                                border-top: 1px dashed #777;
-
-                                display: flex;
-                                justify-content: center;
-                            }
-                            #poster-footer-div:hover {
-                                background-color: rgb(0, 0, 0, 0.5);
-                            }
-                            #poster-footer-div button i {
-                                color: black;
-                            }
-                            #poster-footer-div:hover button i {
-                                color: #fff;
-                            }
-                            #poster-footer-div button:active i {
-                                color: black;
-                            }
-                        </style>
-                        
+                        <!-- Title -->                                                
                         <div class="row with-forms">
                             <div class="col-md-4">
-                                <div style="width: 240px; height: 360px;" title="Add Footer">
+                                <div style="width: 240px; height: 360px; position: relative;" title="Add Footer">
+                                    <div id="poster-qr-div">
+                                        <button type="button" style="border: none; background-color: transparent; width: 100%;" onclick="$('#poster-pop-up-box').hide(); $('#qr-pop-up-box').show();"><i class="fa fa-plus"><br>&nbsp;ADD QR</i></button>
+                                        <input type="file" name="poster" id="poster-qr" hidden required>
+                                    </div>
                                     <canvas id="poster-canvas" width="240" height="360" style="border:1px solid #000000;"></canvas>
                                     <div id="poster-footer-div">
-                                        <button type="button" style="border: none; background-color: transparent; width: 100%;" onclick="$('#poster-pop-up-box').show();"><i class="fa fa-plus">&nbsp;ADD FOOTER</i></button>
+                                        <button type="button" style="border: none; background-color: transparent; width: 100%;" onclick="$('#qr-pop-up-box').hide(); $('#poster-pop-up-box').show();"><i class="fa fa-plus">&nbsp;ADD FOOTER</i></button>
                                         <input type="file" name="poster" id="poster-footer" hidden required>
                                     </div> 
                                 </div>                        
@@ -292,75 +335,103 @@
 
 <script>
     $(document).ready(function() {
-    var canvas = $('#poster-canvas')[0];
-    var context = canvas.getContext('2d');
-    var mainImage = new Image();
-    mainImage.src = `{{poster.poster.url}}`; // URL of the pre-existing image
+        var canvas = $('#poster-canvas')[0];
+        var context = canvas.getContext('2d');
+        var mainImage = new Image();
+        mainImage.src = `{{poster.poster.url}}`; // URL of the pre-existing image
 
-    mainImage.onload = function() {
-        context.drawImage(mainImage, 0, 0, canvas.width, canvas.height);
-    };
+        mainImage.onload = function() {
+            context.drawImage(mainImage, 0, 0, canvas.width, canvas.height);
+        };
 
-    $('#poster-pop-up-form').on('submit', function(event) {
-        event.preventDefault();
-        // var footerImageFile = event.target.files[0];
+        $('#poster-pop-up-form').on('submit', function(event) {
+            event.preventDefault();
+            // var footerImageFile = event.target.files[0];
 
-        var footerImageFile = $('#footer-image')[0].files[0];
+            var footerImageFile = $('#footer-image')[0].files[0];
 
-        $('#poster-pop-up-box').hide();
+            $('#poster-pop-up-box').hide();
 
-        if (footerImageFile) {
-            var footerImage = new Image();
-            var footerReader = new FileReader();
+            if (footerImageFile) {
+                var footerImage = new Image();
+                var footerReader = new FileReader();
 
-            footerReader.onload = function(e) {
-                footerImage.src = e.target.result;
-                footerImage.onload = function() {
-                    // Clear previous footer image if any
-                    context.clearRect(0, canvas.height - 75, canvas.width, 100);
-                    
-                    // Draw the footer image at the bottom of the canvas
-                    var footerHeight = 75; // Adjust the height as needed
-                    var y = canvas.height - footerHeight;
-                    context.drawImage(footerImage, 0, y, canvas.width, footerHeight);
+                footerReader.onload = function(e) {
+                    footerImage.src = e.target.result;
+                    footerImage.onload = function() {
+                        // Clear previous footer image if any
+                        context.clearRect(0, canvas.height - 75, canvas.width, 100);
+                        
+                        // Draw the footer image at the bottom of the canvas
+                        var footerHeight = 75; // Adjust the height as needed
+                        var y = canvas.height - footerHeight;
+                        context.drawImage(footerImage, 0, y, canvas.width, footerHeight);
+                    };
                 };
-            };
-            footerReader.readAsDataURL(footerImageFile);
-        }
-    });
-
-
-    // Apply HTML content to canvas
-    $('#poster-pop-up-form').on('submit', function(event) {
-        event.preventDefault();
-
-        var formData = new FormData(this);
-
-        // Get the value of the 'text' field
-        var footerText = formData.get('text');
-
-        var htmlContent = footerText;
-
-        console.log(htmlContent)
-
-        html2canvas(htmlContent).then(function(contentCanvas) {
-            // Convert canvas to image data URL
-            var contentImage = contentCanvas.toDataURL('image/jpg');
-            
-            // Create a new Image object and set its source to the data URL
-            var img = new Image();
-            img.src = contentImage;
-            
-            img.onload = function() {
-                // Draw the image onto the main canvas
-                ctx.drawImage(img, 50, 50); // Adjust position as needed
-            };
-        }).catch(function(error) {
-            console.error('Error rendering HTML to canvas:', error);
+                footerReader.readAsDataURL(footerImageFile);
+            }
         });
-    });
 
-});
+        // Header Image
+        $('#qr-pop-up-form').on('submit', function(event) {
+            event.preventDefault();
+
+            var qrImageFile = $('#qr-code-div').html()
+
+            $('#qr-pop-up-box').hide();
+
+            if (qrImageFile) {
+                var qrImage = new Image();
+                var qrReader = new FileReader();
+
+                qrReader.onload = function(e) {
+                    qrImage.src = e.target.result;
+                    qrImage.onload = function() {
+                        // Clear previous qr image if any
+                        context.clearRect(0, canvas.height - 75, canvas.width, 100);
+                        
+                        // Draw the qr image at the bottom of the canvas
+                        var qrHeight = 75; // Adjust the height as needed
+                        var y = canvas.height - qrHeight;
+                        context.drawImage(qrImage, 0, 0, canvas.width, qrHeight);
+                    };
+                };
+                qrReader.read(qrImageFile);
+            }
+        });
+
+
+        // Apply HTML content to canvas
+        $('#poster-pop-up-form').on('submit', function(event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+
+            // Get the value of the 'text' field
+            var footerText = formData.get('text');
+
+            var htmlContent = footerText;
+
+            console.log(htmlContent)
+
+            html2canvas(htmlContent).then(function(contentCanvas) {
+                // Convert canvas to image data URL
+                var contentImage = contentCanvas.toDataURL('image/jpg');
+                
+                // Create a new Image object and set its source to the data URL
+                var img = new Image();
+                img.src = contentImage;
+                
+                img.onload = function() {
+                    // Draw the image onto the main canvas
+                    ctx.drawImage(img, 50, 50); // Adjust position as needed
+                };
+            }).catch(function(error) {
+                console.error('Error rendering HTML to canvas:', error);
+            });
+        });
+
+    });
 
 </script>
 
@@ -381,7 +452,7 @@
         $('#poster-footer-text').show();
     })
 
-    $('.poster-close-btn, #poster-pop-up-cancel-btn').click(() => $('#poster-pop-up-box').hide());
+    $('.poster-close-btn, #poster-pop-up-cancel-btn, .qr-close-btn, #qr-pop-up-cancel-btn').click(() => $('#poster-pop-up-box, #qr-pop-up-box').hide());
 </script>
 
 <script>
@@ -432,6 +503,26 @@
         //     // Print the data to the console
         //     console.log("Footer Text:", footerText);                    
         // })
+    })
+</script>
+
+<script>
+    $('#qr-form-center-dropdown').on('change', function () {
+        const center = $(this).val();
+    
+        $.ajax({
+            type: 'GET',
+            url: `/users/get_qrcode/${center}`,
+            dataType: 'json',
+            success: response => {
+                if (response.qr_code) {
+                    $('#qr-code-div').html(`
+                    <img src='data:image/png;base64,${response.qr_code}' alt="${response.center ? response.center : ''} QR Code" style="width: 75px;" />
+                    `)
+                }
+            },
+            error: error => console.error("Error: ", error),
+        })
     })
 </script>
 {% endblock scripts %}

@@ -56,7 +56,6 @@ class HomeView(BaseUserView, TemplateView):
         if center_slug:
             try:
                 csc_center = get_object_or_404(CscCenter, slug = center_slug)
-                print(csc_center)
             except Http404:
                 pass
 
@@ -1058,6 +1057,18 @@ class CreatePosterView(BasePosterView, CreateView):
         return redirect(self.get_success_url())
 
 
+class GetQrCodeView(BasePosterView, DetailView):
+    model = CscCenter
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        qr_code = self.object.qr_code
+        center = self.object.name
+
+        return JsonResponse({'qr_code': qr_code, 'center': center})
+
+
 class SavePosterView(BasePosterView, View):
     success_url = reverse_lazy('users:my_posters')
     redirect_url = reverse_lazy('users:available_posters')
@@ -1154,7 +1165,6 @@ class MyProfileView(BaseMyProfileView, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['user'] = self.get_object()
-        print(context['user'].first_name)
         return context
     
 
