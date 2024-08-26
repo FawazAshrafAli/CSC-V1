@@ -111,20 +111,24 @@
         position: absolute;
         top:0;
         right: 0;
-        height: 75px;
-        width: 75px;
+        height: 8.334%;
+        width: 12.5%;
         border-top: 1px dashed #777;
+
+        font-size: 13px;
 
         display: flex;
         justify-content: center;
-    }
+    }    
 
     #poster-footer-div {
         position: absolute;
         bottom:0;
-        height: 75px;
-        width: 240px;
+        height: 20%;
+        width: 100%;
         border-top: 1px dashed #777;
+
+        font-size: 35px;
 
         display: flex;
         justify-content: center;
@@ -203,16 +207,7 @@
                 <button class="qr-close-btn" aria-label="Close" title="Close">&times;</button>                   
                 <form id="qr-pop-up-form" method="post" action="#">
                     <div class="row submit-section" id="qr-header-image">
-                        <div class="col-md-12">
-                            <h5>Select CSC Center</h5>
-                            <select name="" id="qr-form-center-dropdown" required>
-                                <option value="" selected disabled hidden>Select CSC Center</option>
-                                {% for center in centers %}
-                                <option value="{{center.slug}}">{{center.name}}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-12" id="qr-code-div">
+                        <div class="col-md-12" id="qr-code-div" style="display: flex; justify-content: center;">
                             
                         </div>
                         
@@ -237,55 +232,42 @@
                         </div>
                         <!-- Title -->                                                
                         <div class="row with-forms">
-                            <div class="col-md-4">
-                                <div style="width: 240px; height: 360px; position: relative;" title="Add Footer">
+                            <div class="col-md-8">
+                                <div style="width: 720px; height: 1080px; position: relative;" title="Add Footer">
                                     <div id="poster-qr-div">
-                                        <button type="button" style="border: none; background-color: transparent; width: 100%;" onclick="$('#poster-pop-up-box').hide(); $('#qr-pop-up-box').show();"><i class="fa fa-plus"><br>&nbsp;ADD QR</i></button>
+                                        <button type="button" style="border: none; background-color: transparent; width: 100%;" onclick="$('#poster-pop-up-box').hide(); $('#qr-pop-up-box').show(); getQr();"><i class="fa fa-plus"><br>&nbsp;ADD QR</i></button>
                                         <input type="file" name="poster" id="poster-qr" hidden required>
                                     </div>
-                                    <canvas id="poster-canvas" width="240" height="360" style="border:1px solid #000000;"></canvas>
+                                    <canvas id="poster-canvas" width="720" height="1080" style="border:1px solid #000000;"></canvas>
                                     <div id="poster-footer-div">
                                         <button type="button" style="border: none; background-color: transparent; width: 100%;" onclick="$('#qr-pop-up-box').hide(); $('#poster-pop-up-box').show();"><i class="fa fa-plus">&nbsp;ADD FOOTER</i></button>
                                         <input type="file" name="poster" id="poster-footer" hidden required>
                                     </div> 
                                 </div>                        
                             </div>
-                            <div class="col-md-8">
+                            <div class="col-md-4">
                                 <div class="row with-forms">
-                                    <div class="{% if multi_center_owner %} col-md-6 {% else %} col-md-12 {% endif %}">
+                                    <div class="col-md-12">
                                         <h5>Poster Title <i class="tip" data-tip-content="Title of Poster"></i></h5>
                                         <input class="search-field" type="text" name="title"
                                             placeholder="Title of Poster" id="poster-title-input" value="{{poster.title}}" required/>
-                                    </div>
-                                    {% if multi_center_owner %}
-                                    <div class="col-md-6">
-                                        <h5>CSC Center</h5>
-                                        <select class="chosen-select" name="csc_center" id="csc-center-dropdown"
-                                            data-placeholder="Select CSC Center" required>
-                                            <option label="Select CSC Center"></option>
-                                            {% for center in centers %}
-                                            <option value="{{center.slug}}">{{center.name}}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    {% endif %}
+                                    </div>                                    
                                     <div class="col-md-12">
                                         <div class="form">
                                             <h5>Description</h5>
                                             <textarea class="WYSIWYG" name="description" cols="40" rows="3" id="poster-description-input"
                                                 spellcheck="true">"{{poster.description}}"</textarea>
                                         </div>
-                                    </div>
+                                    </div>                                    
                                 </div>
+                            </div>
+                            <div class="col-md-12" id="create-poster-btns-div">
+                                <button class="button preview" type="button" id="create-poster-btn">Create Poster</button>
                             </div>
                         </div>                           
                     </div>
                     
-                    <!-- Section / End -->                    
-                                        
-                    <div id="create-poster-btns-div">
-                    <button class="button preview" type="button" id="create-poster-btn">Create Poster</button>
-                    </div>
+                    <!-- Section / End -->                                                                        
             </form>
             <br>
         </div>
@@ -334,11 +316,16 @@
 <!-- Style Switcher / End -->
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function() {        
+        
         var canvas = $('#poster-canvas')[0];
         var context = canvas.getContext('2d');
         var mainImage = new Image();
         mainImage.src = `{{poster.poster.url}}`; // URL of the pre-existing image
+
+        // var scaleFactor = 2;  // Increase the scale factor to improve quality
+        // canvas.width = canvas.width * scaleFactor;
+        // canvas.height = canvas.height * scaleFactor;        
 
         mainImage.onload = function() {
             context.drawImage(mainImage, 0, 0, canvas.width, canvas.height);
@@ -359,13 +346,15 @@
                 footerReader.onload = function(e) {
                     footerImage.src = e.target.result;
                     footerImage.onload = function() {
+                        footerWidth = canvas.width
+                        footerHeight = canvas.height * 0.2
+
                         // Clear previous footer image if any
-                        context.clearRect(0, canvas.height - 75, canvas.width, 100);
+                        context.clearRect(0, canvas.height - footerHeight, canvas.width, footerHeight);
                         
                         // Draw the footer image at the bottom of the canvas
-                        var footerHeight = 75; // Adjust the height as needed
                         var y = canvas.height - footerHeight;
-                        context.drawImage(footerImage, 0, y, canvas.width, footerHeight);
+                        context.drawImage(footerImage, 0, y, footerWidth, footerHeight);
                     };
                 };
                 footerReader.readAsDataURL(footerImageFile);
@@ -376,27 +365,31 @@
         $('#qr-pop-up-form').on('submit', function(event) {
             event.preventDefault();
 
-            var qrImageFile = $('#qr-code-div').html()
+            // Extract the image source from the div
+            // var qrImageFile = $('#qr-code-div img').attr('src');
+
+            var qrImageFile = localStorage.getItem('currentQrCode');
 
             $('#qr-pop-up-box').hide();
 
             if (qrImageFile) {
                 var qrImage = new Image();
-                var qrReader = new FileReader();
 
-                qrReader.onload = function(e) {
-                    qrImage.src = e.target.result;
-                    qrImage.onload = function() {
-                        // Clear previous qr image if any
-                        context.clearRect(0, canvas.height - 75, canvas.width, 100);
-                        
-                        // Draw the qr image at the bottom of the canvas
-                        var qrHeight = 75; // Adjust the height as needed
-                        var y = canvas.height - qrHeight;
-                        context.drawImage(qrImage, 0, 0, canvas.width, qrHeight);
-                    };
+                qrImage.onload = function() {
+                    padding = canvas.width * 0.01
+                    var qrWidth = (canvas.width * 0.125) - (2 * padding);
+                    var qrHeight =  qrWidth// Adjust the height as needed
+                    // Draw the QR image at the bottom of the canvas
+                    var y = canvas.width - qrWidth - padding;
+
+                    // Clear previous QR image if any
+                    context.clearRect(y, padding, qrWidth, qrHeight);
+                    
+                    context.drawImage(qrImage, y, padding, qrWidth, qrHeight);
                 };
-                qrReader.read(qrImageFile);
+
+                // Set the image source
+                qrImage.src = qrImageFile;
             }
         });
 
@@ -460,10 +453,18 @@
         $('#create-poster-btn').click(function () {
 
             const canvas = $('#poster-canvas')[0];
-            const imageData = canvas.toDataURL('image/jpg');
+            const imageData = canvas.toDataURL('image/jpg', 1.0);
             const title = $('#poster-title-input').val();
             const description = $('#poster-description-input').val();
-            const csc_center = $('#csc-center-dropdown').val();
+            // const csc_center = $('#csc-center-dropdown').val();
+
+            let csc_center;
+
+            if (localStorage.getItem('cscUser') == `{{request.user.username}}` && localStorage.getItem('centerSlug')) {
+                csc_center = localStorage.getItem('centerSlug');
+            } else {
+                csc_center = `{{center.slug}}`;
+            }
 
             $.ajax({
                 type: 'POST',
@@ -507,9 +508,17 @@
 </script>
 
 <script>
-    $('#qr-form-center-dropdown').on('change', function () {
-        const center = $(this).val();
-    
+    function getQr () {
+        console.log(localStorage.getItem('centerSlug'));
+
+        let center;
+
+        if (localStorage.getItem('cscUser') == `request.user.username` && localStorage.getItem('centerSlug')) {
+            center = localStorage.getItem('centerSlug');
+        } else {
+            center = `{{center.slug}}`;
+        }
+
         $.ajax({
             type: 'GET',
             url: `/users/get_qrcode/${center}`,
@@ -517,12 +526,13 @@
             success: response => {
                 if (response.qr_code) {
                     $('#qr-code-div').html(`
-                    <img src='data:image/png;base64,${response.qr_code}' alt="${response.center ? response.center : ''} QR Code" style="width: 75px;" />
-                    `)
+                    <img src='${response.qr_code}' alt="${response.center ? response.center : ''} QR Code" style="width: 75px;" />
+                    `);
+                    localStorage.setItem('currentQrCode', response.qr_code);
                 }
             },
             error: error => console.error("Error: ", error),
         })
-    })
+    }
 </script>
 {% endblock scripts %}

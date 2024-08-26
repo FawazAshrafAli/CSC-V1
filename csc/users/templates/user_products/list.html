@@ -207,11 +207,23 @@
 		const center =  localStorage.getItem('centerSlug');
 		const user = localStorage.getItem('cscUser');
 
-		if (user == `{{request.user.username}}`) {
-            if ($('#center-dropdown').val() != center) {
-                getProducts(center);
-            }
-		}
+		if (user == `{{request.user.username}}` && center) {
+            getProducts(center);
+		} else {
+            $('#product-tbody').html(`
+                {% for product in center.products.all %}
+                <tr class="row-items" onclick="window.location='{% url 'products:product' product.slug %}'">
+                    <td>{{ forloop.counter }}</td>
+                    <td id="td-image">
+                        <img src="{% if product.image %} {{product.image.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
+                    </td>
+                    <td>{{ product.name }}</td>
+                    <td>&#8377; {{product.price}}</td>
+                    <td><button class="button gray" onclick="event.stopPropagation(); toggleProductDeletion(`{{product.slug}}`, `{{product.name}}`)">Remove</button></td>
+                </tr>
+                {% endfor %}
+            `)
+        }
 
 		// $('#center-dropdown').on('change', function () {
 		// 	const center = $(this).val();

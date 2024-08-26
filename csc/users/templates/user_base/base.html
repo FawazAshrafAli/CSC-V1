@@ -354,9 +354,7 @@
 		}
 
 		// Get the logo and name of the current center
-		function getCurrentCsc() {
-			const centerSlug = localStorage.getItem('centerSlug');
-
+		function getCurrentCsc(centerSlug) {
 			$.ajax({
 				type: 'get',
 				url: '/users/get_current_csc/',
@@ -376,7 +374,12 @@
 			});
 		};
 
-		getCurrentCsc();
+		if (localStorage.getItem('cscUser') == `{{request.user.username}}` && localStorage.getItem('centerSlug')) {
+			const centerSlug = localStorage.getItem('centerSlug');
+			getCurrentCsc(centerSlug);
+		} else {
+			defaultCurrentCsc();
+		}
 	});
 </script>
 

@@ -290,6 +290,7 @@ class LeftoverServiceView(BaseServiceView, ListView):
     def get_queryset(self):
         try:
             center = get_object_or_404(CscCenter, slug = self.kwargs.get('slug'))
+            print('center')
             center_services = center.services.all()
             return Service.objects.exclude(id__in = center_services.values_list('id', flat=True))
         except Http404:
@@ -340,23 +341,24 @@ class ProductListView(ProductBaseView,ListView):
         return super().get(request, *args, **kwargs)
     
 
-class RemoveProductView(ProductBaseView, View):
+class RemoveProductView(ProductBaseView, UpdateView):
+    model = CscCenter
     success_url = reverse_lazy('users:products')
     redirect_url = success_url
+    slug_url_kwarg = 'slug'
 
     def get(self, request, *args, **kwargs):
-        center = super().get_object()
-
+        self.object = super().get_object()
         try:
             product_id = get_object_or_404(Product, slug = kwargs['slug']).pk
         except Http404:
             messages.error(self.request, 'Product not found')
             return redirect(self.redirect_url)
         
-        center.products.remove(product_id)
-        center.save()
+        self.object.products.remove(product_id)
+        self.object.save()
         messages.success(self.request, 'Product removed successfully')
-        return redirect(self.success_url)
+        return redirect(self.get_success_url())
     
 
 class AddProductView(ProductBaseView, UpdateView):
@@ -515,15 +517,16 @@ class GetCurrentCscCenterView(CscCenterBaseView, View):
 
         try:
             center = get_object_or_404(CscCenter, slug = center_slug)
+            data = {
+                'current_center_logo': center.logo.url if center.logo else None,
+                'current_center_name': center.name
+                }
+
+            return JsonResponse(data)
         except Http404:
             pass
-
-        data = {
-            'current_center_logo': center.logo.url if center.logo else None,
-            'current_center_name': center.name
-            }
-
-        return JsonResponse(data)
+            
+        
 
 
 class CscCenterListView(CscCenterBaseView, ListView):
@@ -959,6 +962,7 @@ class AvailablePosterView(BasePosterView, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         context[f"{self.context_object_name}"] = self.queryset        
         return context
 
@@ -1063,7 +1067,7 @@ class GetQrCodeView(BasePosterView, DetailView):
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        qr_code = self.object.qr_code
+        qr_code = self.object.qr_code_image.url
         center = self.object.name
 
         return JsonResponse({'qr_code': qr_code, 'center': center})

@@ -85,24 +85,7 @@
 <div class="row">
   <!-- Listings -->
   <div class="col-lg-12 col-md-12">
-    <div class="dashboard-list-box margin-top-0" style="background-color: #fff">
-      <!-- Sort by -->
-      <div class="sort-by">
-        <div class="sort-by-select">
-          <select
-          data-placeholder="List By Category"
-          class="chosen-select-no-single"
-          id="center-dropdown"
-          >
-            <option value="" selected hidden disabled>
-            Select CSC Center
-            </option>
-            {% for center_obj in centers %}
-            <option value="{{center_obj.slug}}" {% if center_obj.slug == center.slug %} selected {% endif %}>{{center_obj.name}}</option>
-            {% endfor %}
-            </select>
-        </div>
-      </div>
+    <div class="dashboard-list-box margin-top-0" style="background-color: #fff">      
       <h4>Services</h4>
       <div style="float: right; padding: 5px 20px;">
         <button class="button gray" type="button" id="add-services">Add Services</button>
@@ -117,28 +100,11 @@
           </tr>
         </thead>
         <tbody id="service-tbody">
-          {% for service in center.services.all %}
-          <tr class="service-items" 
-            onclick="window.location='{% url 'services:service' service.slug %}'"
-          >
-            <td>{{ forloop.counter }}</td>
-            <td id="td-image">
-              <img
-                src="{% if service.image %} {{service.image.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}"
-                alt="Product Image"
-              />
-            </td>
-            <td>{{ service.name }}</td>
-            <td>
-              <button
-                class="button gray"
-                onclick="event.stopPropagation(); toggleServiceDeletion('{{service.slug}}', '{{service.name}}')"
-              >
-                Remove
-              </button>
-            </td>
+          {% comment %} {% for service in center.services.all %} {% endcomment %}
+          <tr class="service-items">
+            <td colspan="4" rowspan="4" onmouseover="style = 'color: #777;'">Loading . . .</td>
           </tr>
-          {% endfor %}
+          {% comment %} {% endfor %} {% endcomment %}
         </tbody>
       </table>
     </div>
@@ -207,7 +173,7 @@
 				data: {'center_slug': center},
 				success: response => {
 					$('#service-tbody').html('');
-          $(`#center-dropdown option[value='${center}']`).prop('selected', true).trigger('chosen:updated');
+          //$(`#center-dropdown option[value='${center}']`).prop('selected', true).trigger('chosen:updated');
 
 					response.services.forEach(service => {
 						let html = `<tr onclick="window.location='/services/service/${service.slug}'">
@@ -233,19 +199,29 @@
 		const center =  localStorage.getItem('centerSlug');
 		const user = localStorage.getItem('cscUser');
 
-		if (user == `{{request.user.username}}`) {
-      if ($('#center-dropdown').val() != center) {
-          getServices(center);
-      }
-		}
+		if (user == `{{request.user.username}}` && center) {
+      getServices(center);
+		} else {
+      $('#service-tbody').html(`
+      {% for service in center.services.all %}
+        <tr onclick="window.location='/services/service/{{service.slug}}'">
+          <td>{{service.count}}</td>
+          <td id="td-image">
+          <img
+            src="{% if service.image %} {{service.image.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}"
+            alt="Product Image"
+          />
+          </td>
+          <td>{{service.name}}</td>
+          <td>
+          <button class="button gray" onclick="event.stopPropagation(); toggleServiceDeletion('{{service.slug}}', '{{service.name}}')">Remove</button>
+          </td>
+        </tr>
+        {% endfor %}
+      `)
+    }
 
-		$('#center-dropdown').on('change', function () {
-			const center = $(this).val();
-			localStorage.setItem('centerSlug', center)
-			localStorage.setItem('cscUser', `{{request.user.username}}`)
-
-			getServices(center);
-		});
+		
 	});
 </script>
 
@@ -366,7 +342,7 @@
   $(document).ready(() => {
     $('#add-services').click((event) => {
 
-      const center = $('#center-dropdown').val();
+      const center = localStorage.getItem('centerSlug');
 
 			$('#pop-up-form').prop('action', `/users/add_services/${center}`);
 			$('#pop-up-box-heading, #pop-up-add-btn').html('Add Services');

@@ -4,7 +4,7 @@ from services.models import Service
 from products.models import Product
 import qrcode
 from io import BytesIO
-from django.core.files import File
+from django.core.files.base import ContentFile
 import base64
 from django.conf import settings
 
@@ -90,6 +90,8 @@ class SocialMediaLink(models.Model):
         return f"{self.social_media_name} for {self.csc_center_id.name}"
 
 class CscCenter(models.Model):
+    qr_code_image = models.ImageField(upload_to='csc_qr_codes/', blank=True, null=True)
+
     name = models.CharField(max_length=150)
     slug = models.SlugField(unique=True, blank=True, null=True)
     type = models.ForeignKey(CscNameType, on_delete=models.CASCADE)
@@ -144,6 +146,8 @@ class CscCenter(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
+        self.generate_qr_code_image()
+
         if not self.slug:
             base_slug = slugify(self.name)
             slug = base_slug
@@ -218,6 +222,30 @@ class CscCenter(models.Model):
         img.save(buffer, format='PNG')
         qr_code_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
         return qr_code_base64
+    
+    def generate_qr_code_image(self):
+        url = self.get_absolute_url  # Call the method correctly
+        protocol = settings.SITE_PROTOCOL  # e.g., 'http' or 'https'
+        domain = settings.SITE_DOMAIN     # e.g., 'example.com'
+        full_url = f"{protocol}://{domain}{url}"
+
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,  # Adjust for higher resolution
+            border=4,
+        )
+        qr.add_data(full_url)
+        qr.make(fit=True)
+
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)  # Ensure the buffer is at the beginning
+
+        # Save the image to the model's ImageField
+        filename = f'qr_code_{self.pk}.png'  # Use self.pk or other unique identifier
+        self.qr_code_image.save(filename, ContentFile(buffer.read()), save=False)
 
     class Meta:
         db_table = 'csc_center'
