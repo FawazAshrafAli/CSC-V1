@@ -10,6 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.utils import timezone
 from datetime import datetime
+from django.contrib.auth import authenticate, logout
 import re
 
 from posters.forms import PosterDescriptionForm
@@ -42,6 +43,14 @@ class BaseAdminView(LoginRequiredMixin, View):
 
 class AdminHomeView(BaseAdminView, TemplateView):
     template_name = 'admin_home/home.html'
+
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+        context['csc_centers'] = CscCenter.objects.all()
+        context['services'] = Service.objects.all()
+        context['products'] = Product.objects.all()
+        context['posters'] = Poster.objects.all()
+        return context
 
 
 ##################################### SERVICE START #####################################
@@ -1499,3 +1508,51 @@ class UpdatePosterView(BasePosterView, UpdateView):
         messages.success(request, 'Updated Poster')
         return redirect(self.get_success_url())
             
+
+################# Profile ##############
+
+class MyProfileView(BaseAdminView, TemplateView):
+    model = User
+    template_name = "admin_profile/my_profile.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["profile_page"] = True
+        return context
+    
+
+class ChangePasswordView(MyProfileView, UpdateView):
+    success_url = reverse_lazy('authentication:login')
+    redirect_url = reverse_lazy('csc_admin:my_profile')
+
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+
+            current_password = request.POST.get('current_password')
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+
+            user = authenticate(request, username = request.user.username, password = current_password)
+
+            if user is not None and new_password == confirm_password:
+                self.object.set_password(new_password)
+                self.object.save()
+                messages.success(request, "Password Updated. Please login again with your new password")
+                logout(request)
+                return redirect(self.get_success_url())
+            
+            if user is None:
+                error_msg = "The current password you entered is incorrect"
+            elif new_password != confirm_password:
+                error_msg = "New passwords are not matching"
+            else:
+                error_msg = "Something went wrong."
+
+            messages.error(request, error_msg)
+            return redirect(self.redirect_url)
+        
+        except Exception as e:
+            print(f"Exception: {e}")
+            return redirect(self.redirect_url)
+    

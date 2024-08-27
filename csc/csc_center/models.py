@@ -161,7 +161,11 @@ class CscCenter(models.Model):
     @property
     def full_name(self):
         return f"{self.name} {self.type} {self.location}"
-    
+
+    @property
+    def type_and_location(self):
+        return f"{self.type} {self.location}"
+
     @property
     def partial_address(self):
         return f"{self.block}, {self.district}, {self.state}"
@@ -249,6 +253,7 @@ class CscCenter(models.Model):
 
     class Meta:
         db_table = 'csc_center'
+        ordering = ["name"]
 
     def __str__(self):
         return self.name

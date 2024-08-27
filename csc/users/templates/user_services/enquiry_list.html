@@ -85,24 +85,7 @@
 		
 		<!-- Listings -->
 		<div class="col-lg-12 col-md-12">
-			<div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
-				<!-- Sort by -->
-				<div class="sort-by">
-					<div class="sort-by-select">
-						<select
-						data-placeholder="List By Category"
-						class="chosen-select-no-single"
-						id="center-dropdown"
-						>
-						<option value="" selected hidden disabled>
-						Select CSC Center
-						</option>
-						{% for center_obj in centers %}
-						<option value="{{center_obj.slug}}" {% if center_obj.slug == center.slug %} selected {% endif %}>{{center_obj.name}}</option>
-						{% endfor %}
-						</select>
-					</div>
-				</div>
+			<div class="dashboard-list-box margin-top-0" style="background-color: #fff;">				
 				<h4>Service Enquiry</h4>
 				<br />
 				<table id="enquiry-table">
@@ -117,26 +100,9 @@
 					</tr>
 					</thead>
 					<tbody id="enquiry-tbody">
-					{% for enquiry in enquiries %}
-					<tr
-					    class="row-items"
-						onclick="window.location='{% url 'users:service_enquiry' enquiry.slug %}'"
-					>
-						<td>{{ forloop.counter }}</td>
-						<td>{{ enquiry.applicant_name }}</td>
-						<td>{{ enquiry.service.first_name }}</td>
-						<td>{{ enquiry.applicant_email }}</td>
-						<td>{{ enquiry.applicant_phone }}</td>
-						<td>
-						<button
-							class="button gray"
-							onclick="event.stopPropagation(); toggleEnquiryDeletion('{{enquiry.slug}}', '{{enquiry.service.first_name}}')"
-						>
-							Delete
-						</button>
-						</td>
-					</tr>
-					{% endfor %}
+						<tr>
+							<td colspan="6">Loading . . .</td>
+						</tr>
 					</tbody>
 				</table>				
 			</div>
@@ -232,19 +198,32 @@
 		const center =  localStorage.getItem('centerSlug');
 		const user = localStorage.getItem('cscUser');
 
-		if (user == `{{request.user.username}}`) {
-			if ($('#center-dropdown').val() != center) {
-				getEnquiries(center);
-			}
-		}
-
-		$('#center-dropdown').on('change', function () {
-			const center = $(this).val();
-			localStorage.setItem('centerSlug', center)
-			localStorage.setItem('cscUser', `{{request.user.username}}`)
-
+		if (user == `{{request.user.email}}` && center) {
 			getEnquiries(center);
-		});
+		} else {
+			$('#enquiry-tbody').html(`
+				{% for enquiry in enquiries %}
+					<tr
+					    class="row-items"
+						onclick="window.location='{% url 'users:service_enquiry' enquiry.slug %}'"
+					>
+						<td>{{ forloop.counter }}</td>
+						<td>{{enquiry.applicant_name}}</td>
+						<td>{{ enquiry.service.first_name }}</td>
+						<td>{{ enquiry.applicant_email }}</td>
+						<td>{{ enquiry.applicant_phone }}</td>
+						<td>
+						<button
+							class="button gray"
+							onclick="event.stopPropagation(); toggleEnquiryDeletion('{{enquiry.slug}}', '{{enquiry.service.first_name}}')"
+						>
+							Delete
+						</button>
+						</td>
+					</tr>
+				{% endfor %}
+			`)
+		}		
 	});
 </script>
 

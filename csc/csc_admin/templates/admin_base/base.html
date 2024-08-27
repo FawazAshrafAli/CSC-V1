@@ -240,7 +240,7 @@
 				 <nav id="navigation" class="style-1" itemscope="" itemtype="http://www.schema.org/SiteNavigationElement">
 					<ul id="responsive">
 
-						<li><a href="#" {% if request.path == '/admin/' %} class="current" {% endif %}>Home</a></li>
+						<li><a href="{% url 'csc_admin:home' %}" {% if home_page %} class="current" {% endif %}>Home</a></li>
 
 						<li><a href="{% url 'csc_admin:csc_centers' %}" {% if csc_center_page %} class="current" {% endif %}>CSC Centers</a></li>
 
@@ -268,9 +268,7 @@
 					<div class="user-menu">
 						<div class="user-name"><span><img src="{% static 'images/dashboard-avatar.jpg' %}" alt=""></span> {% if request.user %} {{ request.user.username }} {% else %} My Account {% endif %}</div>
 						<ul>
-							<li><a href="dashboard.html"><i class="sl sl-icon-settings"></i> Dashboard</a></li>
-							<li><a href="dashboard-messages.html"><i class="sl sl-icon-envelope-open"></i> Messages</a></li>
-							<li><a href="dashboard-bookings.html"><i class="fa fa-calendar-check-o"></i> Bookings</a></li>
+							<li><a href="{% url 'csc_admin:my_profile' %}"><i class="sl sl-icon-user"></i> My Profile</a></li>							
 							<li><a href="{% url 'authentication:logout' %}"><i class="sl sl-icon-power"></i> Logout</a></li>
 						</ul>
 					</div>
@@ -303,8 +301,8 @@
 		<div class="dashboard-nav-inner">
 
 			<ul data-submenu-title="Main">
-				<li {% if request.path == '/admin/' %} class="active" {% endif %}><a href="dashboard.html"><i class="sl sl-icon-home"></i> Home</a></li>
-				<li {% if csc_center_page %} class="active" {% endif %}><a><i class="sl sl-icon-info"></i> CSC Centers</a>
+				<li {% if home_page %} class="active" {% endif %}><a href="{% url 'csc_admin:home' %}"><i class="sl sl-icon-home"></i> Home</a></li>
+				<li {% if csc_center_page %} class="active" {% endif %}><a><i class="fa fa-building"></i> CSC Centers</a>
 					<ul>
 						<li><a href="{% url 'csc_admin:csc_centers' %}">List CSC Center</a></li>
 						<li><a href="{% url 'csc_admin:add_csc' %}">Add CSC Center</a></li>						
@@ -359,7 +357,7 @@
             </ul>
 
 			<ul data-submenu-title="Account">
-				<li><a href="dashboard-my-profile.html"><i class="sl sl-icon-user"></i> My Profile</a></li>
+				<li {% if profile_page %} class="active" {% endif %} ><a href="{% url 'csc_admin:my_profile' %}"><i class="sl sl-icon-user"></i> My Profile</a></li>
 				<li><a href="{% url 'authentication:logout' %}"><i class="sl sl-icon-power"></i> Logout</a></li>
 			</ul>
 			

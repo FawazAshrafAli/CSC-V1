@@ -52,30 +52,40 @@
     <div class="col-lg-12 col-md-12" id="product-card-col">
         <div class="dashboard-list-box margin-top-0" style="background-color: #fff; padding: 10px 10px;">
             <div class="row">
-                <div class="col-md-3">
-                    <span style="color:black;">Name: {{enquiry.applicant_name}}</span>
+                <div class="col-md-6">
+                    <h4 style="padding-left: 0;">Applicant Details</h4>
+                    <table style="width: 100%;">
+                        <tr>
+                            <th>Name</th>
+                            <th>&nbsp;:&nbsp;</th>
+                            <td>{{enquiry.applicant_name}}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <th>&nbsp;:&nbsp;</th>
+                            <td>{{enquiry.applicant_email}}</td>
+                        </tr>
+                        <tr>
+                            <th>Phone</th>
+                            <th>&nbsp;:&nbsp;</th>
+                            <td>{{enquiry.applicant_phone}}</td>
+                        </tr>
+                        <tr>
+                            <th>Product</th>
+                            <th>&nbsp;:&nbsp;</th>
+                            <td>{{enquiry.product.name}}</td>
+                        </tr>
+                    </table>
                 </div>
-                <div class="col-md-3">
-                    <span style="color:black;">Email: {{enquiry.applicant_email}}</span>
-                </div>
-                <div class="col-md-3">
-                    <span style="color:black;">Phone: {{enquiry.applicant_phone}}</span>
-                </div>
-                <div class="col-md-3">
-                    <span style="color:black;">Product: {{enquiry.product.name}}</span>
-                </div>
-            </div>
-            <hr>
-            <div class="row">
-                <div class="col-md-12">
-                    <h5>Messages:</h5>
+
+                <div class="col-md-6">
+                    <h4 style="padding-left: 0;">Messages:</h4>
                     <span style="color: black;">{{enquiry.message}}</span>
-                </div>
-            </div>
+                </div>                
             <br>
-            <div class="row" style="text-align: right;">
-                <div class="col-md-12">
-                    <span>{{enquiry.created}}</span>
+            <div class="row">
+                <div class="col-md-12" style="text-align: right;">
+                    <span style="padding-right: 10px">{{enquiry.created}}</span>
                 </div>
             </div>
         </div>

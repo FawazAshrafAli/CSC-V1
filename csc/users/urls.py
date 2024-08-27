@@ -2,17 +2,11 @@ from django.urls import path
 from .views import (
     HomeView, 
     
-    ServiceListView, RemoveServiceView, AddServiceView, 
-
     ServiceEnquiryListView, DeleteServiceEnquiryView,
-    ServiceEnquiryDetailView, LeftoverServiceView,
-    MarkServiceEnquiryAsViewedView,
+    ServiceEnquiryDetailView, MarkServiceEnquiryAsViewedView,
     
-    ProductListView, RemoveProductView, AddProductView,
-
     ProductEnquiryListView, DeleteProductEnquiryView, 
-    ProductEnquiryDetailView, LeftoverProductView,
-    MarkProductEnquiryAsViewedView,
+    ProductEnquiryDetailView, MarkProductEnquiryAsViewedView,
     
     CscCenterListView, AddCscCenterView, DetailCscCenterView, 
     UpdateCscCenterView, SavePosterView, GetCurrentCscCenterView,
@@ -30,20 +24,10 @@ app_name = "users"
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
 
-    path('services/', ServiceListView.as_view(), name="services"),
-    path('remove_service/<str:slug>', RemoveServiceView.as_view(), name="remove_service"),
-    path('add_services/<str:slug>', AddServiceView.as_view(), name="add_services"),
-    path('leftover_services/<str:slug>', LeftoverServiceView.as_view(), name="leftover_services"),
-
     path('service_enquiries/', ServiceEnquiryListView.as_view(), name="service_enquiries"),
     path('delete_service_enquiry/<str:slug>', DeleteServiceEnquiryView.as_view(), name="delete_service_enquiry"),
     path('service_enquiry/<str:slug>', ServiceEnquiryDetailView.as_view(), name="service_enquiry"),
     path('viewed_service_enquiry/<str:slug>', MarkServiceEnquiryAsViewedView.as_view(), name="viewed_service_enquiry"),
-
-    path('products/', ProductListView.as_view(), name="products"),
-    path('remove_product/<str:slug>', RemoveProductView.as_view(), name="remove_product"),
-    path('add_products/<str:slug>', AddProductView.as_view(), name="add_products"),
-    path('leftover_products/<str:slug>', LeftoverProductView.as_view(), name="leftover_products"),
 
     path('product_enquiries/', ProductEnquiryListView.as_view(), name="product_enquiries"),
     path('delete_product_enquiry/<str:slug>', DeleteProductEnquiryView.as_view(), name="delete_product_enquiry"),

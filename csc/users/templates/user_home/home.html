@@ -30,7 +30,7 @@
 <div class="row">
 
     <!-- Item -->
-    <div class="col-lg-3 col-md-6">
+    {% comment %} <div class="col-lg-3 col-md-6">
         <div class="dashboard-stat color-1">
             <div class="dashboard-stat-content"><h4 id="services-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Services</span></div>
             <div class="dashboard-stat-icon"><i class="fa fa-handshake"></i></div>
@@ -43,11 +43,11 @@
             <div class="dashboard-stat-content"><h4 id="products-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Products</span></div>
             <div class="dashboard-stat-icon"><i class="fa fa-box"></i></div>
         </div>
-    </div>
+    </div> {% endcomment %}
 
     
     <!-- Item -->
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-6 col-md-6">
         <div class="dashboard-stat color-3">
             <div class="dashboard-stat-content"><h4 id="service-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Service Enquiries</span></div>
             <div class="dashboard-stat-icon"><i class="fa fa-question-circle"></i></div>
@@ -55,7 +55,7 @@
     </div>
 
     <!-- Item -->
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-6 col-md-6">
         <div class="dashboard-stat color-4">
             <div class="dashboard-stat-content"><h4 id="product-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Product Enquiries</span></div>
             <div class="dashboard-stat-icon"><i class="fa fa-cart-plus"></i></div>
@@ -99,41 +99,51 @@
     $(document).ready(() => {
         function defaultServiceEnquiries() {
             $('#service-enquiries').html(`
+                {% if service_enquiries|length > 0 %}
                 {% for service_enquiry in service_enquiries %}
                 <li>
                     <i class="list-box-icon sl sl-icon-layers"></i><a href="{{service_enquiry.get_absolute_url}}"> <strong>{{service_enquiry.applicant_name}}</strong> enquired about <strong>{{service_enquiry.service.first_name}}</strong>!</a>
                     <a href="#" class="close-list-item" onclick="markServiceEnquiryViewed('{{service_enquiry.slug}}')"><i class="fa fa-close"></i></a>
                 </li>
                 {% endfor %}
+                {% else %}
+                <li>No new service enquiries.</li>
+                {% endif %}
             `);
         };
 
         function defaultProductEnquiries() {
             $('#product-enquiries').html(`
+                {% if product_enquiries %}
                 {% for product_enquiry in product_enquiries %}
                 <li>
                     <i class="list-box-icon sl sl-icon-layers"></i><a href="{{product_enquiry.get_absolute_url}}"> <strong>{{product_enquiry.applicant_name}}</strong> is interested in <strong>{{product_enquiry.product.name}}</strong>!</a>
                     <a href="#" class="close-list-item" onclick="markProductEnquiryViewed('{{product_enquiry.slug}}');"><i class="fa fa-close"></i></a>
                 </li>
                 {% endfor %}
+                {% else %}
+                <li>No new service enquiries.</li>
+                {% endif %}
             `);
         }
 
         function defaultHomeView() {
             $('#services-count').html(`{{csc_center.services.all|length}}`);
             $('#products-count').html(`{{csc_center.products.all|length}}`);
+            $('#service-enquiries-count').html('{{service_enquiries|length}}');
+            $('#product-enquiries-count').html('{{product_enquiries|length}}');
             defaultServiceEnquiries();
             defaultProductEnquiries();
         }
 
-        function getCenterData() {
+        function getCenterData(center) {
             const centerSlug = localStorage.getItem('centerSlug');
 
             $.ajax({
                 type: 'get',
-                url: '/users/get_center_data/',
+                url: '/users/get_center_datas/',
                 dataType: 'json',
-                data: {'center_slug': centerSlug},
+                data: {'center_slug': center},
                 success: response => {
                     $('#services-count').html(`${response.services_count ? response.services_count : '{{csc_center.services.all|length}}' }`);
                     $('#products-count').html(`${response.products_count ? response.products_count : '{{csc_center.products.all|length}}' }`)
@@ -189,15 +199,11 @@
             });
         };
 
-        var currentUser = `{{request.user.username}}`;
-        var storedUser = localStorage.getItem('cscUser');
+        
+        const center = localStorage.getItem('centerSlug');
 
-        var currentCsc = $('#switch-csc-btn').val();
-        var storedCsc = localStorage.getItem('centerSlug');
-
-
-        if (currentUser == storedUser) {
-            getCenterData();
+        if (localStorage.getItem('cscUser') == `{{request.user.email}}` && center) {
+            getCenterData(center);
         } else {
             defaultHomeView();
         }

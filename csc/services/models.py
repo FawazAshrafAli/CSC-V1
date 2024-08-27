@@ -27,6 +27,11 @@ class Service(models.Model):
         if self.name.endswith(' in India'):
             return self.name.split(' in India')[0]
         
+    @property
+    def tailing_name(self):
+        if self.name.endswith(' in India'):
+            return 'in India'
+        
 
     @property
     def get_absolute_url(self):

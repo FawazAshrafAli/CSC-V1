@@ -71,6 +71,7 @@ class GetCenterDataView(BaseUserView, View):
 
         try:
             center = get_object_or_404(CscCenter, slug = center_slug)
+            print(center)
         except Http404:
             pass
 
@@ -115,74 +116,6 @@ class BaseServiceView(BaseUserView):
         context = super().get_context_data(**kwargs)
         context['service_page'] = True
         return context
-    
-
-class ServiceListView(BaseServiceView, ListView):
-    model = CscCenter
-    template_name = 'user_services/list.html'
-
-    def get_queryset(self):
-        center = CscCenter.objects.filter(email = self.request.user.email).first()
-        return center.services.all()
-
-    def get(self, request, *args, **kwargs):
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            center_slug = request.GET.get('center_slug')
-            try:
-                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email)
-                services = center.services.all()
-                services_list = []
-                for count, service in enumerate(services):
-                    services_list.append({'name': service.name, 'image': service.image.url if service.image else None, 'slug': service.slug, 'count': count+1})
-                return JsonResponse({'services': services_list})
-            except Http404:
-                pass
-        return super().get(request, *args, **kwargs)
-            
-    
-
-class RemoveServiceView(BaseServiceView, View):
-    success_url = reverse_lazy('users:services')
-    redirect_url = success_url
-
-    def get(self, request, *args, **kwargs):
-        center = super().get_object()
-
-        try:
-            service_id = get_object_or_404(Service, slug = kwargs['slug']).pk
-        except Http404:
-            messages.error(self.request, 'Service not found')
-            return redirect(self.redirect_url)
-        
-        center.services.remove(service_id)
-        center.save()
-        messages.success(self.request, 'Service removed successfully')
-        return redirect(self.success_url)
-    
-
-class AddServiceView(BaseServiceView, UpdateView):
-    success_url = reverse_lazy('users:services')
-    redirect_url = success_url
-
-    def post(self, request, *args, **kwargs):
-        center = super().get_object()
-
-        service_slugs = request.POST.getlist('services')
-        service_ids = []
-
-        for service_slug in service_slugs:
-            try:
-                service = get_object_or_404(Service, slug = service_slug)
-                service_ids.append(service.pk)
-            except Http404:
-                return redirect(self.redirect_url)
-
-        for service_id in service_ids:
-            center.services.add(service_id)
-            center.save()
-        
-        messages.success(request, 'Added Services')
-        return redirect(self.success_url)
 
 
 class ServiceEnquiryListView(BaseServiceView, ListView):
@@ -265,7 +198,6 @@ class MarkServiceEnquiryAsViewedView(BaseServiceView, UpdateView):
 
 
 
-
 class DeleteServiceEnquiryView(BaseServiceView, View):
     model = ServiceEnquiry
     success_url = reverse_lazy('users:service_enquiries')
@@ -284,24 +216,6 @@ class DeleteServiceEnquiryView(BaseServiceView, View):
         return redirect(self.success_url)
 
 
-class LeftoverServiceView(BaseServiceView, ListView):
-    model = Service
-
-    def get_queryset(self):
-        try:
-            center = get_object_or_404(CscCenter, slug = self.kwargs.get('slug'))
-            print('center')
-            center_services = center.services.all()
-            return Service.objects.exclude(id__in = center_services.values_list('id', flat=True))
-        except Http404:
-            pass
-
-    def get(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        services = list(queryset.values('slug', 'name'))
-        return JsonResponse({'services': services})
-
-
 # Products
 class ProductBaseView(BaseUserView):
     model = CscCenter
@@ -310,98 +224,6 @@ class ProductBaseView(BaseUserView):
         context['product_page'] = True
         context['products'] = Product.objects.all()
         return context  
-    
-    
-class ProductListView(ProductBaseView,ListView):
-    model = CscCenter
-    template_name = 'user_products/list.html'
-
-    def get_queryset(self):
-        center = CscCenter.objects.filter(email = self.request.user.email).first()
-        return center.products.all()
-    
-    def get(self, request, *args, **kwargs):
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            center_slug = request.GET.get('center_slug')
-            try:
-                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email)
-                products = center.products.all()
-                product_list = []
-                for count, product in enumerate(products):
-                    product_list.append({
-                        'name': product.name, 
-                        'image': product.image.url if product.image else None, 
-                        'slug': product.slug, 
-                        'count': count+1,
-                        'get_absolute_url': product.get_absolute_url if product.get_absolute_url else '#',
-                        'price': product.price})
-                return JsonResponse({'products': product_list})
-            except Http404:
-                pass
-        return super().get(request, *args, **kwargs)
-    
-
-class RemoveProductView(ProductBaseView, UpdateView):
-    model = CscCenter
-    success_url = reverse_lazy('users:products')
-    redirect_url = success_url
-    slug_url_kwarg = 'slug'
-
-    def get(self, request, *args, **kwargs):
-        self.object = super().get_object()
-        try:
-            product_id = get_object_or_404(Product, slug = kwargs['slug']).pk
-        except Http404:
-            messages.error(self.request, 'Product not found')
-            return redirect(self.redirect_url)
-        
-        self.object.products.remove(product_id)
-        self.object.save()
-        messages.success(self.request, 'Product removed successfully')
-        return redirect(self.get_success_url())
-    
-
-class AddProductView(ProductBaseView, UpdateView):
-    slug_url_kwarg = 'slug'
-    success_url = reverse_lazy('users:products')
-    redirect_url = success_url
-
-    def post(self, request, *args, **kwargs):
-        center = super().get_object()
-
-        products_slugs = request.POST.getlist('products')
-        product_ids = []
-
-        for product_slug in products_slugs:
-            try:
-                product = get_object_or_404(Product, slug = product_slug)
-                product_ids.append(product.pk)
-            except Http404:
-                pass
-
-        for product_id in product_ids:
-            center.products.add(product_id)
-            center.save()
-        
-        messages.success(request, 'Added Products')
-        return redirect(self.success_url)
-    
-
-class LeftoverProductView(ProductBaseView, ListView):
-    model = Product
-
-    def get_queryset(self):
-        try:
-            center = get_object_or_404(CscCenter, slug = self.kwargs.get('slug'))
-            center_products = center.products.all()
-            return Product.objects.exclude(id__in = center_products.values_list('id', flat=True))
-        except Http404:
-            pass
-
-    def get(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        products = list(queryset.values('slug', 'name'))
-        return JsonResponse({'products': products})
     
 
 class ProductEnquiryListView(ProductBaseView, ListView):
@@ -526,8 +348,6 @@ class GetCurrentCscCenterView(CscCenterBaseView, View):
         except Http404:
             pass
             
-        
-
 
 class CscCenterListView(CscCenterBaseView, ListView):
     template_name = 'user_csc_center/list.html'
@@ -536,7 +356,6 @@ class CscCenterListView(CscCenterBaseView, ListView):
     def get_queryset(self):
         return CscCenter.objects.filter(email = self.request.user.email)
     
-
 
 class DetailCscCenterView(CscCenterBaseView, DetailView):
     template_name = "user_csc_center/detail.html"
@@ -1241,6 +1060,12 @@ class UpdateProfileView(MyProfileView, UpdateView):
 class ChangePasswordView(MyProfileView, UpdateView):
     success_url = reverse_lazy('authentication:login')
     redirect_url = reverse_lazy('users:my_profile')
+
+    def get_object(self):
+        try:
+            return get_object_or_404(User, username = 'admin')
+        except Http404:
+            return redirect(self.redirect_url)
 
     def post(self, request, *args, **kwargs):
         try:
