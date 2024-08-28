@@ -118,6 +118,7 @@
 							</ul>
 						</li>
 
+
 						<li itemprop="name"><a itemprop="url" {% if service_page %} class="current" {% endif %} href="{% url 'services:services' %}">Services</a>
 							<div class="mega-menu mobile-styles {% if service_group_1 and service_group_2 and service_group_3 %} three-columns {% elif service_group_1 and service_group_2 %} two-columns {% elif service_group_1 %} one-columns {% endif %} ">
 									{% if services|length > 0 %}
@@ -219,71 +220,37 @@
 
 
 <div class="col-md-3">
-<ul class="list-1">
-<li><a href="#">State Wise CSC Center</a>
-</li><li><a href="#">CSC Centers in Andhra Pradesh</a>
-</li><li><a href="#">CSC Centers in Arunachal Pradesh</a>
-</li><li><a href="#">CSC Centers in Assam</a>
-</li><li><a href="#">CSC Centers in Bihar</a>
-</li><li><a href="#">CSC Centers in Goa</a>
-</li><li><a href="#">CSC Centers in Andaman &amp; Nicobar</a>
-</li><li><a href="#">CSC Centers in Chandigarh</a>
-</li><li><a href="#">CSC Centers in Chhattisgarh</a>
-</li><li><a href="#">CSC Centers in Dadra and Nagar Haveli</a>
-</li><li><a href="#">CSC Centers in Daman and Diu</a>
-
-</li></ul>
+	<ul class="list-1">	
+		{% for state in states|slice:':9' %}
+		<li><a href="{% url 'home:csc_centers' %}?state={{state.pk}}">CSC Centers in {{state.state}}</a></li>
+		{% endfor %}
+	</ul>
 </div>
 
 
 <div class="col-md-3">
-<ul class="list-1">
-<li><a href="#">State Wise CSC Center</a>
-</li><li><a href="#">CSC Centers in Andhra Pradesh</a>
-</li><li><a href="#">CSC Centers in Arunachal Pradesh</a>
-</li><li><a href="#">CSC Centers in Assam</a>
-</li><li><a href="#">CSC Centers in Bihar</a>
-</li><li><a href="#">CSC Centers in Goa</a>
-</li><li><a href="#">CSC Centers in Andaman &amp; Nicobar</a>
-</li><li><a href="#">CSC Centers in Chandigarh</a>
-</li><li><a href="#">CSC Centers in Chhattisgarh</a>
-</li><li><a href="#">CSC Centers in Dadra and Nagar Haveli</a>
-</li><li><a href="#">CSC Centers in Daman and Diu</a>
-
-</li></ul>
+	<ul class="list-1">
+		{% for state in states|slice:'9:18' %}
+		<li><a href="{% url 'home:csc_centers' %}?state={{state.pk}}">CSC Centers in {{state.state}}</a></li>
+		{% endfor %}
+	</ul>
 </div>
 
 
 <div class="col-md-3">
-<ul class="list-1">
-<li><a href="#">State Wise CSC Center</a>
-</li><li><a href="#">CSC Centers in Andhra Pradesh</a>
-</li><li><a href="#">CSC Centers in Arunachal Pradesh</a>
-</li><li><a href="#">CSC Centers in Assam</a>
-</li><li><a href="#">CSC Centers in Bihar</a>
-</li><li><a href="#">CSC Centers in Goa</a>
-</li><li><a href="#">CSC Centers in Andaman &amp; Nicobar</a>
-</li><li><a href="#">CSC Centers in Chandigarh</a>
-</li><li><a href="#">CSC Centers in Chhattisgarh</a>
-</li><li><a href="#">CSC Centers in Dadra and Nagar Haveli</a>
-</li><li><a href="#">CSC Centers in Daman and Diu</a>
+	<ul class="list-1">
+		{% for state in states|slice:'18:27' %}
+		<li><a href="{% url 'home:csc_centers' %}?state={{state.pk}}">CSC Centers in {{state.state}}</a></li>
+		{% endfor %}
+	</ul>
+</div>
 
-</li></ul>
-</div><div class="col-md-3">
-<ul class="list-1">
-<li><a href="#">State Wise CSC Center</a>
-</li><li><a href="#">CSC Centers in Andhra Pradesh</a>
-</li><li><a href="#">CSC Centers in Arunachal Pradesh</a>
-</li><li><a href="#">CSC Centers in Assam</a>
-</li><li><a href="#">CSC Centers in Bihar</a>
-</li><li><a href="#">CSC Centers in Goa</a>
-</li><li><a href="#">CSC Centers in Andaman &amp; Nicobar</a>
-</li><li><a href="#">CSC Centers in Chandigarh</a>
-</li><li><a href="#">CSC Centers in Chhattisgarh</a>
-</li><li><a href="#">CSC Centers in Dadra and Nagar Haveli</a>
-</li><li><a href="#">CSC Centers in Daman and Diu</a>
-
-</li></ul>
+<div class="col-md-3">
+	<ul class="list-1">
+		{% for state in states|slice:'27:36' %}
+		<li><a href="{% url 'home:csc_centers' %}?state={{state.pk}}">CSC Centers in {{state.state}}</a></li>
+		{% endfor %}
+	</ul>
 </div>
 
 

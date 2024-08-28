@@ -266,7 +266,7 @@
 					
 					<!-- User Menu -->
 					<div class="user-menu">
-						<div class="user-name"><span><img src="{% static 'images/dashboard-avatar.jpg' %}" alt=""></span> {% if request.user %} {{ request.user.username }} {% else %} My Account {% endif %}</div>
+						<div class="user-name"><span><img src="{% if request.user.image %} {{request.user.image.url}} {% else %} {% static 'images/dashboard-avatar.jpg' %} {% endif %}" alt="" style="min-width:35px; min-height:35px; max-width:35px; max-height:35px; object-fit: cover; object-position: top;"></span> {% if request.user %} {{ request.user.username }} {% else %} My Account {% endif %}</div>
 						<ul>
 							<li><a href="{% url 'csc_admin:my_profile' %}"><i class="sl sl-icon-user"></i> My Profile</a></li>							
 							<li><a href="{% url 'authentication:logout' %}"><i class="sl sl-icon-power"></i> Logout</a></li>
@@ -633,15 +633,59 @@
             );
         };
 
+        //Category 
+        function getCategories(e) {
+            e.preventDefault();
+            popUpDefaultView();
+            $('#pop-up-edit-toggle').hide();
+            $('#pop-up-delete-toggle').hide();
+            $('#pop-up-box-heading').html('Categories');
+
+            $.ajax({
+                type: 'get',
+                url: '/admin/get_product_categories/',
+                dataType: 'json',
+                success: data => {
+                    console.log("200")
+                    if (data.categories && Array.isArray(data.categories)) {
+                        $('#pop-up-dropdown').html('');
+                        data.categories.forEach(category => {
+                            let html = `<option value="${category.slug}">${category.name}</option>`;
+                            $('#pop-up-dropdown').append(html);
+                        });
+                    } else {
+                        $('#pop-up-dropdown').html('');
+                    };
+                },
+                error: (jqXHR, textStatus, errorThrow) => {
+                    console.error("Error: ", textStatus, errorThrow);
+                }
+            });
+        };
+
+       $('#product-category-btn').click(() => {
+            getCategories(event);
+            $('#pop-up-box').show();
+        });
+
         // Toggle add item.
         $(document).on('click', '#pop-up-add-toggle', function () {
-            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            let currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+
+            if (currentItem == 'Categorie') {
+                currentItem = 'Category'
+            }
+
             let basePlacehodler;
             let baseInputIdPrefix;
             if (currentItem === 'Name Type') {
                 endpoint = `add_name_type`;
                 basePlacehodler = `Name Type`;
                 baseInputIdPrefix = `name-type`;
+            } else if (currentItem == "Categorie") {
+                endpoint = `add_product_category`;
+                basePlacehodler = `Product Category`;
+                baseInputIdPrefix = `product-category`;
             } else {
                 endpoint = `add_${currentItem.toLowerCase()}`
                 basePlacehodler = `Name of ${currentItem}`
@@ -683,6 +727,8 @@
                 getNameTypes(event);
             } else if (currentItem === "Keyword") {
                 getKeywords(event);
+            } else if (currentItem == "Categorie") {
+                getCategories(event);
             }
         });
 
@@ -723,7 +769,12 @@
 
         // Create item Form submission
         $(document).on('click', '#pop-up-add-btn', () => {
-            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            let currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+
+            if (currentItem == 'Categorie') {
+                currentItem = 'Category';
+            }
+
             let data;
             let endpoint;
             endpoint = `add_${currentItem.toLowerCase()}`;
@@ -756,6 +807,9 @@
                 const keyword = $('#keyword-input').val().trim();
                 data = { 'keyword': keyword }
 
+            } else if (currentItem === 'Category') {
+                const category = $('#category-input').val().trim();
+                data = { 'category': category }
             }
 
             submitPopUpForm('post', `/admin/${endpoint}/`, data, (result, error) => {
@@ -779,6 +833,9 @@
 
                     } else if (currentItem === 'Keyword') {
                         $('#keyword-input').val('');
+
+                    }else if (currentItem === 'Category') {
+                        $('#category-input').val('');
 
                     }
                 } else {
@@ -804,7 +861,11 @@
 
             localStorage.setItem('dropdownValue', dropdownValue);
 
-            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            let currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+
+            if (currentItem == 'Categorie') {
+                currentItem = 'Category'
+            }
 
             let basePlacehodler;
             let baseInputIdPrefix;
@@ -875,7 +936,12 @@
 
         // Edit item Form submission
         $(document).on('click', '#pop-up-edit-btn', () => {
-            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            let currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+
+            if (currentItem == 'Categorie') {
+                currentItem = 'Category';
+            }
+
             let data;
             let endpoint = `edit_${currentItem.toLowerCase()}`;
             let itemId = localStorage.getItem('dropdownValue');
@@ -909,6 +975,9 @@
                 const keyword = $('#keyword-input').val();
                 data = { 'keyword': keyword }
 
+            } else if (currentItem == 'Category') {
+                const category = $('#category-input').val();
+                data = {'category' : category}
             }
             submitPopUpForm('post', `/admin/${endpoint}/${itemId}`, data, (result, error) => {
                 if (result) {
@@ -951,7 +1020,12 @@
 
         // Delete item Form submission
         $(document).on('click', '#pop-up-delete-btn', () => {
-            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            let currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+
+            if (currentItem = 'Categorie') {
+                currentItem = 'Category'
+            }
+
             let data;
             let itemId = localStorage.getItem('dropdownValue');
             let endpoint = `delete_${currentItem.toLowerCase()}`;

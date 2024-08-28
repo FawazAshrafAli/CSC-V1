@@ -4,7 +4,6 @@ from django.urls import reverse
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True)
     slug = models.SlugField(unique=True, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

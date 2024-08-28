@@ -21,8 +21,7 @@
             <!-- Breadcrumbs -->
             <nav id="breadcrumbs">
                 <ul>
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">Dashboard</a></li>
+                    <li><a href="{% url 'csc_admin:home' %}">Home</a></li>
                     <li>My Profile</li>
                 </ul>
             </nav>
@@ -37,7 +36,7 @@
     <div class="col-lg-6 col-md-12">
         <div class="dashboard-list-box margin-top-0">
             <h4 class="gray">Profile Details</h4>
-            <form class="dashboard-list-box-static" method="post" action="{% url 'users:update_profile' %}" enctype="multipart/form-data">
+            <form class="dashboard-list-box-static" method="post" action="{% url 'csc_admin:update_profile' %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 <!-- Avatar -->
                 <div class="edit-profile-photo">
@@ -54,25 +53,16 @@
                 <div class="my-profile">
 
                     <label>Your Name</label>
-                    <input value="{% if user.full_name %}{{user.full_name}}{% endif %}" type="text" name="name" placeholder="Your Name" required>
+                    <input value="{% if user.full_name %}{{user.full_name}}{% endif %}" type="text" name="name" placeholder="Your Name">
 
                     <label>Phone</label>
-                    <input value="{% if user.phone %}{{user.phone}}{% endif %}" type="text" name="phone" placeholder="Phone Number" required>
+                    <input value="{% if user.phone %}{{user.phone}}{% endif %}" type="text" name="phone" placeholder="Phone Number">
 
                     <label>Email</label>
                     <input value="{% if user.email %}{{user.email}}{% endif %}" type="text" name="email" id="email-input" placeholder="tom@example.com" required>
 
                     <label>Notes</label>
                     <textarea name="notes" id="notes" cols="30" rows="10" name="notes" placeholder="Notes">{% if user.notes %} {{user.notes}} {% endif %}</textarea>
-
-                    <label><i class="fa fa-twitter"></i> Twitter</label>
-                    <input value="{% if user.twitter %}{{user.twitter}}{% endif %}" name="twitter" placeholder="https://www.twitter.com/" type="text">
-
-                    <label><i class="fa fa-facebook-square"></i> Facebook</label>
-                    <input value="{% if user.facebook %}{{user.facebook}}{% endif %}" name="facebook" placeholder="https://www.facebook.com/" type="text">
-
-                    <label><i class="fa fa-google-plus"></i> Google+</label>
-                    <input value="{% if user.google %}{{user.google}}{% endif %}" name="google" placeholder="https://www.google.com/" type="text">
                 </div>
 
                 <button class="button margin-top-15" type="submit" id="profile-form-submit-btn">Save Changes</button>

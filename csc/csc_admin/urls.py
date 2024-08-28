@@ -1,17 +1,20 @@
 from django.urls import path
 from .views import (
     AdminHomeView, MyProfileView, ChangePasswordView,
+    UpdateProfileView,
     
-    ListServiceView, DetailServiceView, 
-    UpdateServiceView, CreateServiceView, 
-    DeleteServiceView, RemoveServiceImageView,
+    ListServiceView, DetailServiceView, UpdateServiceView, 
+    CreateServiceView, DeleteServiceView, RemoveServiceImageView,
 
     BlogListView, BlogDetailView, CreateBlogView,
     UpdateBlogView, DeleteBlogView, RemoveBlogImageView,
     ChangeBlogStatusView, 
 
     CreateProductView, ProductListView, ProductDetailView,
-    UpdateProductView, DeleteProductView,
+    UpdateProductView, DeleteProductView, 
+    
+    get_product_categories, 
+    AddProductCategoryView, EditProductCategoryView, DeleteProductCategoryView,
 
     AddCscCenterView, GetDistrictView, GetBlockView,
     ListCscCenterView, DetailCscCenterView, UpdateCscCenterView,
@@ -23,12 +26,12 @@ from .views import (
 
     get_all_states, get_all_districts, get_all_blocks,
     get_csc_keywords, get_name_types,
-    GetDistrictDetailsView, GetBlockDetailsView,
-    CreateStateView, CreateDistrictView, CreateBlockView,
-    EditStateView, EditDistrictView, EditBlockView,
-    DeleteStateView, DeleteDistrictView, DeleteBlockView,
-    CreateKeywordView, EditKeywordView, DeleteKeywordView,
-    CreateCscNameTypeView, EditCscNameTypeView, DeleteCscNameTypeView,
+    GetDistrictDetailsView, GetBlockDetailsView, CreateStateView, 
+    CreateDistrictView, CreateBlockView, EditStateView, 
+    EditDistrictView, EditBlockView, DeleteStateView, 
+    DeleteDistrictView, DeleteBlockView, CreateKeywordView, 
+    EditKeywordView, DeleteKeywordView, CreateCscNameTypeView, 
+    EditCscNameTypeView, DeleteCscNameTypeView,
 
     )
 
@@ -38,6 +41,7 @@ urlpatterns = [
     path("", AdminHomeView.as_view(), name="home"),
     path("my_profile", MyProfileView.as_view(), name="my_profile"),
     path("change_password", ChangePasswordView.as_view(), name="change_password"),
+    path("update_profile", UpdateProfileView.as_view(), name="update_profile"),
 
     path("services/", ListServiceView.as_view(), name="services"),
     path("service/<pk>", DetailServiceView.as_view(), name="service"),
@@ -59,6 +63,11 @@ urlpatterns = [
     path('product/<str:slug>', ProductDetailView.as_view(), name = "product"),
     path('update_product/<str:slug>', UpdateProductView.as_view(), name = "update_product"),
     path('delete_product/<str:slug>', DeleteProductView.as_view(), name = "delete_product"),
+
+    path('get_product_categories/', get_product_categories, name = "get_product_categories"),
+    path('add_category/', AddProductCategoryView.as_view(), name = "add_category"),
+    path('edit_category/<str:slug>', EditProductCategoryView.as_view(), name = "edit_category"),
+    path('delete_category/<str:slug>', DeleteProductCategoryView.as_view(), name = "delete_category"),
 
     path('posters/', PosterListView.as_view(), name="posters"),
     path('poster/<str:slug>', PosterDetailView.as_view(), name="poster"),

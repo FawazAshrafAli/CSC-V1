@@ -92,6 +92,8 @@
             background-color: #fff;
             padding: 10px;
             margin: 0 0 10px 0;
+
+            text-align: center;
         }
 
         .close-btn {
@@ -229,7 +231,7 @@
 
     <!-- Pop Up Box Start -->
     <div id="pop-up-box">
-        <h3 id="pop-up-box-heading" ></h3>
+        <h3 id="pop-up-box-heading"></h3>
         <button class="close-btn" aria-label="Close" title="Close">&times;</button>
         <span id="pop-up-msg" ></span>
         <form id="pop-up-form"> </form>
@@ -307,8 +309,7 @@
 {% endblock content %}
 
 {% block scripts %}
-<script src="{% static 'w3/admin_csc_center/js/populateDistricts.js' %}"></script>
-<script>
+{% comment %} <script>
 
     $(document).ready(() => {
 
@@ -323,193 +324,11 @@
             };
         });
 
-        // To populate select with state data on toggling state btn
-        function getStates(e) {
-            e.preventDefault();            
-            
-            $.ajax({
-                type:'get',
-                url:'/admin/get_all_states/',
-                dataType:'json',
-                success: data => {                    
-                    if (data.states && Array.isArray(data.states)) {
-                        $('#pop-up-dropdown').html('');
-                        if ($('#state-dropdown-input')) {
-                            $('#state-dropdown-input').html('<option value="" hidden disabled selected>Select State</option')
-                        };
-                        data.states.forEach(state => {
-                            let html = `<option value="${state.id}">${state.state}</option>`;
-                            $('#pop-up-dropdown').append(html);
-                            if ($('#state-dropdown-input')) {
-                                $('#state-dropdown-input').append(html);
-                            };
-                        });
-                    } else {
-                        $('#pop-up-dropdown').html('');
-                        if ($('#state-dropdown-input')) {
-                            $('#state-dropdown-input').html('')
-                        };
-                    };
-                },
-                error: (jqXHR, textStatus, errorThrow) => {
-                    console.error("Error: ", textStatus, errorThrow);
-                }
-            });
-        };
-
-        $('#toggle-state-pop-up').click(() => {
-            getStates(event);
-            popUpDefaultView();
-            $('#pop-up-edit-toggle').hide();
-            $('#pop-up-delete-toggle').hide();
-            $('#pop-up-box-heading').html('States');
+        $('#product-category-btn').click(() => {
+            $('#pop-up-box-heading').html('Categories');
             $('#pop-up-box').show();
         });
-
-        // To populate select with district data on toggling district btn
-        function getDistricts(e) {
-            e.preventDefault();
-            
-            $.ajax({
-                type:'get',
-                url:'/admin/get_all_districts/',
-                dataType:'json',
-                success: data => {                    
-                    if (data.districts && Array.isArray(data.districts)) {
-                        $('#pop-up-dropdown').html('');
-                        if ($('#district-dropdown-input')) {
-                            $('#district-dropdown-input').html('<option value="" hidden disabled selected>Select District</option')
-                        }
-                        data.districts.forEach(district => {
-                            let html = `<option value="${district.id}">${district.district}</option>`;
-                            $('#pop-up-dropdown').append(html);
-                            if ($('#district-dropdown-input')) {
-                                $('#district-dropdown-input').append(html);
-                            }
-                        });
-                    } else {
-                        $('#pop-up-dropdown').html('');
-                        if ($('#district-dropdown-input')) {
-                            $('#district-dropdown-input').html('')
-                        }
-                    };
-                },
-                error: (jqXHR, textStatus, errorThrow) => {
-                    console.error("Error: ", textStatus, errorThrow);
-                }
-            });
-        }
-        
-        $('#toggle-district-pop-up').click(() => {
-            getDistricts(event);
-            popUpDefaultView();
-            $('#pop-up-edit-toggle').hide();
-            $('#pop-up-delete-toggle').hide();
-            $('#pop-up-box-heading').html('Districts');
-            $('#pop-up-box').show();
-        });
-
-        // To populate select with block data on toggling block btn
-        function getBlocks(e) {
-            e.preventDefault();
-            popUpDefaultView();
-            $('#pop-up-edit-toggle').hide();
-            $('#pop-up-delete-toggle').hide();
-            $('#pop-up-box-heading').html('Blocks');
-
-            $.ajax({
-                type:'get',
-                url:'/admin/get_all_blocks/',
-                dataType:'json',
-                success: data => {                    
-                    if (data.blocks && Array.isArray(data.blocks)) {
-                        $('#pop-up-dropdown').html('');
-                        data.blocks.forEach(block => {
-                            let html = `<option value="${block.id}">${block.block}</option>`;
-                            $('#pop-up-dropdown').append(html);
-                        });
-                    } else {
-                        $('#pop-up-dropdown').html('');
-                    };
-                },
-                error: (jqXHR, textStatus, errorThrow) => {
-                    console.error("Error: ", textStatus, errorThrow);
-                }
-            });
-        };
-        
-        $('#toggle-block-pop-up').click(() => {
-            getBlocks(event);
-            $('#pop-up-box').show();
-        });
-
-        // To populate select with name type data on toggling block btn
-        function getNameTypes(e) {
-            e.preventDefault();
-            popUpDefaultView();
-            $('#pop-up-edit-toggle').hide();
-            $('#pop-up-delete-toggle').hide();
-            $('#pop-up-box-heading').html('Name Types');
-
-            $.ajax({
-                type:'get',
-                url:'/admin/get_name_types/',
-                dataType:'json',
-                success: data => {                    
-                    if (data.name_types && Array.isArray(data.name_types)) {
-                        $('#pop-up-dropdown').html('');
-                        data.name_types.forEach(name_type => {
-                            let html = `<option value="${name_type.slug}">${name_type.type}</option>`;
-                            $('#pop-up-dropdown').append(html);
-                        });
-                    } else {
-                        $('#pop-up-dropdown').html('');
-                    };
-                },
-                error: (jqXHR, textStatus, errorThrow) => {
-                    console.error("Error: ", textStatus, errorThrow);
-                }
-            });
-        };
-
-        $('#toggle-name-type-pop-up').click(() => {
-            getNameTypes(event);
-            $('#pop-up-box').show();
-        });
-
-        // To populate select with keyword data on toggling block btn
-        function getKeywords(e) {
-            e.preventDefault();
-            popUpDefaultView();
-            $('#pop-up-edit-toggle').hide();
-            $('#pop-up-delete-toggle').hide();
-            $('#pop-up-box-heading').html('Keywords');
-
-            $.ajax({
-                type:'get',
-                url:'/admin/get_csc_keywords/',
-                dataType:'json',
-                success: data => {                    
-                    if (data.keywords && Array.isArray(data.keywords)) {
-                        $('#pop-up-dropdown').html('');
-                        data.keywords.forEach(keyword => {
-                            let html = `<option value="${keyword.slug}">${keyword.keyword}</option>`;
-                            $('#pop-up-dropdown').append(html);
-                        });
-                    } else {
-                        $('#pop-up-dropdown').html('');
-                    };
-                },
-                error: (jqXHR, textStatus, errorThrow) => {
-                    console.error("Error: ", textStatus, errorThrow);
-                }
-            });
-        };
-
-        $('#toggle-keyword-pop-up').click(() => {
-            getKeywords(event);
-            $('#pop-up-box').show();
-        });
+                
 
         // Return to the default pop up box
         function popUpDefaultView() {
@@ -529,18 +348,14 @@
 
         // Toggle add item.
         $(document).on('click', '#pop-up-add-toggle', function () {
-            const currentItem = $('#pop-up-box-heading').html().slice(0, -1);
+            const currentItem = Category;
             let basePlacehodler;
             let baseInputIdPrefix;
-            if (currentItem === 'Name Type') {
-                endpoint = `add_name_type`;
-                basePlacehodler = `Name Type`;
-                baseInputIdPrefix = `name-type`;
-            } else {
-                endpoint = `add_${currentItem.toLowerCase()}`
-                basePlacehodler = `Name of ${currentItem}`
-                baseInputIdPrefix = currentItem.toLowerCase()
-            }            
+
+            endpoint = `add_${currentItem.toLowerCase()}`;
+            basePlacehodler = `Name of ${currentItem}`;
+            baseInputIdPrefix = currentItem.toLowerCase();
+
             $('#pop-up-form').html('')
             $('#pop-up-form').html(
                 `${(currentItem == 'District' || currentItem == 'Block') ? `<select id="state-dropdown-input"></select>` : '' }
@@ -879,7 +694,7 @@
 
         popUpDefaultView();
     });
-</script>
+</script> {% endcomment %}
 
 <script>
     function toggleProductDeletion(productSlug, productTitle) {		

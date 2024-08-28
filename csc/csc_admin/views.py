@@ -13,6 +13,7 @@ from datetime import datetime
 from django.contrib.auth import authenticate, logout
 import re
 
+from faq.models import Faq
 from posters.forms import PosterDescriptionForm
 from authentication.models import User
 from .forms import (
@@ -50,6 +51,7 @@ class AdminHomeView(BaseAdminView, TemplateView):
         context['services'] = Service.objects.all()
         context['products'] = Product.objects.all()
         context['posters'] = Poster.objects.all()
+        context['home_page'] = True
         return context
 
 
@@ -63,7 +65,7 @@ class CreateServiceView(BaseAdminView, CreateView):
     
     def post(self, request, *args, **kwargs):
         form = self.get_form()
-        name = request.POST.get('name')
+        name = request.POST.get('name').strip()
         image = request.FILES.get('image')
 
         if name:
@@ -108,7 +110,7 @@ class UpdateServiceView(BaseAdminView, UpdateView):
         self.object = self.get_object()
         form = self.get_form()
 
-        name = request.POST.get('name')
+        name = request.POST.get('name').strip()
         image = request.FILES.get('image')
 
         if name:
@@ -230,12 +232,12 @@ class CreateBlogView(BaseAdminBlogView, CreateView):
         return context    
 
     def post(self, request, *args, **kwargs):
-        title = request.POST.get('title')
+        title = request.POST.get('title').strip()
         image = request.FILES.get('image')        
         category_list = request.POST.getlist('category')
-        summary = request.POST.get('summary')        
+        summary = request.POST.get('summary').strip()
         author = request.user
-        tags = request.POST.get('tags')
+        tags = request.POST.get('tags').strip()
 
         if Blog.objects.filter(title = title).exists():
             messages.error(request, 'Blog with this title already exists. Please try again with another title')            
@@ -298,12 +300,12 @@ class UpdateBlogView(BaseAdminBlogView, UpdateView):
         return context    
 
     def post(self, request, *args, **kwargs):
-        title = request.POST.get('title')        
+        title = request.POST.get('title').strip()
         image = request.FILES.get('image')        
         category_list = request.POST.getlist('category')
-        summary = request.POST.get('summary')        
+        summary = request.POST.get('summary').strip()
         author = request.user
-        tags = request.POST.get('tags')
+        tags = request.POST.get('tags').strip()
         
         try:
             form = self.get_form()
@@ -410,11 +412,11 @@ class CreateProductView(BaseAdminCscProductView, CreateView):
     success_url = reverse_lazy("csc_admin:create_product")
 
     def post(self, request, *args, **kwargs):
-        name = request.POST.get('name')
+        name = request.POST.get('name').strip()
         image = request.FILES.get('image')
-        description = request.POST.get('description')
-        price = request.POST.get('price')
-        category = request.POST.get('category')
+        description = request.POST.get('description').strip()
+        price = request.POST.get('price').strip()
+        category = request.POST.get('category').strip()
 
         try:
             category = get_object_or_404(ProductCategory, slug = category)
@@ -452,11 +454,11 @@ class UpdateProductView(BaseAdminCscProductView, UpdateView):
         return reverse_lazy("csc_admin:product", kwargs = {"slug" : self.object.slug})
     
     def post(self, request, *args, **kwargs):
-        name = request.POST.get('name')
+        name = request.POST.get('name').strip()
         image = request.FILES.get('image')
-        description = request.POST.get('description')
-        price = request.POST.get('price')
-        category = request.POST.get('category')
+        description = request.POST.get('description').strip()
+        price = request.POST.get('price').strip()
+        category = request.POST.get('category').strip()
 
         try:
             category = get_object_or_404(ProductCategory, slug = category)
@@ -500,6 +502,59 @@ class DeleteProductView(BaseAdminCscProductView, View):
         messages.success(self.request, "Deleted Product")
         return redirect(self.success_url)
 
+
+def get_product_categories(request):
+    categories = list(ProductCategory.objects.all().values('slug', 'name'))
+    return JsonResponse({"categories": categories})
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class AddProductCategoryView(BaseAdminView, CreateView):
+    model = ProductCategory
+    slug_url_kwarg = 'slug'
+
+    def post(self, request, *args, **kwargs):
+        category = request.POST.get('category').strip()
+
+        print(category)
+
+        self.model.objects.create(name = category)
+
+        return JsonResponse({'status': 'success'})
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class EditProductCategoryView(BaseAdminView, UpdateView):
+    model = ProductCategory
+    slug_url_kwarg = 'slug'
+
+    def post(self, request, *args, **kwargs):
+        category = request.POST.get('category').strip()
+
+
+        self.object = self.get_object()
+        self.object.name = category
+        self.object.save()
+
+        return JsonResponse({'status': 'success'})
+    
+
+class DeleteProductCategoryView(BaseAdminView, View):
+    model = ProductCategory
+
+    def get_object(self):
+        try:
+            return get_object_or_404(self.model, slug = self.kwargs.get('slug'))
+        except Http404:
+            pass
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+
+        return JsonResponse({'status': 'success'})
+
+
 ##################################### PRODUCT END #####################################
 
 ##################################### CSC CENTER START #####################################
@@ -527,9 +582,9 @@ class ListCscCenterView(BaseAdminCscCenterView, ListView):
 
     def get(self, request, *args, **kwargs):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            state = request.GET.get('state', None)
-            district = request.GET.get('district', None)
-            block = request.GET.get('block', None)
+            state = request.GET.get('state', None).strip()
+            district = request.GET.get('district', None).strip()
+            block = request.GET.get('block', None).strip()
 
             print(f"{state}, {district}, {block}")
 
@@ -591,46 +646,46 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        name = request.POST.get('name')
-        type = request.POST.get('type')
+        name = request.POST.get('name').strip()
+        type = request.POST.get('type').strip()
         keywords = request.POST.getlist('keywords')
 
-        state = request.POST.get('state')
-        district = request.POST.get('district')
-        block = request.POST.get('block')
-        location = request.POST.get('location')
-        zipcode = request.POST.get('zipcode')
-        landmark_or_building_name = request.POST.get('landmark_or_building_name')
-        street = request.POST.get('address')
+        state = request.POST.get('state').strip()
+        district = request.POST.get('district').strip()
+        block = request.POST.get('block').strip()
+        location = request.POST.get('location').strip()
+        zipcode = request.POST.get('zipcode').strip()
+        landmark_or_building_name = request.POST.get('landmark_or_building_name').strip()
+        street = request.POST.get('address').strip()
         logo = request.FILES.get('logo') # dropzone
         banner = request.FILES.get('banner') # dropzone
-        description = request.POST.get('description')
-        owner = request.POST.get('owner')
-        email = request.POST.get('email')
-        website = request.POST.get('website') # optional
-        contact_number = request.POST.get('contact_number')
-        mobile_number = request.POST.get('mobile_number')
-        whatsapp_number = request.POST.get('whatsapp_number')
+        description = request.POST.get('description').strip()
+        owner = request.POST.get('owner').strip()
+        email = request.POST.get('email').strip()
+        website = request.POST.get('website') # optional.strip()
+        contact_number = request.POST.get('contact_number').strip()
+        mobile_number = request.POST.get('mobile_number').strip()
+        whatsapp_number = request.POST.get('whatsapp_number').strip()
         services = request.POST.getlist('services')
         products = request.POST.getlist('products')
 
-        show_opening_hours = request.POST.get('show_opening_hours')
+        show_opening_hours = request.POST.get('show_opening_hours').strip()
 
-        mon_opening_time = request.POST.get('mon_opening_time') if show_opening_hours else None #timefield
-        tue_opening_time = request.POST.get('tue_opening_time') if show_opening_hours else None #timefield
-        wed_opening_time = request.POST.get('wed_opening_time') if show_opening_hours else None #timefield
-        thu_opening_time = request.POST.get('thu_opening_time') if show_opening_hours else None #timefield
-        fri_opening_time = request.POST.get('fri_opening_time') if show_opening_hours else None #timefield
-        sat_opening_time = request.POST.get('sat_opening_time') if show_opening_hours else None #timefield
-        sun_opening_time = request.POST.get('sun_opening_time') if show_opening_hours else None #timefield
+        mon_opening_time = request.POST.get('mon_opening_time').strip() if show_opening_hours else None #timefield
+        tue_opening_time = request.POST.get('tue_opening_time').strip() if show_opening_hours else None #timefield
+        wed_opening_time = request.POST.get('wed_opening_time').strip() if show_opening_hours else None #timefield
+        thu_opening_time = request.POST.get('thu_opening_time').strip() if show_opening_hours else None #timefield
+        fri_opening_time = request.POST.get('fri_opening_time').strip() if show_opening_hours else None #timefield
+        sat_opening_time = request.POST.get('sat_opening_time').strip() if show_opening_hours else None #timefield
+        sun_opening_time = request.POST.get('sun_opening_time').strip() if show_opening_hours else None #timefield
 
-        mon_closing_time = request.POST.get('mon_closing_time') if show_opening_hours else None #timefield
-        tue_closing_time = request.POST.get('tue_closing_time') if show_opening_hours else None #timefield
-        wed_closing_time = request.POST.get('wed_closing_time') if show_opening_hours else None #timefield
-        thu_closing_time = request.POST.get('thu_closing_time') if show_opening_hours else None #timefield
-        fri_closing_time = request.POST.get('fri_closing_time') if show_opening_hours else None #timefield
-        sat_closing_time = request.POST.get('sat_closing_time') if show_opening_hours else None #timefield
-        sun_closing_time = request.POST.get('sun_closing_time') if show_opening_hours else None #timefield
+        mon_closing_time = request.POST.get('mon_closing_time').strip() if show_opening_hours else None #timefield
+        tue_closing_time = request.POST.get('tue_closing_time').strip() if show_opening_hours else None #timefield
+        wed_closing_time = request.POST.get('wed_closing_time').strip() if show_opening_hours else None #timefield
+        thu_closing_time = request.POST.get('thu_closing_time').strip() if show_opening_hours else None #timefield
+        fri_closing_time = request.POST.get('fri_closing_time').strip() if show_opening_hours else None #timefield
+        sat_closing_time = request.POST.get('sat_closing_time').strip() if show_opening_hours else None #timefield
+        sun_closing_time = request.POST.get('sun_closing_time').strip() if show_opening_hours else None #timefield
 
         mon_opening_time = mon_opening_time if  mon_opening_time != "" else None
         tue_opening_time = tue_opening_time if  tue_opening_time != "" else None
@@ -648,13 +703,13 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
         sat_closing_time = sat_closing_time if  sat_closing_time != "" else None
         sun_closing_time = sun_closing_time if  sun_closing_time != "" else None
 
-        show_social_media_links = request.POST.get('show_social_media_links')
+        show_social_media_links = request.POST.get('show_social_media_links').strip()
 
         social_medias = request.POST.getlist('social_medias') if show_social_media_links else None # manytomany
         social_links = request.POST.getlist('social_links') if show_social_media_links else None # manytomany
 
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
+        latitude = request.POST.get('latitude').strip()
+        longitude = request.POST.get('longitude').strip()
 
         try:
             type = get_object_or_404(CscNameType, slug = type)
@@ -773,46 +828,45 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         return context
     
     def post(self, request, *args, **kwargs):
-        name = request.POST.get('name')
-        type = request.POST.get('type')
+        name = request.POST.get('name').strip()
+        type = request.POST.get('type').strip()
         keywords = request.POST.getlist('keywords')
 
-        state = request.POST.get('state')
-        district = request.POST.get('district')
-        block = request.POST.get('block')
-        location = request.POST.get('location')
-        zipcode = request.POST.get('zipcode')
-        landmark_or_building_name = request.POST.get('landmark_or_building_name')
-        street = request.POST.get('address')
+        state = request.POST.get('state').strip()
+        district = request.POST.get('district').strip()
+        block = request.POST.get('block').strip()
+        location = request.POST.get('location').strip()
+        zipcode = request.POST.get('zipcode').strip()
+        landmark_or_building_name = request.POST.get('landmark_or_building_name').strip()
+        street = request.POST.get('address').strip()
         logo = request.FILES.get('logo') # dropzone
         banner = request.FILES.get('banner') # dropzone
-        description = request.POST.get('description')
-        owner = request.POST.get('owner')
-        email = request.POST.get('email')
-        website = request.POST.get('website') # optional
-        contact_number = request.POST.get('contact_number')
-        mobile_number = request.POST.get('mobile_number')
-        whatsapp_number = request.POST.get('whatsapp_number')        
+        description = request.POST.get('description').strip()
+        owner = request.POST.get('owner').strip()
+        email = request.POST.get('email').strip()
+        website = request.POST.get('website').strip()
+        contact_number = request.POST.get('contact_number').strip()
+        mobile_number = request.POST.get('mobile_number').strip()
+        whatsapp_number = request.POST.get('whatsapp_number').strip()
         services = request.POST.getlist('services')
         products = request.POST.getlist('products')
 
-        show_opening_hours = request.POST.get('show_opening_hours')
+        show_opening_hours = request.POST.get('show_opening_hours').strip()
 
-        mon_opening_time = request.POST.get('mon_opening_time') if show_opening_hours else None #timefield
-        tue_opening_time = request.POST.get('tue_opening_time') if show_opening_hours else None #timefield
-        wed_opening_time = request.POST.get('wed_opening_time') if show_opening_hours else None #timefield
-        thu_opening_time = request.POST.get('thu_opening_time') if show_opening_hours else None #timefield
-        fri_opening_time = request.POST.get('fri_opening_time') if show_opening_hours else None #timefield
-        sat_opening_time = request.POST.get('sat_opening_time') if show_opening_hours else None #timefield
-        sun_opening_time = request.POST.get('sun_opening_time') if show_opening_hours else None #timefield
-
-        mon_closing_time = request.POST.get('mon_closing_time') if show_opening_hours else None #timefield
-        tue_closing_time = request.POST.get('tue_closing_time') if show_opening_hours else None #timefield
-        wed_closing_time = request.POST.get('wed_closing_time') if show_opening_hours else None #timefield
-        thu_closing_time = request.POST.get('thu_closing_time') if show_opening_hours else None #timefield
-        fri_closing_time = request.POST.get('fri_closing_time') if show_opening_hours else None #timefield
-        sat_closing_time = request.POST.get('sat_closing_time') if show_opening_hours else None #timefield
-        sun_closing_time = request.POST.get('sun_closing_time') if show_opening_hours else None #timefield
+        mon_opening_time = request.POST.get('mon_opening_time').strip() if show_opening_hours else None #timefield
+        tue_opening_time = request.POST.get('tue_opening_time').strip() if show_opening_hours else None #timefield
+        wed_opening_time = request.POST.get('wed_opening_time').strip() if show_opening_hours else None #timefield
+        thu_opening_time = request.POST.get('thu_opening_time').strip() if show_opening_hours else None #timefield
+        fri_opening_time = request.POST.get('fri_opening_time').strip() if show_opening_hours else None #timefield
+        sat_opening_time = request.POST.get('sat_opening_time').strip() if show_opening_hours else None #timefield
+        sun_opening_time = request.POST.get('sun_opening_time').strip() if show_opening_hours else None #timefield
+        mon_closing_time = request.POST.get('mon_closing_time').strip() if show_opening_hours else None #timefield
+        tue_closing_time = request.POST.get('tue_closing_time').strip() if show_opening_hours else None #timefield
+        wed_closing_time = request.POST.get('wed_closing_time').strip() if show_opening_hours else None #timefield
+        thu_closing_time = request.POST.get('thu_closing_time').strip() if show_opening_hours else None #timefield
+        fri_closing_time = request.POST.get('fri_closing_time').strip() if show_opening_hours else None #timefield
+        sat_closing_time = request.POST.get('sat_closing_time').strip() if show_opening_hours else None #timefield
+        sun_closing_time = request.POST.get('sun_closing_time').strip() if show_opening_hours else None #timefield
 
         mon_opening_time = mon_opening_time if  mon_opening_time != "" else None
         tue_opening_time = tue_opening_time if  tue_opening_time != "" else None
@@ -830,13 +884,13 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         sat_closing_time = sat_closing_time if  sat_closing_time != "" else None
         sun_closing_time = sun_closing_time if  sun_closing_time != "" else None
 
-        show_social_media_links = request.POST.get('show_social_media_links')
+        show_social_media_links = request.POST.get('show_social_media_links').strip()
 
         social_medias = request.POST.getlist('social_medias') if show_social_media_links else None # manytomany
         social_links = request.POST.getlist('social_links') if show_social_media_links else None # manytomany
 
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
+        latitude = request.POST.get('latitude').strip()
+        longitude = request.POST.get('longitude').strip()
 
         try:
             type = get_object_or_404(CscNameType, slug = type)
@@ -1005,7 +1059,7 @@ class RemoveSocialMediaLinkView(BaseAdminCscCenterView, UpdateView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        social_media_id = request.POST.get('social_media_id')
+        social_media_id = request.POST.get('social_media_id').strip()
 
         try:
             social_media_link = get_object_or_404(SocialMediaLink, pk = social_media_id)
@@ -1021,15 +1075,15 @@ class RemoveSocialMediaLinkView(BaseAdminCscCenterView, UpdateView):
 # Nuclear
 class GetDistrictView(View):
     def get(self, request, *args, **kwargs):
-        state_id = request.GET.get('state_id')
+        state_id = request.GET.get('state_id').strip()
         districts = list(District.objects.filter(state__pk=state_id).values())
         return JsonResponse({"districts": districts}, safe=False)
     
 
 class GetBlockView(View):
     def get(self, request, *args, **kwargs):
-        district_id = request.GET.get('district_id')
-        state_id = request.GET.get('state_id')
+        district_id = request.GET.get('district_id').strip()
+        state_id = request.GET.get('state_id').strip()
         blocks = list(Block.objects.filter(district__id = district_id, state__id = state_id).values())
         return JsonResponse({"blocks": blocks}, safe=False)
     
@@ -1084,7 +1138,7 @@ class GetBlockDetailsView(BaseAdminCscCenterView, View):
 @method_decorator(csrf_exempt, name="dispatch")
 class CreateStateView(BaseAdminCscCenterView, View):
     def post(self, request, *args, **kwargs):
-        state = request.POST.get('state').title()
+        state = request.POST.get('state').title().strip()
 
         if not state:
             return JsonResponse({"error": "State is required"}, status=400)
@@ -1104,7 +1158,7 @@ class EditStateView(BaseAdminCscCenterView, View):
         except Http404:
             return JsonResponse({"error": "State does not exist"}, status=400)
         
-        state = request.POST.get('state').title()
+        state = request.POST.get('state').title().strip()
 
         if not state:
             return JsonResponse({"error": "State is required"}, status=400)        
@@ -1132,8 +1186,8 @@ class DeleteStateView(BaseAdminCscCenterView, View):
 @method_decorator(csrf_exempt, name="dispatch")
 class CreateDistrictView(BaseAdminCscCenterView, View):
     def post(self, request, *args, **kwargs):
-        state = request.POST.get('state')
-        districts = request.POST.get('districts')
+        state = request.POST.get('state').strip()
+        districts = request.POST.get('districts').strip()
         
         if not state:
             return JsonResponse({"error": "State is required"}, safe=False)
@@ -1178,7 +1232,7 @@ class EditDistrictView(BaseAdminCscCenterView, View):
         except Http404:
             return JsonResponse({"error": "District does not exist"}, safe=False)
 
-        state = request.POST.get('state')
+        state = request.POST.get('state').strip()
         district = request.POST.get('district').title().strip()
         
         if not state:
@@ -1216,9 +1270,9 @@ class DeleteDistrictView(BaseAdminCscCenterView, View):
 @method_decorator(csrf_exempt, name="dispatch")
 class CreateBlockView(BaseAdminCscCenterView, View):
     def post(self, request, *args, **kwargs):
-        state = request.POST.get('state')
-        district = request.POST.get('district')
-        blocks = request.POST.get('blocks')
+        state = request.POST.get('state').strip()
+        district = request.POST.get('district').strip()
+        blocks = request.POST.get('blocks').strip()
         
         if not state:
             return JsonResponse({"error": "State is required"}, safe=False)
@@ -1271,8 +1325,8 @@ class EditBlockView(BaseAdminCscCenterView, View):
         except Http404:
             return JsonResponse({"error": "Block does not exist"}, safe=False)
 
-        state = request.POST.get('state')
-        district = request.POST.get('district')
+        state = request.POST.get('state').strip()
+        district = request.POST.get('district').strip()
         block = request.POST.get('block').title().strip()
         
         if not state:
@@ -1321,7 +1375,7 @@ class DeleteBlockView(BaseAdminCscCenterView, View):
 @method_decorator(csrf_exempt, name="dispatch")
 class CreateKeywordView(BaseAdminCscCenterView, View):
     def post(self, request, *args, **kwargs):
-        keyword = request.POST.get('keyword')
+        keyword = request.POST.get('keyword').strip()
 
         if not keyword:
             return JsonResponse({"error": "Keyword is required"}, status=400)
@@ -1341,7 +1395,7 @@ class EditKeywordView(BaseAdminCscCenterView, View):
         except Http404:
             return JsonResponse({"error": "Keyword does not exist"}, status=400)
         
-        keyword = request.POST.get('keyword')
+        keyword = request.POST.get('keyword').strip()
 
         if not keyword:
             return JsonResponse({"error": "Keyword is required"}, status=400)        
@@ -1369,7 +1423,7 @@ class DeleteKeywordView(BaseAdminCscCenterView, View):
 @method_decorator(csrf_exempt, name="dispatch")
 class CreateCscNameTypeView(BaseAdminCscCenterView, View):
     def post(self, request, *args, **kwargs):
-        name_type = request.POST.get('name_type')
+        name_type = request.POST.get('name_type').strip()
 
         if not name_type:
             return JsonResponse({"error": "Name Type is required"}, status=400)
@@ -1389,7 +1443,7 @@ class EditCscNameTypeView(BaseAdminCscCenterView, View):
         except Http404:
             return JsonResponse({"error": "Name Type does not exist"}, status=400)
         
-        name_type = request.POST.get('name_type')
+        name_type = request.POST.get('name_type').strip()
 
         if not name_type:
             return JsonResponse({"error": "Name Type is required"}, status=400)        
@@ -1442,7 +1496,7 @@ class CreatePosterView(BasePosterView, CreateView):
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
-        title = request.POST.get('title')
+        title = request.POST.get('title').strip()
         poster = request.FILES.get('poster')
 
         if title:
@@ -1485,7 +1539,7 @@ class UpdatePosterView(BasePosterView, UpdateView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         form = self.get_form()
-        title = request.POST.get('title')
+        title = request.POST.get('title').strip()
         poster = request.FILES.get('poster')
 
         if not title:
@@ -1514,24 +1568,91 @@ class UpdatePosterView(BasePosterView, UpdateView):
 class MyProfileView(BaseAdminView, TemplateView):
     model = User
     template_name = "admin_profile/my_profile.html"
+    success_url = reverse_lazy('csc_admin:my_profile')
+    redirect_url = success_url
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["profile_page"] = True
         return context
     
+    def get_object(self):
+        try:
+            return get_object_or_404(User, email = self.request.user.email)
+        except:
+            messages.error(self.request, 'Unauthorized user')
+            return redirect(self.redirect_url)
+    
+
+class UpdateProfileView(MyProfileView, UpdateView):        
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+
+            image = request.FILES.get('image')
+            name = request.POST.get('name').strip().title()
+            phone = request.POST.get('phone').strip()
+            email = request.POST.get('email').strip().lower()
+            notes = request.POST.get('notes').strip()
+
+            if not email:
+                messages.error(request, "Email is required")
+                return redirect(self.redirect_url)
+
+            if name:
+                name_parts = name.split(' ')
+
+                first_name = name_parts[0] if len(name_parts) > 0 else None
+                last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else None
+
+                self.object.first_name = first_name
+                self.object.last_name = last_name            
+                self.object.notes = notes            
+
+            
+            if  phone.isnumeric():
+                self.object.phone = phone
+            
+            if image:
+                self.object.image = image
+
+            self.object.save()
+
+            current_email = self.object.email
+
+            if email != current_email:
+                user_csc_centers = CscCenter.objects.filter(email = current_email)
+                for csc_center in user_csc_centers:
+                    csc_center.email = email
+                    csc_center.save()
+                self.object.email = email
+                self.object.save()
+
+            messages.success(request, "Updated user profile details.")
+            return redirect(self.get_success_url())
+        except Exception as e:
+            print(f"Exception: {e}")
+            return redirect(self.redirect_url)
+
 
 class ChangePasswordView(MyProfileView, UpdateView):
     success_url = reverse_lazy('authentication:login')
     redirect_url = reverse_lazy('csc_admin:my_profile')
 
+    # def get_object(self):
+    #     try:
+    #         return get_object_or_404(User, email = self.request.user.email)
+    #     except:
+    #         messages.error(self.request, 'Unauthorized user')
+    #         return redirect(self.redirect_url)
+
     def post(self, request, *args, **kwargs):
         try:
             self.object = self.get_object()
 
-            current_password = request.POST.get('current_password')
-            new_password = request.POST.get('new_password')
-            confirm_password = request.POST.get('confirm_password')
+            current_password = request.POST.get('current_password').strip()
+            new_password = request.POST.get('new_password').strip()
+            confirm_password = request.POST.get('confirm_password').strip()
 
             user = authenticate(request, username = request.user.username, password = current_password)
 
@@ -1556,3 +1677,11 @@ class ChangePasswordView(MyProfileView, UpdateView):
             print(f"Exception: {e}")
             return redirect(self.redirect_url)
     
+
+
+############# FAQ ##############
+
+class CreateFaqView(BaseAdminView, CreateView):
+    model = Faq
+    success_url = reverse_lazy('faq:create')
+    fields = ["question", "answer"]

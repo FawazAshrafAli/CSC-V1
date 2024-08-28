@@ -25,13 +25,16 @@ class BaseHomeView(View):
         user = self.request.user
         if user:
             context['username'] = user.username
-            try:
-                if user.email:
-                    user_center = CscCenter.objects.filter(email = user.email).first()        
-                    context['user_center'] = user_center
-            except Exception as e:
-                print(e)
-                pass      
+            if user.is_superuser:
+                pass
+            else:
+                try:
+                    if user.email:
+                        user_center = CscCenter.objects.filter(email = user.email).first()        
+                        context['user_center'] = user_center
+                except Exception as e:
+                    print(e)
+                    pass      
         return context
 
 
@@ -130,6 +133,7 @@ class HomePageView(BaseHomeView, TemplateView):
 # Detail CscCenter Center
     
 
+@method_decorator(csrf_exempt, name="dispatch")
 class SearchCscCenterView(HomePageView, ListView):
     model = CscCenter
     template_name = 'home/list.html'
