@@ -13,6 +13,12 @@
 	#near-me:hover {
 		text-decoration: underline;
 	}
+
+	/* FAQ */
+	#more-faq-div {
+		display: flex;
+		justify-content: center;
+	}
 </style>
 
 <!-- Banner
@@ -227,6 +233,7 @@
 	<!-- Info Section -->
 	<div class="container">
 
+		{% if faqs %}
 		<div class="row">
 			<div class="col-md-12">
 				<h3 class="headline centered"> Frequently Asked Questions (FAQ)	</h3>
@@ -234,53 +241,28 @@
    
 			<!-- Toggles Container -->
 			<div class="style-2">
-
+				{% for faq in faqs|slice:':5' %}
 				<!-- Toggle 1 -->
 				<div class="toggle-wrap">
-					<span class="trigger"><a href="#">What is common service Centre scheme? <i class="sl sl-icon-plus"></i></a></span>
+					<span class="trigger"><a href="#">{{faq.question}} <i class="sl sl-icon-plus"></i></a></span>
 					<div class="toggle-container" style="display: none;">
-						<p>Under the National e-Governance Plan (NeGP) formulated by the Department of Electronics and Information Technology (DEITY), Ministry of Communication and Information Technology, Government of India, the Common Services Centers (CSCs) are conceptualized as ICT enabled, front end service delivery points for delivery of Government, Social and Private Sector services in the areas of agriculture, health, education, entertainment, FMCG products, banking and financial services, utility payments, et </p>
+						<p>{{faq.answer}} </p>
 					</div>
 				</div>
-
-				<!-- Toggle 2 -->
-				<div class="toggle-wrap">
-					<span class="trigger"><a href="#">What Are The Services Provided by CSC? <i class="sl sl-icon-plus"></i> </a></span>
-					<div class="toggle-container" style="display: none;">
-						<p>CSC (Common Service Centre) Center Offers Services are GST Registration, FSSAI Registration, MSME Registration, Trademark Registration, Government Registration, Flight Ticket Booking, Train Ticket Booking, Visa Assistance, Pancard Services, Passport Services, Insurance Services, Income Tax Filing, ISO Registration, BIS Registration, Barcode Registration, Recharge, and Bill Payments, Banking and Money Transfer, Digital Signature, Aadhaar Enrollment, Aadhaar Registration and Updation, Marriage Registration, Ration Card Services, Scholarship Registration, Educational Registrations, Govt Job Applications, Voter ID Card Services, Driving Licence Related Services, Vahan Related Services, eDistrict Services, UDID Card</p>
-					</div>
-				</div>
-                
-                
-                <div class="toggle-wrap">
-					<span class="trigger"><a href="#">How do I find the common service Centre? <i class="sl sl-icon-plus"></i> </a></span>
-					<div class="toggle-container" style="display: none;">
-						<p>You had better visit the home page <a href="https://cscindia.info">https://cscindia.info</a> and search the nearest Common Service Center</p>
-					</div>
-				</div>
-                
-                
-                <div class="toggle-wrap">
-					<span class="trigger"><a href="#">What is VLE full form? <i class="sl sl-icon-plus"></i> </a></span>
-					<div class="toggle-container" style="display: none;">
-						<p>VLE means Village Level Entrepreneur</p>
-					</div>
-				</div>
-                
-                
-                <div class="toggle-wrap">
-					<span class="trigger"><a href="#">Is CSC Govt authorised? <i class="sl sl-icon-plus"></i> </a></span>
-					<div class="toggle-container" style="display: none;">
-						<p>CSC is described as a special purpose vehicle (SPV) and named CSC e-Governance Services India Limited (CSC-SPV), which has been promoted by the government of India’s Ministry of Electronics and Information Technology (MeitY), is a “government company” under the provisions of the Companies Act of 2013 and other laws.</p>
-					</div>
-				</div>
+				{% endfor %}
 
 			</div>
+
+			<br>
 			<!-- Toggles Container / End -->
-		 
-                
+			
+			<div id="more-faq-div">
+				<a href="{% url 'faq:faqs' %}" class="button border">More FAQs</a>
+			<div>
+
 			</div>
 		</div>
+		{% endif %}
 
 	</div>
 	<!-- Info Section / End -->
@@ -321,7 +303,7 @@
                 
                 
 			</div>
-<a href="#" class="button margin-top-25">Get Started</a>
+			<a href="{% url 'csc_center:add_csc' %}" class="button margin-top-25">Get Started</a>
 		</div>
 	</div>
 
@@ -423,7 +405,7 @@
 			{% endfor %}
 			
 			<div class="col-md-12 centered-content">
-				<a href="pages-blog.html" class="button border margin-top-10">View Blog</a>
+				<a href="{% url 'blog:blogs' %}" class="button border margin-top-10">View Blog</a>
 			</div>
 
 		</div>

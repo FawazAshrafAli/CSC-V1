@@ -15,12 +15,14 @@ from blog.models import Blog
 from csc_center.models import CscCenter, State, District, Block
 from services.models import Service, ServiceEnquiry
 from products.models import Product, ProductEnquiry
+from faq.models import Faq
 
 class BaseHomeView(View):
     def get_context_data(self, **kwargs):
         context = {}
         context["services"] = Service.objects.all()
         context['states'] = State.objects.all()
+        context['faqs'] = Faq.objects.all()
         context['home_page'] = True
         user = self.request.user
         if user:

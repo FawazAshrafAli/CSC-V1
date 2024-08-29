@@ -114,7 +114,7 @@
 						<li itemprop="name"><a itemprop="url" {% if about_us_page %} class="current" {% endif %} href="{% url 'about_us:view' %}">About Us</a>
 							<ul>
 								<li itemprop="name"><a itemprop="url" href="profile">Profile</a></li>
-								<li itemprop="name"><a itemprop="url" href="{% url 'blog:list' %}">Blog</a></li>
+								<li itemprop="name"><a itemprop="url" href="{% url 'blog:blogs' %}">Blog</a></li>
 							</ul>
 						</li>
 
@@ -283,7 +283,7 @@
 				<ul class="footer-links">
 					<li><a href="#">FAQ</a></li>
 <li><a href="#">Profile</a></li>
-<li><a href="{% url 'blog:list' %}">Blog</a></li>
+<li><a href="{% url 'blog:blogs' %}">Blog</a></li>
 <li><a href="#">Contact</a></li>
 <li><a href="#">Privacy Policy</a></li>
 <li><a href="#">Terms & Conditions</a></li>

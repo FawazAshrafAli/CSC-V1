@@ -31,6 +31,7 @@ urlpatterns = [
     path('blog/', include('blog.urls', namespace='blog')), # Blog app url
     path('csc_center/', include('csc_center.urls', namespace = "csc_center")), # CSC Center app url
     path('users/', include('users.urls', namespace = "users")), # Users app url
+    path('faq/', include('faq.urls', namespace = "faq")), # Faq app url
 
     path('admin/', include('csc_admin.urls', namespace='csc_admin')), # CSC Admin app url
 

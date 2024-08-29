@@ -2,6 +2,9 @@ from django.urls import path
 from .views import (
     AdminHomeView, MyProfileView, ChangePasswordView,
     UpdateProfileView,
+
+    CreateFaqView, ListFaqView, FaqDetailView,
+    UpdateFaqView, DeleteFaqView,
     
     ListServiceView, DetailServiceView, UpdateServiceView, 
     CreateServiceView, DeleteServiceView, RemoveServiceImageView,
@@ -42,6 +45,12 @@ urlpatterns = [
     path("my_profile", MyProfileView.as_view(), name="my_profile"),
     path("change_password", ChangePasswordView.as_view(), name="change_password"),
     path("update_profile", UpdateProfileView.as_view(), name="update_profile"),
+
+    path("add_faq/", CreateFaqView.as_view(), name="add_faq"),
+    path("faqs/", ListFaqView.as_view(), name="faqs"),
+    path("faq/<str:slug>", FaqDetailView.as_view(), name="faq"),
+    path("update_faq/<str:slug>", UpdateFaqView.as_view(), name="update_faq"),
+    path("delete_faq/<str:slug>", DeleteFaqView.as_view(), name="delete_faq"),
 
     path("services/", ListServiceView.as_view(), name="services"),
     path("service/<pk>", DetailServiceView.as_view(), name="service"),

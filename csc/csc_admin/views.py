@@ -1681,7 +1681,90 @@ class ChangePasswordView(MyProfileView, UpdateView):
 
 ############# FAQ ##############
 
-class CreateFaqView(BaseAdminView, CreateView):
+class BaseFaqView(BaseAdminView, View):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['faq_page'] = True
+        return context
+
+class CreateFaqView(BaseFaqView, CreateView):
     model = Faq
-    success_url = reverse_lazy('faq:create')
+    success_url = reverse_lazy('csc_admin:add_faq')
     fields = ["question", "answer"]
+    template_name = "admin_faq/create.html"
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "FAQ created successfully")
+        return response
+    
+    def form_invalid(self, form):
+        messages.error(self.request, "FAQ creation failed")
+        for field, errors in form.errors.items():
+            for error in errors:
+                print(f"Error on field - {field}: {error}")
+        return super().form_invalid(form)
+    
+
+class ListFaqView(BaseFaqView, ListView):
+    model = Faq
+    template_name = "admin_faq/list.html"
+    context_object_name = "faqs"
+    queryset = model.objects.all()
+
+
+class FaqDetailView(BaseFaqView, DetailView):
+    model = Faq
+    template_name = "admin_faq/detail.html"
+    context_object_name = "faq"
+    slug_url_kwarg = 'slug'
+
+
+class UpdateFaqView(BaseFaqView, UpdateView):
+    model = Faq
+    fields = ["question", "answer"]
+    template_name = "admin_faq/update.html"
+    context_object_name = "faq"
+    slug_url_kwarg = 'slug'
+
+    def get_success_url(self):
+        try:
+            return reverse_lazy('csc_admin:faq', kwargs={'slug': self.kwargs.get('slug')})
+        except Http404:
+            return reverse_lazy('csc_admin:faqs')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "FAQ updated successfully")
+        return response
+    
+    def form_invalid(self, form):
+        messages.error(self.request, "FAQ updation failed")
+        for field, errors in form.errors.items():
+            for error in errors:
+                print(f"Error on field - {field}: {error}")
+        return super().form_invalid(form)
+    
+
+class DeleteFaqView(BaseFaqView, View):
+    model = Faq
+    success_url = reverse_lazy('csc_admin:faqs')
+    redirect_url = success_url
+
+    def get_object(self):
+        try:
+            return get_object_or_404(Faq, slug = self.kwargs.get('slug'))
+        except Http404:
+            messages.error(self.request, "Invalid FAQ")
+            return redirect(self.redirect_url)
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+            self.object.delete()
+            messages.success(request, "FAQ deleted successfully")
+            return redirect(self.success_url)
+        except Exception as e:
+            messages.error(request, "FAQ deletion failed")
+            print(f"Error: {e}")
+            return redirect(self.redirect_url)

@@ -437,7 +437,8 @@
     <!-- Info Section -->
     <div class="container">
 
-
+        {% if faqs %}
+        {{faqs}}
         <div class="row">
             <div class="col-md-12">
                 <h3 class="headline centered"> Frequently Asked Questions (FAQ) </h3>
@@ -518,6 +519,7 @@
 
             </div>
         </div>
+        {% endif %}
 
     </div>
     <!-- Info Section / End -->

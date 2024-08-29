@@ -250,7 +250,9 @@
 
 						<li><a href="{% url 'csc_admin:products' %}" {% if product_page %} class="current" {% endif %}>Products</a></li>
 
-                        <li><a href="{% url 'csc_admin:posters' %}" {% if poster_page %} class="current" {% endif %} {% if poster_page %} class="current" {% endif %}>Posters</a></li>
+                        <li><a href="{% url 'csc_admin:posters' %}" {% if poster_page %} class="current" {% endif %}>Posters</a></li>
+
+                        <li><a href="{% url 'csc_admin:faqs' %}" {% if faq_page %} class="current" {% endif %}>FAQ</a></li>
 					</ul>
 				</nav>
 				<div class="clearfix"></div>
@@ -334,6 +336,13 @@
 					<ul>
 						<li><a href="{% url 'csc_admin:posters' %}">List Posters</a></li>
 						<li><a href="{% url 'csc_admin:create_poster' %}">Add Posters</a></li>						
+					</ul>	
+				</li>
+
+                <li {% if faq_page %} class="active" {% endif %} ><a><i class="fa fa-question"></i> FAQ</a>
+					<ul>
+						<li><a href="{% url 'csc_admin:faqs' %}">List Posters</a></li>
+						<li><a href="{% url 'csc_admin:add_faq' %}">Add FAQ</a></li>						
 					</ul>	
 				</li>
 
