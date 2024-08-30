@@ -13,6 +13,7 @@ from datetime import datetime
 from django.contrib.auth import authenticate, logout
 import re
 
+from contact_us.models import Enquiry
 from faq.models import Faq
 from posters.forms import PosterDescriptionForm
 from authentication.models import User
@@ -155,6 +156,7 @@ class DetailServiceView(BaseAdminView, DetailView):
     template_name = 'admin_service/detail.html'
     context_object_name = "service"
     form_class = UpdateServiceForm
+    slug_url_kwarg = 'slug'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1679,7 +1681,7 @@ class ChangePasswordView(MyProfileView, UpdateView):
     
 
 
-############# FAQ ##############
+############# FAQ START ##############
 
 class BaseFaqView(BaseAdminView, View):
     def get_context_data(self, **kwargs):
@@ -1768,3 +1770,46 @@ class DeleteFaqView(BaseFaqView, View):
             messages.error(request, "FAQ deletion failed")
             print(f"Error: {e}")
             return redirect(self.redirect_url)
+
+############# FAQ END ##############
+
+############### ENQUIRY START ###############
+
+class EnquiryBaseView(BaseAdminView):
+    model = Enquiry
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['enquiry_page'] = True
+        return context
+
+
+class EnquiryListView(EnquiryBaseView, ListView):
+    model = Enquiry
+    template_name = 'admin_enquiry/list.html'
+    queryset = model.objects.all()
+    context_object_name = 'enquiries'
+
+
+class DeleteEnquiryView(EnquiryBaseView, View):
+    success_url = reverse_lazy('csc_admin:enquiries')
+    redirect_url = success_url
+
+    def get_object(self):
+        try:
+            return get_object_or_404(Enquiry, slug=self.kwargs.get('slug'))
+        except Http404:
+            messages.error(self.request, "Invalid Enquiry")
+            return redirect(self.redirect_url)
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+            self.object.delete()
+            messages.success(request, "Enquiry deleted successfully")
+            return redirect(self.success_url)
+        except Exception as e:
+            print(F"Error: {e}")
+            return redirect(self.redirect_url)
+
+############### ENQUIRY END ###############

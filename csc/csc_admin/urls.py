@@ -5,6 +5,8 @@ from .views import (
 
     CreateFaqView, ListFaqView, FaqDetailView,
     UpdateFaqView, DeleteFaqView,
+
+    EnquiryListView, DeleteEnquiryView,
     
     ListServiceView, DetailServiceView, UpdateServiceView, 
     CreateServiceView, DeleteServiceView, RemoveServiceImageView,
@@ -52,8 +54,11 @@ urlpatterns = [
     path("update_faq/<str:slug>", UpdateFaqView.as_view(), name="update_faq"),
     path("delete_faq/<str:slug>", DeleteFaqView.as_view(), name="delete_faq"),
 
+    path('enquiries/', EnquiryListView.as_view(), name="enquiries"),
+    path('delete_enquiry/<str:slug>', DeleteEnquiryView.as_view(), name="delete_enquiry"),
+
     path("services/", ListServiceView.as_view(), name="services"),
-    path("service/<pk>", DetailServiceView.as_view(), name="service"),
+    path("service/<str:slug>", DetailServiceView.as_view(), name="service"),
     path("create_service/", CreateServiceView.as_view(), name="create_service"),
     path("update_service/<str:slug>", UpdateServiceView.as_view(), name="update_service"),
     path("delete_service/<str:slug>", DeleteServiceView.as_view(), name="delete_service"),

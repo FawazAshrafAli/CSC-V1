@@ -73,8 +73,8 @@
             <ul id="service-enquiries">
                 {% for center in csc_centers|slice:':5' %}
                 <li>
-                    <i class="list-box-icon fa fa-building"></i><a href="${service_enquiry.get_absolute_url}"> <strong>{{center.name}}</strong> {{center.type_and_location}}!</a>
-                    <a href="#" class="close-list-item" onclick="markServiceEnquiryViewed('${service_enquiry.slug}');"><i class="fa fa-close"></i></a>
+                    <i class="list-box-icon fa fa-building"></i><a href="{% url 'csc_admin:csc_center' center.slug %}"> <strong>{{center.name}}</strong> {{center.type_and_location}}!</a>
+                    <a href="{% url 'csc_admin:csc_center' center.slug %}" class="close-list-item" onclick="markServiceEnquiryViewed('${service_enquiry.slug}');"><i class="fa fa-close"></i></a>
                 </li>
                 {% endfor %}
                 <a href="{% url 'csc_admin:csc_centers' %}" style="display: flex; justify-content: center;">
@@ -91,8 +91,8 @@
             <ul id="product-enquiries">
                 {% for poster in posters|slice:':5' %}
                 <li>
-                    <i class="list-box-icon fa fa-sticky-note"></i><a href="${service_enquiry.get_absolute_url}"> <strong>{{poster.title}}</strong></a>
-                    <a href="#" class="close-list-item" onclick="markServiceEnquiryViewed('${service_enquiry.slug}');"><i class="fa fa-close"></i></a>
+                    <i class="list-box-icon fa fa-sticky-note"></i><a href="{% url 'csc_admin:poster' poster.slug %}"> <strong>{{poster.title}}</strong></a>
+                    <a href="{% url 'csc_admin:poster' poster.slug %}" class="close-list-item" onclick="markServiceEnquiryViewed('${service_enquiry.slug}');"><i class="fa fa-close"></i></a>
                 </li>
                 {% endfor %}
                 <a href="{% url 'csc_admin:posters' %}" style="display: flex; justify-content: center;">
@@ -109,8 +109,8 @@
             <ul>
                 {% for service in services|slice:':5' %}
                 <li>
-                    <i class="list-box-icon fa fa-handshake"></i><a href="${service_enquiry.get_absolute_url}"> <strong>{{service.first_name}}</strong> {{service.tailing_name}}</a>
-                    <a href="#" class="close-list-item" onclick="markServiceEnquiryViewed('${service_enquiry.slug}');"><i class="fa fa-close"></i></a>
+                    <i class="list-box-icon fa fa-handshake"></i><a href="{% url 'csc_admin:service' service.slug %}"> <strong>{{service.first_name}}</strong> {{service.tailing_name}}</a>
+                    <a href="{% url 'csc_admin:service' service.slug %}" class="close-list-item" onclick="markServiceEnquiryViewed('${service_enquiry.slug}');"><i class="fa fa-close"></i></a>
                 </li>
                 {% endfor %}
                 <a href="{% url 'csc_admin:services' %}" style="display: flex; justify-content: center;">

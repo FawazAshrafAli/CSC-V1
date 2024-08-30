@@ -11,7 +11,7 @@ class ContactUsView(TemplateView):
 
 class SubmitEnquiryView(ContactUsView, CreateView):
     model = Enquiry
-    fields = ["name", "email", "subject", "message"]
+    fields = ["name", "email", "phone", "location", "message"]
     success_url = reverse_lazy("contact_us:view")
     redirect_url = success_url
 

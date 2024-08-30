@@ -253,6 +253,8 @@
                         <li><a href="{% url 'csc_admin:posters' %}" {% if poster_page %} class="current" {% endif %}>Posters</a></li>
 
                         <li><a href="{% url 'csc_admin:faqs' %}" {% if faq_page %} class="current" {% endif %}>FAQ</a></li>
+
+                        <li><a href="{% url 'csc_admin:enquiries' %}" {% if enquiry_page %} class="current" {% endif %}>Enquiry</a></li>
 					</ul>
 				</nav>
 				<div class="clearfix"></div>
@@ -341,10 +343,12 @@
 
                 <li {% if faq_page %} class="active" {% endif %} ><a><i class="fa fa-question"></i> FAQ</a>
 					<ul>
-						<li><a href="{% url 'csc_admin:faqs' %}">List Posters</a></li>
+						<li><a href="{% url 'csc_admin:faqs' %}">List FAQ</a></li>
 						<li><a href="{% url 'csc_admin:add_faq' %}">Add FAQ</a></li>						
 					</ul>	
 				</li>
+
+                <li {% if enquiry_page %} class="active" {% endif %}><a href="{% url 'csc_admin:enquiries' %}"><i class="fa fa-comment"></i> Enquiry</a></li>
 
 			</ul>
             

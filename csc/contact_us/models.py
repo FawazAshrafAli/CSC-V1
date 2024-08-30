@@ -4,7 +4,8 @@ from django.utils.text import slugify
 class Enquiry(models.Model):
     name = models.CharField(max_length=150)
     email = models.EmailField(max_length=254)
-    subject = models.CharField(max_length=150)
+    phone = models.TextField(max_length=20)
+    location = models.TextField(max_length=150)
     message = models.TextField()
 
     slug = models.SlugField(blank=True, null=True)
@@ -22,11 +23,7 @@ class Enquiry(models.Model):
                 count += 1
             
         super().save(*args, **kwargs)
-
-    def str(self):
-        return f"{self.name} regarding '{self.subject}'"
     
-
     class Meta:
         ordering = ['-created']
         db_table = 'enquiry'
