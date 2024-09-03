@@ -26,21 +26,20 @@ from csc_center.models import (CscCenter, SocialMediaLink, State,
                                 District, Block, CscKeyword, 
                                 CscNameType)
 
-class BaseUserView(LoginRequiredMixin, View):
+class BaseUserView(LoginRequiredMixin):
     login_url = reverse_lazy('authentication:login')
 
     def get_context_data(self, **kwargs):
-        context = {}
-        try:
+        context = super().get_context_data(**kwargs)    
+        try:            
             centers = CscCenter.objects.filter(email = self.request.user.email)
             context['centers'] = centers
-            context['center'] = centers[0]
+            context['center'] = centers[0] if centers[0].is_active else None
             context['services_left'] = Service.objects.all()
             context['user_csc_centers'] = CscCenter.objects.filter(email = self.request.user.email)
 
         except Exception as e:
             print(e)
-            pass
 
         return context
     
@@ -50,18 +49,18 @@ class HomeView(BaseUserView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        csc_center = CscCenter.objects.filter(email = self.request.user.email).first()
+        csc_center = CscCenter.objects.filter(email = self.request.user.email, is_active = True).first()
 
-        center_slug = self.request.GET.get('center_slug')        
+        center_slug = self.request.GET.get('center_slug')     
         if center_slug:
             try:
-                csc_center = get_object_or_404(CscCenter, slug = center_slug)
+                csc_center = get_object_or_404(CscCenter, slug = center_slug, is_active = True)
             except Http404:
                 pass
 
         context["csc_center"] = csc_center
-        context["service_enquiries"] = ServiceEnquiry.objects.filter(csc_center = csc_center, is_viewed = False).order_by('-created')
-        context["product_enquiries"] = ProductEnquiry.objects.filter(csc_center = csc_center, is_viewed = False).order_by('-created')
+        context["service_enquiries"] = ServiceEnquiry.objects.filter(csc_center = csc_center).order_by('-created')
+        context["product_enquiries"] = ProductEnquiry.objects.filter(csc_center = csc_center).order_by('-created')
         context["home_page"] = True
         return context
 
@@ -70,42 +69,45 @@ class GetCenterDataView(BaseUserView, View):
         center_slug = request.GET.get('center_slug')
 
         try:
-            center = get_object_or_404(CscCenter, slug = center_slug)
-            print(center)
-        except Http404:
-            pass
+            center = get_object_or_404(CscCenter, slug = center_slug, is_active = True)
+            service_enquiries = ServiceEnquiry.objects.filter(csc_center = center)
+            product_enquiries = ProductEnquiry.objects.filter(csc_center = center)
 
-        service_enquiries = ServiceEnquiry.objects.filter(csc_center = center, is_viewed = False)
-        product_enquiries = ProductEnquiry.objects.filter(csc_center = center, is_viewed = False)
+            service_enquiry_list = []
+            for enquiry in service_enquiries:
+                service_enquiry_list.append({
+                    "applicant_name": enquiry.applicant_name,
+                    "service": enquiry.service.first_name,
+                    "slug": enquiry.slug
+                })
 
-        service_enquiry_list = []
-        for enquiry in service_enquiries:
-            service_enquiry_list.append({
-                "applicant_name": enquiry.applicant_name,
-                "service": enquiry.service.first_name,
-                "get_absolute_url": enquiry.get_absolute_url,
-                "slug": enquiry.slug
-            })
-
-        product_enquiry_list = []
-        for enquiry in product_enquiries:
-            product_enquiry_list.append({
-                "applicant_name": enquiry.applicant_name,
-                "product": enquiry.product.name,
-                "get_absolute_url": enquiry.get_absolute_url,
-                "slug": enquiry.slug
-            })
-
-        data = {
-            'services_count': center.services.all().count(),
-            'products_count': center.products.all().count(),
-            "service_enquiries_count" : service_enquiries.count(),
-            "product_enquiries_count" : product_enquiries.count(),
-            'service_enquiries': service_enquiry_list,
-            'product_enquiries': product_enquiry_list
+            product_enquiry_list = []
+            for enquiry in product_enquiries:
+                product_enquiry_list.append({
+                    "applicant_name": enquiry.applicant_name,
+                    "product": enquiry.product.name,
+                    "slug": enquiry.slug
+                })
+            
+            data = {
+                'csc_center': center,
+                'services_count': center.services.all().count(),
+                'products_count': center.products.all().count(),
+                "service_enquiries_count" : service_enquiries.count(),
+                "product_enquiries_count" : product_enquiries.count(),
+                'service_enquiries': service_enquiry_list,
+                'product_enquiries': product_enquiry_list
             }
 
-        return JsonResponse(data)
+            print(data['csc_center'])
+
+            return JsonResponse(data)
+        except Http404:
+            return JsonResponse({"error": "Selected center is not yet active."})
+
+        
+
+        
 
 
 # Service
@@ -124,8 +126,8 @@ class ServiceEnquiryListView(BaseServiceView, ListView):
     context_object_name = 'enquiries'
 
     def get_queryset(self):
-        center = CscCenter.objects.filter(email = self.request.user.email).first()
-        enquiries = self.model.objects.filter(csc_center = center).order_by('-created')
+        center = CscCenter.objects.filter(email = self.request.user.email, is_active = True).first()
+        enquiries = self.model.objects.filter(csc_center = center).order_by('-created') if center else None
         return enquiries
     
     def get_context_data(self, **kwargs):
@@ -137,65 +139,21 @@ class ServiceEnquiryListView(BaseServiceView, ListView):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             center_slug = request.GET.get('center_slug')
             try:
-                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email)
+                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email, is_active = True)
                 enquiries = self.model.objects.filter(csc_center = center)
                 enquiries_list = []
                 for count, enquiry in enumerate(enquiries):
-                    enquiries_list.append({
+                    enquiries_list.append({                        
                         'applicant_name': enquiry.applicant_name, 
                         'applicant_email': enquiry.applicant_email, 
-                        'applicant_phone': enquiry.applicant_phone, 
-                        'get_absolute_url': enquiry.get_absolute_url if enquiry.get_absolute_url else None,
+                        'applicant_phone': enquiry.applicant_phone,
+                        'message': enquiry.message, 
                         'service': enquiry.service.first_name, 
                         'slug': enquiry.slug, 'count': count+1})
-                return JsonResponse({'enquiries': enquiries_list})
+                return JsonResponse({'enquiries': enquiries_list, 'center': True if center else False})
             except Http404:
-                pass
+                return JsonResponse({'error': 'Not an active csc center.'})
         return super().get(request, *args, **kwargs)
-    
-
-class ServiceEnquiryDetailView(BaseServiceView, DetailView):
-    model = ServiceEnquiry
-    template_name = 'user_services/enquiry_detail.html'
-    slug_url_kwarg = 'slug'
-    context_object_name = 'enquiry'
-    
-    def get_object(self):
-        try:
-            enquiry = get_object_or_404(ServiceEnquiry, slug = self.kwargs['slug'])
-            enquiry.is_viewed = True
-            enquiry.save()
-            return enquiry
-        except Http404:
-            return redirect(reverse_lazy('users:service_enquiries'))
-        
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['enquiry'] = self.get_object()
-        return context
-
-    
-@method_decorator(csrf_exempt, name='dispatch')
-class MarkServiceEnquiryAsViewedView(BaseServiceView, UpdateView):
-    model = ServiceEnquiry
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.is_viewed = True
-        self.object.save()
-
-        service_enquiries = ServiceEnquiry.objects.filter(csc_center = self.object.csc_center, is_viewed = False)
-
-        service_enquiry_list = []
-        for enquiry in service_enquiries:
-            service_enquiry_list.append({
-                "applicant_name": enquiry.applicant_name,
-                "service": enquiry.service.first_name,
-                "get_absolute_url": enquiry.get_absolute_url,
-            })
-
-        return JsonResponse({'service_enquiries': service_enquiry_list})
-
 
 
 class DeleteServiceEnquiryView(BaseServiceView, View):
@@ -232,20 +190,21 @@ class ProductEnquiryListView(ProductBaseView, ListView):
     context_object_name = 'enquiries'
 
     def get_queryset(self):
-        center = CscCenter.objects.filter(email = self.request.user.email).first()
-        enquiries = self.model.objects.filter(csc_center = center).order_by('-created')
+        center = CscCenter.objects.filter(email = self.request.user.email, is_active = True).first()
+        enquiries = self.model.objects.filter(csc_center = center).order_by('-created') if center else None
         return enquiries
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['enquiries'] = self.get_queryset()
-        return context
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     csc_center = CscCenter.objects.filter(email = self.request.user.email, is_active = True).first()
+    #     context['csc_center'] = csc_center
+    #     return context
     
     def get(self, request, *args, **kwargs):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             center_slug = request.GET.get('center_slug')
             try:
-                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email)
+                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email, is_active = True)
                 enquiries = self.model.objects.filter(csc_center = center)
                 enquiries_list = []
                 for count, enquiry in enumerate(enquiries):
@@ -253,57 +212,14 @@ class ProductEnquiryListView(ProductBaseView, ListView):
                         'applicant_name': enquiry.applicant_name, 
                         'applicant_email': enquiry.applicant_email, 
                         'applicant_phone': enquiry.applicant_phone, 
-                        'get_absolute_url': enquiry.get_absolute_url, 
+                        'message': enquiry.message,
                         'product': enquiry.product.name, 
                         'slug': enquiry.slug, 
                         'count': count+1})
-                return JsonResponse({'enquiries': enquiries_list})
+                return JsonResponse({'enquiries': enquiries_list, 'csc_center': True if center else False})
             except Http404:
-                pass
+                return JsonResponse({'error': 'Not an active csc center.'})
         return super().get(request, *args, **kwargs)
-    
-
-class ProductEnquiryDetailView(ProductBaseView, DetailView):
-    model = ProductEnquiry
-    template_name = 'user_products/enquiry_detail.html'
-    slug_url_kwarg = 'slug'
-    context_object_name = 'enquiry'
-    
-    def get_object(self, **kwargs):
-        try:
-            enquiry = get_object_or_404(ProductEnquiry, slug = self.kwargs['slug'])
-            enquiry.is_viewed = True
-            enquiry.save()
-            return enquiry
-        except Http404:
-            return redirect(reverse_lazy('users:product_enquiries'))
-        
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['enquiry'] = self.get_object()
-        return context
-    
-
-@method_decorator(csrf_exempt, name='dispatch')
-class MarkProductEnquiryAsViewedView(ProductBaseView, UpdateView):
-    model = ProductEnquiry
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.is_viewed = True
-        self.object.save()
-
-        product_enquiries = ProductEnquiry.objects.filter(csc_center = self.object.center, is_viewed = False)
-
-        product_enquiry_list = []
-        for enquiry in product_enquiries:
-            product_enquiry_list.append({
-                "applicant_name": enquiry.applicant_name,
-                "product": enquiry.product.first_name,
-                "get_absolute_url": enquiry.get_absolute_url,
-            })
-
-        return JsonResponse({'product_enquiries': product_enquiry_list})
 
 
 class DeleteProductEnquiryView(ProductBaseView, View):
@@ -791,7 +707,7 @@ class MyPosterListView(BasePosterView, ListView):
     template_name = "user_posters/my_list.html"
 
     def get_queryset(self):
-        csc_center = CscCenter.objects.filter(email = self.request.user.email).first()
+        csc_center = CscCenter.objects.filter(email = self.request.user.email, is_active = True).first()
         return CustomPoster.objects.filter(csc_center = csc_center)
 
     def get_context_data(self, **kwargs):
@@ -803,7 +719,8 @@ class MyPosterListView(BasePosterView, ListView):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             center_slug = request.GET.get('center_slug')
             try:
-                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email)
+                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email, is_active = True)
+                print(center)
 
                 posters = CustomPoster.objects.filter(csc_center = center)
 
@@ -816,9 +733,9 @@ class MyPosterListView(BasePosterView, ListView):
                         'count': count+1,
                         'get_absolute_url': poster.get_absolute_url if poster.get_absolute_url else '#',
                         })
-                return JsonResponse({'posters': poster_list})
+                return JsonResponse({'posters': poster_list, 'csc_center': True if center else False})
             except Http404:
-                pass
+                return JsonResponse({'error': 'Not an active csc center'})
         return super().get(request, *args, **kwargs)
 
     

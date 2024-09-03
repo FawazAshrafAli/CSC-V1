@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404
-from django.views.generic import View, UpdateView, TemplateView
+from django.views.generic import View, UpdateView, TemplateView, CreateView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
@@ -8,6 +8,8 @@ from django.http import Http404
 from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
+import uuid
+from django.core.mail import send_mail
 
 from .tasks import send_otp_email
 from .models import User, UserOtp
@@ -18,7 +20,7 @@ class AuthenticationView(TemplateView):
     user_success_url = reverse_lazy('users:home')
 
     def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
+        if request.user.is_authenticated and request.user.email_verified:
             if request.user.is_superuser:
                 return redirect(self.admin_success_url)
             else:
@@ -32,11 +34,15 @@ class AuthenticationView(TemplateView):
         if username and password:
             user = authenticate(request, username = username, password = password)
             if user is not None:
-                login(request, user)
-                if request.user.is_superuser:
-                    return redirect(self.admin_success_url)
+                if user.email_verified:
+                    login(request, user)
+                    if request.user.is_superuser:
+                        return redirect(self.admin_success_url)
+                    else:
+                        return redirect(self.user_success_url)
                 else:
-                    return redirect(self.user_success_url)
+                    messages.error(request, 'Email not verified. Please check your email for verification link.')
+                    return redirect(reverse_lazy('authentication:login'))
             else:
                 messages.error(request, 'Invalid username or password.')
                 
@@ -156,3 +162,75 @@ class ForgotPasswordView(View):
         except Exception as e:
             print(e)
             return redirect(self.redirect_url)
+
+
+class UserRegistrationView(CreateView):
+    model = User
+    fields = ["username", "email", "password"]
+    template_name = 'authentication/register.html'
+    success_url = reverse_lazy('authentication:login')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['email'] = self.kwargs.get('email')
+        return context
+
+    def get(self, request, *args, **kwargs):
+        email = self.kwargs.get('email')
+        if email and self.model.objects.filter(email = email):
+            return redirect(self.success_url)
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        email = self.kwargs.get('email')
+        password = request.POST.get("password")
+        repeat_password = request.POST.get("repeat_password")
+
+        if password != repeat_password:
+            messages.error(request, "Passwords are not matching.")
+            return super().get(request, *args, **kwargs)
+
+        user = self.model.objects.create_user(username = email, email=email, password=password)
+        user.is_active = False
+        user.verification_token = str(uuid.uuid4())
+        user.save()
+
+        self.send_verification_email(user)
+        messages.success(request, "A verification email has been send to your email address.")
+        return redirect(self.success_url)
+        
+
+    def send_verification_email(self, user):
+        verification_link = self.request.build_absolute_uri(
+            reverse_lazy('authentication:verify_email', kwargs = {"token": user.verification_token})
+        )
+
+        sender = str('w3digitalpmna@gmail.com')
+
+        send_mail(
+            'Verify your email',
+            f'Click the link to verify your email: {verification_link}',
+            sender,
+            [user.email],
+            fail_silently=False
+        )
+
+
+class VerifyEamilAddressView(View):
+
+    def get(self, request, *args, **kwargs):
+        try:
+            token = self.kwargs.get('token')
+            user = User.objects.get(verification_token=token)
+            if user.email_verified:
+                messages.info(request, "Your email has already been verified.")
+            else:
+                user.email_verified = True
+                user.is_active = True  # Activate the account
+                user.verification_token = None  # Clear the token
+                user.save()
+                messages.success(request, "Your email has been verified successfully.")
+        except User.DoesNotExist:
+            messages.error(request, "Invalid verification link.")
+
+        return redirect('authentication:login')

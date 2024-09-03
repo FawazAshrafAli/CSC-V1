@@ -153,7 +153,7 @@ class SearchCscCenterView(HomePageView, ListView):
         context = self.get_context_data(**kwargs)
 
         if pincode:
-            centers = CscCenter.objects.filter(zipcode = pincode)
+            centers = CscCenter.objects.filter(zipcode = pincode, is_active = True)
             context['pincode'] = pincode
 
             if len(centers) > 0 or (not state and not district and not block):
@@ -180,6 +180,7 @@ class SearchCscCenterView(HomePageView, ListView):
             except Http404:
                 pass
 
+        kwargs['is_active'] = True
         centers = CscCenter.objects.filter(**kwargs)
 
         if block:
@@ -278,7 +279,7 @@ class NearMeCscCenterView(BaseHomeView, View):
                     })
 
                     if county:
-                        centers = CscCenter.objects.filter(block__block = county)
+                        centers = CscCenter.objects.filter(block__block = county, is_active = True)
                         context['centers'] = centers
                         return render(request, self.template_name, context)
                     

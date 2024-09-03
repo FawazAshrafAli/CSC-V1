@@ -26,72 +26,80 @@
     </div>
 </div>
 
-<!-- Content -->
-<div class="row">
 
-    <!-- Item -->
-    {% comment %} <div class="col-lg-3 col-md-6">
-        <div class="dashboard-stat color-1">
-            <div class="dashboard-stat-content"><h4 id="services-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Services</span></div>
-            <div class="dashboard-stat-icon"><i class="fa fa-handshake"></i></div>
-        </div>
-    </div>
-
-    <!-- Item -->
-    <div class="col-lg-3 col-md-6">
-        <div class="dashboard-stat color-2">
-            <div class="dashboard-stat-content"><h4 id="products-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Products</span></div>
-            <div class="dashboard-stat-icon"><i class="fa fa-box"></i></div>
-        </div>
-    </div> {% endcomment %}
-
+<div id="home-content">
+    {% if center %}
+    <!-- Content -->
+    <div class="row">
     
-    <!-- Item -->
-    <div class="col-lg-6 col-md-6">
-        <div class="dashboard-stat color-3">
-            <div class="dashboard-stat-content"><h4 id="service-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Service Enquiries</span></div>
-            <div class="dashboard-stat-icon"><i class="fa fa-question-circle"></i></div>
+        <!-- Item -->
+        {% comment %} <div class="col-lg-3 col-md-6">
+            <div class="dashboard-stat color-1">
+                <div class="dashboard-stat-content"><h4 id="services-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Services</span></div>
+                <div class="dashboard-stat-icon"><i class="fa fa-handshake"></i></div>
+            </div>
+        </div>
+    
+        <!-- Item -->
+        <div class="col-lg-3 col-md-6">
+            <div class="dashboard-stat color-2">
+                <div class="dashboard-stat-content"><h4 id="products-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Products</span></div>
+                <div class="dashboard-stat-icon"><i class="fa fa-box"></i></div>
+            </div>
+        </div> {% endcomment %}
+    
+        <!-- Item -->
+        <div class="col-lg-6 col-md-6">
+            <div class="dashboard-stat color-3">
+                <div class="dashboard-stat-content"><h4 id="service-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Service Enquiries</span></div>
+                <div class="dashboard-stat-icon"><i class="fa fa-question-circle"></i></div>
+            </div>
+        </div>
+    
+        <!-- Item -->
+        <div class="col-lg-6 col-md-6">
+            <div class="dashboard-stat color-4">
+                <div class="dashboard-stat-content"><h4 id="product-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Product Enquiries</span></div>
+                <div class="dashboard-stat-icon"><i class="fa fa-cart-plus"></i></div>
+            </div>
         </div>
     </div>
-
-    <!-- Item -->
-    <div class="col-lg-6 col-md-6">
-        <div class="dashboard-stat color-4">
-            <div class="dashboard-stat-content"><h4 id="product-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Product Enquiries</span></div>
-            <div class="dashboard-stat-icon"><i class="fa fa-cart-plus"></i></div>
+    
+    
+    <div class="row">
+    
+        <!-- Recent Activity -->
+        <div class="col-lg-6 col-md-12">
+            <div class="dashboard-list-box with-icons margin-top-20">
+                <h4>Service Enquiries</h4>
+                <ul id="service-enquiries">
+                    <li>Loading . . .</li>
+                </ul>
+            </div>
+        </div>
+    
+        <!-- Invoices -->
+        <div class="col-lg-6 col-md-12">
+            <div class="dashboard-list-box invoices with-icons margin-top-20">
+                <h4>Product Enquiries</h4>
+                <ul id="product-enquiries">
+                    <li>Loading . . .</li>
+                </ul>
+            </div>
         </div>
     </div>
+    {% else %}
+    <h3 style="color:red;">Your current csc center is not yet activated.</h3>
+    {% endif %}
 </div>
-
-
 <div class="row">
-    
-    <!-- Recent Activity -->
-    <div class="col-lg-6 col-md-12">
-        <div class="dashboard-list-box with-icons margin-top-20">
-            <h4>Service Enquiries</h4>
-            <ul id="service-enquiries">
-                <li>Loading . . .</li>                
-            </ul>
-        </div>
-    </div>
-    
-    <!-- Invoices -->
-    <div class="col-lg-6 col-md-12">
-        <div class="dashboard-list-box invoices with-icons margin-top-20">
-            <h4>Product Enquiries</h4>
-            <ul id="product-enquiries">
-                <li>Loading . . .</li>                              
-            </ul>
-        </div>
-    </div>
-
-
     <!-- Copyrights -->
     <div class="col-md-12">
         <div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
     </div>
 </div>
+
+
 {% endblock content %}
 
 {% block scripts %}
@@ -102,7 +110,7 @@
                 {% if service_enquiries|length > 0 %}
                 {% for service_enquiry in service_enquiries %}
                 <li>
-                    <i class="list-box-icon sl sl-icon-layers"></i><a href="{{service_enquiry.get_absolute_url}}"> <strong>{{service_enquiry.applicant_name}}</strong> enquired about <strong>{{service_enquiry.service.first_name}}</strong>!</a>
+                    <i class="list-box-icon sl sl-icon-layers"></i><a href="#"> <strong>{{service_enquiry.applicant_name}}</strong> enquired about <strong>{{service_enquiry.service.first_name}}</strong>!</a>
                     <a href="#" class="close-list-item" onclick="markServiceEnquiryViewed('{{service_enquiry.slug}}')"><i class="fa fa-close"></i></a>
                 </li>
                 {% endfor %}
@@ -117,7 +125,7 @@
                 {% if product_enquiries %}
                 {% for product_enquiry in product_enquiries %}
                 <li>
-                    <i class="list-box-icon sl sl-icon-layers"></i><a href="{{product_enquiry.get_absolute_url}}"> <strong>{{product_enquiry.applicant_name}}</strong> is interested in <strong>{{product_enquiry.product.name}}</strong>!</a>
+                    <i class="list-box-icon sl sl-icon-layers"></i><a href="#"> <strong>{{product_enquiry.applicant_name}}</strong> is interested in <strong>{{product_enquiry.product.name}}</strong>!</a>
                     <a href="#" class="close-list-item" onclick="markProductEnquiryViewed('{{product_enquiry.slug}}');"><i class="fa fa-close"></i></a>
                 </li>
                 {% endfor %}
@@ -141,53 +149,119 @@
 
             $.ajax({
                 type: 'get',
-                url: '/users/get_center_datas/',
+                url: '/users/get_center_data/',
                 dataType: 'json',
                 data: {'center_slug': center},
-                success: response => {
-                    $('#services-count').html(`${response.services_count ? response.services_count : '{{csc_center.services.all|length}}' }`);
-                    $('#products-count').html(`${response.products_count ? response.products_count : '{{csc_center.products.all|length}}' }`)
+                success: response => {                    
+                    if (!response.csc_center){
+                        $('#home-content').html('<h3 style="color:red;">Your current csc center is not yet activated.</h3>');
+                    };
+                    if (response.csc_center) {
+                        $('#home-content').html(`
+                            <div class="row">
+        
+                                <!-- Item -->
+                                {% comment %} <div class="col-lg-3 col-md-6">
+                                    <div class="dashboard-stat color-1">
+                                        <div class="dashboard-stat-content"><h4 id="services-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Services</span></div>
+                                        <div class="dashboard-stat-icon"><i class="fa fa-handshake"></i></div>
+                                    </div>
+                                </div>
+                            
+                                <!-- Item -->
+                                <div class="col-lg-3 col-md-6">
+                                    <div class="dashboard-stat color-2">
+                                        <div class="dashboard-stat-content"><h4 id="products-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Products</span></div>
+                                        <div class="dashboard-stat-icon"><i class="fa fa-box"></i></div>
+                                    </div>
+                                </div> {% endcomment %}
+                            
+                                <!-- Item -->
+                                <div class="col-lg-6 col-md-6">
+                                    <div class="dashboard-stat color-3">
+                                        <div class="dashboard-stat-content"><h4 id="service-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Service Enquiries</span></div>
+                                        <div class="dashboard-stat-icon"><i class="fa fa-question-circle"></i></div>
+                                    </div>
+                                </div>
+                            
+                                <!-- Item -->
+                                <div class="col-lg-6 col-md-6">
+                                    <div class="dashboard-stat color-4">
+                                        <div class="dashboard-stat-content"><h4 id="product-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Product Enquiries</span></div>
+                                        <div class="dashboard-stat-icon"><i class="fa fa-cart-plus"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            
+                            <div class="row">
+                            
+                                <!-- Recent Activity -->
+                                <div class="col-lg-6 col-md-12">
+                                    <div class="dashboard-list-box with-icons margin-top-20">
+                                        <h4>Service Enquiries</h4>
+                                        <ul id="service-enquiries">
+                                            <li>Loading . . .</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            
+                                <!-- Invoices -->
+                                <div class="col-lg-6 col-md-12">
+                                    <div class="dashboard-list-box invoices with-icons margin-top-20">
+                                        <h4>Product Enquiries</h4>
+                                        <ul id="product-enquiries">
+                                            <li>Loading . . .</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        `)
 
-                    $('#service-enquiries-count').html(`${response.service_enquiries_count ? response.service_enquiries_count : 0}`);
-                    $('#product-enquiries-count').html(`${response.product_enquiries_count ? response.product_enquiries_count : 0}`)
+                        $('#services-count').html(`${response.services_count ? response.services_count : '{{csc_center.services.all|length}}' }`);
+                        $('#products-count').html(`${response.products_count ? response.products_count : '{{csc_center.products.all|length}}' }`)
 
-                    if (response.service_enquiries) {
-                        if (response.service_enquiries.length == 0) {
-                            $('#service-enquiries').html('<li>No new service enquiries.</li>');
+                        $('#service-enquiries-count').html(`${response.service_enquiries_count ? response.service_enquiries_count : 0}`);
+                        $('#product-enquiries-count').html(`${response.product_enquiries_count ? response.product_enquiries_count : 0}`)
+
+                        if (response.service_enquiries) {
+                            if (response.service_enquiries.length == 0) {
+                                $('#service-enquiries').html('<li>No new service enquiries.</li>');
+                            } else {
+                                $('#service-enquiries').html('');
+                                response.service_enquiries.forEach(service_enquiry => {
+                                    let html = `
+                                        <li>
+                                            <i class="list-box-icon fa fa-question-circle"></i><a href="${service_enquiry.get_absolute_url}"> <strong>${service_enquiry.applicant_name}</strong> enquired about <strong>${service_enquiry.service}</strong>!</a>
+                                            <a href="#" class="close-list-item" onclick="markServiceEnquiryViewed('${service_enquiry.slug}');"><i class="fa fa-close"></i></a>
+                                        </li>
+                                    `
+                                    $('#service-enquiries').append(html)
+                                });
+                            }                            
                         } else {
-                            $('#service-enquiries').html('');
-                            response.service_enquiries.forEach(service_enquiry => {
-                                let html = `
-                                    <li>
-                                        <i class="list-box-icon fa fa-question-circle"></i><a href="${service_enquiry.get_absolute_url}"> <strong>${service_enquiry.applicant_name}</strong> enquired about <strong>${service_enquiry.service}</strong>!</a>
-                                        <a href="#" class="close-list-item" onclick="markServiceEnquiryViewed('${service_enquiry.slug}');"><i class="fa fa-close"></i></a>
-                                    </li>
-                                `
-                                $('#service-enquiries').append(html)
-                            });
-                        }                            
-                    } else {
-                        defaultServiceEnquiries();
-                    }
-
-                    if (response.product_enquiries) {
-                        if (response.product_enquiries.length == 0) {
-                            $('#product-enquiries').html('<li>No new product enquiries.</li>');
-                        } else {
-                            $('#product-enquiries').html('');
-                            response.product_enquiries.forEach(product_enquiry => {
-                                let html = `
-                                    <li>
-                                        <i class="list-box-icon fa fa-cart-plus"></i><a href="${product_enquiry.get_absolute_url}"> <strong>${product_enquiry.applicant_name}</strong> is interested in <strong>${product_enquiry.product}</strong>!</a>
-                                        <a href="#" class="close-list-item" onclick="markProductEnquiryViewed('${product_enquiry.slug}');"><i class="fa fa-close"></i></a>
-                                    </li>
-                                `
-                                $('#product-enquiries').append(html)
-                            });
+                            defaultServiceEnquiries();
                         }
-                        
-                    } else {
-                        defaultProductEnquiries();
+
+                        if (response.product_enquiries) {
+                            if (response.product_enquiries.length == 0) {
+                                $('#product-enquiries').html('<li>No new product enquiries.</li>');
+                            } else {
+                                $('#product-enquiries').html('');
+                                response.product_enquiries.forEach(product_enquiry => {
+                                    let html = `
+                                        <li>
+                                            <i class="list-box-icon fa fa-cart-plus"></i><a href="${product_enquiry.get_absolute_url}"> <strong>${product_enquiry.applicant_name}</strong> is interested in <strong>${product_enquiry.product}</strong>!</a>
+                                            <a href="#" class="close-list-item" onclick="markProductEnquiryViewed('${product_enquiry.slug}');"><i class="fa fa-close"></i></a>
+                                        </li>
+                                    `
+                                    $('#product-enquiries').append(html)
+                                });
+                            }
+                            
+                        } else {
+                            defaultProductEnquiries();
+                        }
                     }
 
                 },

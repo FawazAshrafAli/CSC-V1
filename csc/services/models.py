@@ -50,8 +50,6 @@ class ServiceEnquiry(models.Model):
     service = models.ForeignKey("services.Service", on_delete=models.CASCADE)
     message = models.TextField()
 
-    is_viewed = models.BooleanField(default= False)
-    
     slug = models.SlugField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -66,12 +64,7 @@ class ServiceEnquiry(models.Model):
                 self.slug = f"{base_slug}-{count}"
                 count += 1
         
-        return super().save(*args, **kwargs)
-    
-    @property
-    def get_absolute_url(self):
-        return reverse("users:service_enquiry", kwargs={"slug": self.slug})
-    
+        return super().save(*args, **kwargs)            
     
     def __str__(self):
         return f"From {self.applicant_email} to {self.csc_center.name}"

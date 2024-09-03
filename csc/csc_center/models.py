@@ -145,6 +145,8 @@ class CscCenter(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    is_active = models.BooleanField(default=False)
+
     def save(self, *args, **kwargs):
         self.generate_qr_code_image()
 

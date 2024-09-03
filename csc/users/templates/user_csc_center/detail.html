@@ -83,12 +83,19 @@
                         </div>
                     </div>
                     <div class="col-lg-8" id="csc-description-div">
-                        {% if center_obj.qr_code_image %}
                         <div style="display: flex; justify-content: right;">
+                            {% if center_obj.is_active %}
+                            {% if center_obj.qr_code_image %}
                             <img src="{{center_obj.qr_code_image.url}}" alt="QR code of {{center_obj.name}}" style="width: 90px;"> 
                             {% comment %} <img src="data:image/png;base64,{{ center_obj.qr_code }}" alt="QR code of {{center_obj.name}}" style="width: 90px;">  {% endcomment %}
-                        </div>
-                        {% endif %}
+                            {% endif %}
+
+                            {% else %}
+                            <div style="background: linear-gradient(to bottom, red, darkred); padding: 0 3px; max-width: fit-content; box-shadow: 1px 1px 5px #777; margin-right: 10px;">
+                                <span style="color: #fff; text-transform:uppercase;">Inactive</span>
+                            </div>
+                            {% endif %}
+                        </div>                 
                         <table id="csc-detail-table">
                             <tr>
                                 <th>Title</th>

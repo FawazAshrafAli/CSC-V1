@@ -44,97 +44,93 @@
 
 {% block content %}
 
-	<!-- Titlebar -->
-	<div id="titlebar">
-		<div class="row">
-			<div class="col-md-12">
-				<h2>My Posters</h2>
-				<!-- Breadcrumbs -->
-				<nav id="breadcrumbs">
-					<ul>
-						<li><a href="{% url 'users:home' %}">Home</a></li>						
-						<li>My Posters</li>
-					</ul>
-				</nav>
-			</div>
-		</div>
-		{% include "components/message.html" %}
-	</div>
-
-    <!-- Delete Confirmation Box Start-->
-    <div id="delete-confirmation-box" style="display: none;">
-        <div class="modal-content">            
-            <h4><span>Deleting</span> Poster: <span id="poster-name" style="color: black"></span> . . .</h4>
-            <h5>Are you sure?</h5>                        
-        </div>
-        <br>
-        <form method="GET" action="#">
-            <button type="submit" id="confirm-deletion-btn">Delete</button>
-            <button class="cancel-btn" type="button" id="cancel-deletion-btn">Cancel</button>
-        </form>
+<!-- Titlebar -->
+<div id="titlebar">
+  <div class="row">
+    <div class="col-md-12">
+      <h2>My Posters</h2>
+      <!-- Breadcrumbs -->
+      <nav id="breadcrumbs">
+        <ul>
+          <li><a href="{% url 'users:home' %}">Home</a></li>						
+          <li>My Posters</li>
+        </ul>
+      </nav>
     </div>
-    <!-- Delete Confirmation Box Start-->
+  </div>
+  {% include "components/message.html" %}
+</div>
 
-	<div class="row">
+  <!-- Delete Confirmation Box Start-->
+  <div id="delete-confirmation-box" style="display: none;">
+      <div class="modal-content">            
+          <h4><span>Deleting</span> Poster: <span id="poster-name" style="color: black"></span> . . .</h4>
+          <h5>Are you sure?</h5>                        
+      </div>
+      <br>
+      <form method="GET" action="#">
+          <button type="submit" id="confirm-deletion-btn">Delete</button>
+          <button class="cancel-btn" type="button" id="cancel-deletion-btn">Cancel</button>
+      </form>
+  </div>
+  <!-- Delete Confirmation Box Start-->
 
-		<!-- Listings -->
-		<div class="col-lg-12 col-md-12">
-			<div class="dashboard-list-box margin-top-0" style="background-color: #fff;">        
-				<h4>My Posters</h4>
-				<br>
-				<table id="poster-table">
-					<thead>
-						<tr>
-							<th>No</th>
-							<th id="th-image">Image</th>
-							<th style="text-align:center">Title</th>
-							<th></th>
-						</tr>
-					</thead>
-					<tbody id="poster-tbody">
-						{% for poster in posters %}
-						<tr class="poster-items" onclick="window.location='{% url 'users:my_poster' poster.slug %}'">
-							<td>{{ forloop.counter }}</td>
-							<td id="td-image">
-								<img src="{% if poster.poster %} {{poster.poster.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
-							</td>
-							<td style="text-align:center">{{ poster.title }}</td>
-							<td style="text-align: right; padding-right: 10px;"><button type="button" class="button gray" onclick="event.stopPropagation(); togglePosterDeletion(`{{poster.slug}}`, `{{poster.title}}`)"><i class="sl sl-icon-plus"></i> Delete</button></td>
-						</tr>
-						{% endfor %}
-					</tbody>
-				</table>                        				
-			</div>
-			<!-- Pagination -->
-			<div class="clearfix"></div>
-			<div class="row" id="pagination-row">
-			  <div class="col-md-12">
-				<!-- Pagination -->
-				<div class="pagination-container margin-top-20 margin-bottom-40">
-				  <nav class="pagination" id="pagination-nav">
-					<ul>
-					  <li>
-						<a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
-					  </li>                
-					  <li><a href="#" id="first-page">1</a></li>
-					  <li><a href="#" id="second-page">2</a></li>
-					  <li><a href="#" id="third-page" >3</a></li>
-					  <li>
-						<a href="#" class="next-page" id="next-page"><i class="sl sl-icon-arrow-right"></i></a>
-					  </li>
-					</ul>
-				  </nav>
-				</div>
-			  </div>
-			</div>
-		</div>
-
-
-		<!-- Copyrights -->
-		<div class="col-md-12">
-			<div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
-		</div>
-	</div>
+<div id="poster-content">
+  {% if posters %}
+  <div class="row">
+    <!-- Listings -->
+    <div class="col-lg-12 col-md-12">
+      <div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
+        <h4>My Posters</h4>
+        <br>
+        <table id="poster-table">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th id="th-image">Image</th>
+              <th style="text-align:center">Title</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="poster-tbody">            
+            <tr><td colspan="4" style="text-align:center">Loading . . .</td></tr>            
+          </tbody>
+        </table>
+      </div>
+      <!-- Pagination -->
+      <div class="clearfix"></div>
+      <div class="row" id="pagination-row">
+        <div class="col-md-12">
+          <!-- Pagination -->
+          <div class="pagination-container margin-top-20 margin-bottom-40">
+            <nav class="pagination" id="pagination-nav">
+              <ul>
+                <li>
+                  <a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
+                </li>
+                <li><a href="#" id="first-page">1</a></li>
+                <li><a href="#" id="second-page">2</a></li>
+                <li><a href="#" id="third-page" >3</a></li>
+                <li>
+                  <a href="#" class="next-page" id="next-page"><i class="sl sl-icon-arrow-right"></i></a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <h3 style="color:red;">Your current csc center is not yet activated.</h3>
+  {% endif %}
+</div>
+<div class="row">
+  <!-- Copyrights -->
+  <div class="col-md-12">
+    <div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
+  </div>
+</div>
 
 {% endblock content %}
 
@@ -162,20 +158,71 @@
           dataType: 'json',
           data: {'center_slug': center},
           success: response => {
-            $('#poster-tbody').html('');
-                      $(`#center-dropdown option[value='${center}']`).prop('selected', true).trigger('chosen:updated');
+            if (response.csc_center) {
+              $('#posters-content').html(`
+                <div class="row">
+                  <!-- Listings -->
+                  <div class="col-lg-12 col-md-12">
+                    <div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
+                      <h4>My Posters</h4>
+                      <br>
+                      <table id="poster-table">
+                        <thead>
+                          <tr>
+                            <th>No</th>
+                            <th id="th-image">Image</th>
+                            <th style="text-align:center">Title</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody id="poster-tbody">
+                          
+                          <tr><td colspan="4" style="text-align:center">Loading . . .</td></tr>
+                          
+                        </tbody>
+                      </table>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="clearfix"></div>
+                    <div class="row" id="pagination-row">
+                      <div class="col-md-12">
+                      <!-- Pagination -->
+                      <div class="pagination-container margin-top-20 margin-bottom-40">
+                        <nav class="pagination" id="pagination-nav">
+                          <ul>
+                            <li>
+                              <a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
+                            </li>
+                            <li><a href="#" id="first-page">1</a></li>
+                            <li><a href="#" id="second-page">2</a></li>
+                            <li><a href="#" id="third-page" >3</a></li>
+                            <li>
+                              <a href="#" class="next-page" id="next-page"><i class="sl sl-icon-arrow-right"></i></a>
+                            </li>
+                          </ul>
+                        </nav>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `);
+              $('#poster-tbody').html('');
+              $(`#center-dropdown option[value='${center}']`).prop('selected', true).trigger('chosen:updated');
 
-            response.posters.forEach(poster => {
-              let html = `<tr class="poster-items" onclick="window.location='${poster.get_absolute_url}'">
-							<td>${ poster.count }</td>
-							<td id="td-image">
-								<img src="${poster.poster ? poster.poster : '/static/w3/images/no_image.png'}" alt="Product Image">
-							</td>
-							<td style="text-align:center">${ poster.title }</td>
-							<td style="text-align: right; padding-right: 10px;"><button type="button" class="button gray" onclick="event.stopPropagation(); togglePosterDeletion('${poster.slug}', '${poster.title}')"><i class="sl sl-icon-plus"></i> Delete</button></td>
-						</tr>`
-              $('#poster-tbody').append(html);
-            })
+              response.posters.forEach(poster => {
+                let html = `<tr class="poster-items" onclick="window.location='${poster.get_absolute_url}'">
+                <td>${ poster.count }</td>
+                <td id="td-image">
+                  <img src="${poster.poster ? poster.poster : '/static/w3/images/no_image.png'}" alt="Product Image">
+                </td>
+                <td style="text-align:center">${ poster.title }</td>
+                <td style="text-align: right; padding-right: 10px;"><button type="button" class="button gray" onclick="event.stopPropagation(); togglePosterDeletion('${poster.slug}', '${poster.title}')"><i class="sl sl-icon-plus"></i> Delete</button></td>
+              </tr>`
+                $('#poster-tbody').append(html);
+              })
+            } else {
+              $('#poster-content').html('<h3 style="color:red;">Your current csc center is not yet activated.</h3>')
+            }
           },
           error: error => console.error("Error: ", error),
         })
@@ -184,19 +231,22 @@
       const center =  localStorage.getItem('centerSlug');
       const user = localStorage.getItem('cscUser');
 
-      if (user == `{{request.user.username}}`) {
-              if ($('#center-dropdown').val() != center) {
-                  getPosters(center);
-              }
-      }
-
-      $('#center-dropdown').on('change', function () {
-        const center = $(this).val();
-        localStorage.setItem('centerSlug', center)
-        localStorage.setItem('cscUser', `{{request.user.username}}`)
-
+      if (user == `{{request.user.username}}` && center) {      
         getPosters(center);
-      });
+      } else {
+        $('#poster-tbody').html(`
+        {% for poster in posters %}
+            <tr class="poster-items" onclick="window.location='{% url 'users:my_poster' poster.slug %}'">
+              <td>{{ forloop.counter }}</td>
+              <td id="td-image">
+                <img src="{% if poster.poster %} {{poster.poster.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
+              </td>
+              <td style="text-align:center">{{ poster.title }}</td>
+              <td style="text-align: right; padding-right: 10px;"><button type="button" class="button gray" onclick="event.stopPropagation(); togglePosterDeletion('{{poster.slug}}', '{{poster.title}}')"><i class="sl sl-icon-plus"></i> Delete</button></td>
+            </tr>
+          {% endfor %}
+        `)
+      }
 
         // Pagination
       function paginator () {

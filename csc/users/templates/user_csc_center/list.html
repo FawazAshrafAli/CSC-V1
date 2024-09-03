@@ -78,7 +78,8 @@
 						<tr>
 							<th>No</th>
 							<th id="th-image">Image</th>
-							<th>CSC Center</th>
+							<th style="text-align:center">CSC Center</th>
+              <th style="text-align:center">Status</th>
 							<th></th>
 						</tr>
 					</thead>
@@ -89,7 +90,8 @@
 							<td id="td-image">
 								<img src="{% if center.logo %} {{center.logo.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
 							</td>
-							<td>{{ center.full_name }}</td>
+							<td style="text-align:center">{{ center.full_name }}</td>
+              <td style="text-align:center">{% if center.is_active %} <span style="color:green;">Active</span> {% else %} <span style="color:red;">Inactive</span> {% endif %}</td>
 							<td><a href="{% url 'users:update_csc' center.slug %}" class="button gray">Update</a></td>
 						</tr>
 						{% endfor %}

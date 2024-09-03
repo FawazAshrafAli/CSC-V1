@@ -2,11 +2,9 @@ from django.urls import path
 from .views import (
     HomeView, 
     
-    ServiceEnquiryListView, DeleteServiceEnquiryView,
-    ServiceEnquiryDetailView, MarkServiceEnquiryAsViewedView,
+    ServiceEnquiryListView, DeleteServiceEnquiryView,    
     
     ProductEnquiryListView, DeleteProductEnquiryView, 
-    ProductEnquiryDetailView, MarkProductEnquiryAsViewedView,
     
     CscCenterListView, AddCscCenterView, DetailCscCenterView, 
     UpdateCscCenterView, SavePosterView, GetCurrentCscCenterView,
@@ -25,14 +23,10 @@ urlpatterns = [
     path('', HomeView.as_view(), name='home'),
 
     path('service_enquiries/', ServiceEnquiryListView.as_view(), name="service_enquiries"),
-    path('delete_service_enquiry/<str:slug>', DeleteServiceEnquiryView.as_view(), name="delete_service_enquiry"),
-    path('service_enquiry/<str:slug>', ServiceEnquiryDetailView.as_view(), name="service_enquiry"),
-    path('viewed_service_enquiry/<str:slug>', MarkServiceEnquiryAsViewedView.as_view(), name="viewed_service_enquiry"),
+    path('delete_service_enquiry/<str:slug>', DeleteServiceEnquiryView.as_view(), name="delete_service_enquiry"),    
 
     path('product_enquiries/', ProductEnquiryListView.as_view(), name="product_enquiries"),
-    path('delete_product_enquiry/<str:slug>', DeleteProductEnquiryView.as_view(), name="delete_product_enquiry"),
-    path('product_enquiry/<str:slug>', ProductEnquiryDetailView.as_view(), name="product_enquiry"),
-    path('viewed_product_enquiry/<str:slug>', MarkProductEnquiryAsViewedView.as_view(), name="viewed_product_enquiry"),
+    path('delete_product_enquiry/<str:slug>', DeleteProductEnquiryView.as_view(), name="delete_product_enquiry"),    
 
     path('available_posters/', AvailablePosterView.as_view(), name="available_posters"),
     path('my_posters/', MyPosterListView.as_view(), name="my_posters"),

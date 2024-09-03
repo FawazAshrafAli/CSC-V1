@@ -10,6 +10,10 @@ class User(AbstractUser):
     facebook = models.URLField(max_length=150, null=True, blank=True)
     google = models.URLField(max_length=150, null=True, blank=True)
 
+    email_verified = models.BooleanField(default=False)
+    verification_token = models.CharField(max_length=64, blank=True, null=True)
+    
+
 
     @property
     def full_name(self):

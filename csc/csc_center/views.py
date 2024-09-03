@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import CreateView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from datetime import datetime
 from django.http import Http404
@@ -13,12 +13,11 @@ from authentication.models import User
 
 class AddCscCenterView(CreateView):
     template_name = 'csc_center/add.html'
-    success_url = reverse_lazy('csc_center:add_csc')
+    success_url = reverse_lazy('authentication:login')
     redirect_url = success_url
     fields = "__all__"
     
     def get_context_data(self, **kwargs):
-        # context = super().get_context_data(**kwargs)
         context = {}
         context['name_types'] = CscNameType.objects.all().order_by('type')
         context['keywords'] = CscKeyword.objects.all().order_by('keyword')
@@ -145,12 +144,7 @@ class AddCscCenterView(CreateView):
             fri_closing_time = fri_closing_time,sat_closing_time = sat_closing_time,
             sun_closing_time = sun_closing_time, latitude = latitude,
             longitude = longitude
-        )
-
-        if not User.objects.filter(email = email).exists():
-            User.objects.create_user(username = email, email = email, password = contact_number)
-
-        messages.success(request, "Added CSC center")      
+        )                
         
         # after creation of object
         self.object.keywords.set(keywords)
@@ -173,5 +167,12 @@ class AddCscCenterView(CreateView):
                 
                     self.object.social_media_links.set(social_media_list)
                     self.object.save()
+
+
+        if not User.objects.filter(email = email).exists():
+            # return redirect(UserRegistrationView, context = {'center': self.object})
+            return redirect(reverse('authentication:user_registration', kwargs={'email': self.object.email}))
+        
+        messages.success(request, "Added CSC center")      
         
         return redirect(self.success_url)
