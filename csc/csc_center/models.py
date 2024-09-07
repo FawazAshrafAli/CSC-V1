@@ -88,6 +88,13 @@ class SocialMediaLink(models.Model):
 
     def __str__(self):
         return f"{self.social_media_name} for {self.csc_center_id.name}"
+    
+
+class Banner(models.Model):
+    csc_center_id = models.ForeignKey('CscCenter', on_delete=models.CASCADE, related_name = "banner_csc_center")
+    banner_image = models.ImageField(upload_to='csc_center_banners/')
+    
+
 
 class CscCenter(models.Model):
     qr_code_image = models.ImageField(upload_to='csc_qr_codes/', blank=True, null=True)
@@ -146,6 +153,8 @@ class CscCenter(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     is_active = models.BooleanField(default=False)
+
+    status = models.CharField(max_length=100, default="Not Viewed")
 
     def save(self, *args, **kwargs):
         self.generate_qr_code_image()

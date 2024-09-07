@@ -242,7 +242,7 @@
 
 						<li><a href="{% url 'csc_admin:home' %}" {% if home_page %} class="current" {% endif %}>Home</a></li>
 
-						<li><a href="{% url 'csc_admin:csc_centers' %}" {% if csc_center_page %} class="current" {% endif %}>CSC Centers</a></li>
+						<li><a href="{% url 'csc_admin:csc_center_requests' %}" {% if csc_center_page %} class="current" {% endif %}>CSC Centers</a></li>
 
 						<li><a href="{% url 'csc_admin:blogs' %}" {% if blog_page %} class="current" {% endif %}>Blog</a></li>
 
@@ -308,8 +308,13 @@
 				<li {% if home_page %} class="active" {% endif %}><a href="{% url 'csc_admin:home' %}"><i class="sl sl-icon-home"></i> Home</a></li>
 				<li {% if csc_center_page %} class="active" {% endif %}><a><i class="fa fa-building"></i> CSC Centers</a>
 					<ul>
+                        <li><a href="{% url 'csc_admin:csc_center_requests' %}">CSC Center Requests</a></li>
 						<li><a href="{% url 'csc_admin:csc_centers' %}">List CSC Center</a></li>
-						<li><a href="{% url 'csc_admin:add_csc' %}">Add CSC Center</a></li>						
+                        <li><a href="{% url 'csc_admin:csc_owners' %}">List Owners</a></li>
+						<li><a href="{% url 'csc_admin:add_csc' %}">Add CSC Center</a></li>
+                        <li><a href="{% url 'csc_admin:approved_csc_centers' %}">Approved Center Requests</a></li>
+                        <li><a href="{% url 'csc_admin:returned_csc_centers' %}">Returned Center Requests</a></li>
+                        <li><a href="{% url 'csc_admin:rejected_csc_centers' %}">Rejected Center Requests</a></li>
 					</ul>	
 				</li>
 

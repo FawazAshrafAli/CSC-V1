@@ -364,8 +364,8 @@
 
 
 <!-- Typed Script -->
-<script type="text/javascript" src="{% static 'scripts/typed.js' %}"></script>
-<script>
+{% comment %} <script type="text/javascript" src="{% static 'scripts/typed.js' %}"></script> {% endcomment %}
+{% comment %} <script>
 var typed = new Typed('.typed-words', {
 strings: ["FSSAI Registration","MSME Registration","Passport Registration","Trademark Registration"],
 	typeSpeed: 80,
@@ -375,7 +375,7 @@ strings: ["FSSAI Registration","MSME Registration","Passport Registration","Trad
 	loop: true,
 	showCursor: true
 });
-</script>
+</script> {% endcomment %}
 
 
 
@@ -384,13 +384,13 @@ strings: ["FSSAI Registration","MSME Registration","Passport Registration","Trad
     $(window).on('load', function() { $('.msps-shapes').addClass('shapes-animation'); });
 </script>
  
-<script src="{% static 'scripts/parallax.min.js' %}"></script>
+{% comment %} <script src="{% static 'scripts/parallax.min.js' %}"></script> {% endcomment %}
 <script>
-const parent = document.getElementById('scene');
+{% comment %} const parent = document.getElementById('scene');
 const parallax = new Parallax(parent, {
   limitX: 50,
   limitY: 50,  
-});
+}); {% endcomment %}
  
  
 $('.msps-slider').slick({

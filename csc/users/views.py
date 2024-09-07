@@ -30,13 +30,14 @@ class BaseUserView(LoginRequiredMixin):
     login_url = reverse_lazy('authentication:login')
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)    
+        # context = super().get_context_data(**kwargs)
+        context = {}    
         try:            
             centers = CscCenter.objects.filter(email = self.request.user.email)
             context['centers'] = centers
-            context['center'] = centers[0] if centers[0].is_active else None
+            context['center'] = centers.first() if centers.first().is_active else None
             context['services_left'] = Service.objects.all()
-            context['user_csc_centers'] = CscCenter.objects.filter(email = self.request.user.email)
+            context['user_csc_centers'] = centers
 
         except Exception as e:
             print(e)
@@ -680,7 +681,7 @@ class UpdateCscCenterView(CscCenterBaseView, UpdateView):
 
 ###################### Posters ################################
 
-class BasePosterView(BaseUserView, View):
+class BasePosterView(BaseUserView):
     model = Poster
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -691,15 +692,37 @@ class BasePosterView(BaseUserView, View):
 
 
 class AvailablePosterView(BasePosterView, ListView):
-    queryset = Poster.objects.all()
+    model = Poster
+    queryset = model.objects.all()
     context_object_name = 'posters'
     template_name = "user_posters/available_list.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def get_queryset(self):
+        center = CscCenter.objects.filter(email = self.request.user.email, is_active = True).first()
+        if center:
+            return self.model.objects.all()
+        return None
+    
+    def get(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            data = {}
+            center_slug = request.GET.get('center_slug')
+            print(center_slug)
+            try:
+                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email, is_active = True)
+                data['csc_center'] = True if center else False
+                posters = self.model.objects.all() if center else None
+                if posters:
+                    list_posters = []
+                    for poster in posters:
+                        list_posters.append({"title": poster.title, "slug": poster.slug, "poster": poster.poster.url if poster.poster else None})
+                    data["posters"] = list_posters
+                # return JsonResponse(data)
+            except Http404:
+                data = {{'error': 'Not an active csc center'}}
 
-        context[f"{self.context_object_name}"] = self.queryset        
-        return context
+            return JsonResponse(data)
+        return super().get(request, *args, **kwargs)
 
 
 class MyPosterListView(BasePosterView, ListView):
@@ -735,7 +758,7 @@ class MyPosterListView(BasePosterView, ListView):
                         })
                 return JsonResponse({'posters': poster_list, 'csc_center': True if center else False})
             except Http404:
-                return JsonResponse({'error': 'Not an active csc center'})
+                return JsonResponse({'csc_center': False})
         return super().get(request, *args, **kwargs)
 
     
@@ -761,9 +784,11 @@ class MyPosterDetailView(BasePosterView, DetailView):
 
 
 class CreatePosterView(BasePosterView, CreateView):
+    model = Poster
     template_name = "user_posters/create.html"
     success_url = reverse_lazy('users:available_posters')
     redirect_url = success_url
+    fields = ["csc_center", "poster", "title", "description"]
 
     def get_object(self, **kwargs):
         try:

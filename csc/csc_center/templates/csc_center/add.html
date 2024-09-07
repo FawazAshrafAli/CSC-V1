@@ -3,6 +3,10 @@
 
 {% block title_prefix %}Add CSC{% endblock title_prefix %}
 
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.css">
+{% endblock styles %}
+
 {% block content %}
 <style>
     #add-csc-btns-div {
@@ -175,11 +179,15 @@
 							</div>
 							<div class="col-md-6">
 								<h5>Upload Banner</h5>
-								<input type="file" name="banner" required>
-							</div>
+								{% comment %} <input type="file" name="banner" required> {% endcomment %}
+
+								
+								<div action="/file-upload" class="dropzone" ></div>
+							</div>								
 						</div>
 					</div>
 					<!-- Section / End -->
+
 					<!-- Section -->
 					<div class="add-listing-section margin-top-45">
 						<!-- Headline -->
@@ -530,6 +538,41 @@
 {% endblock content %}
 
 {% block scripts %}
+
+<!-- DropZone | Documentation: http://dropzonejs.com -->
+{% comment %} <script type="text/javascript" src="{% static  'scripts/dropzone.js' %}"></script> {% endcomment %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
+
+<script>
+	Dropzone.options.fileDropzone = {
+        autoProcessQueue: false,  // Prevent Dropzone from automatically uploading the files
+        paramName: "file",  // The name that will be used to transfer the file
+        addRemoveLinks: true,
+
+        init: function() {
+            var myDropzone = this;
+
+            // Prevent default form submission and process Dropzone queue first
+            document.getElementById("add-csc-form").addEventListener("submit", function(e) {
+                e.preventDefault();  // Prevent default form submission
+
+                // Check if there are files to be uploaded
+                if (myDropzone.getQueuedFiles().length > 0) {
+                    myDropzone.processQueue();  // Process files in Dropzone
+                } else {
+                    this.submit();  // If no files, submit the form normally
+                }
+            });
+
+            // On file upload completion, submit the form
+            myDropzone.on("queuecomplete", function() {
+                document.getElementById("add-csc-form").submit();
+            });
+        }
+    };
+</script>
+
+
 <!-- Style Switcher
 ================================================== -->
 <script src="{% static 'scripts/switcher.js' %}"></script>
@@ -560,6 +603,7 @@
 
 </div>
 <!-- Style Switcher / End -->
+
 
 <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
 <!-- Map -->

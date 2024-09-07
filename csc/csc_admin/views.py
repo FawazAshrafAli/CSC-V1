@@ -23,10 +23,11 @@ from .forms import (
     )
 
 from products.models import Product, Category as ProductCategory
-from csc_center.models import CscCenter, State, District, Block, CscKeyword, CscNameType, SocialMediaLink, Image
+from csc_center.models import CscCenter, State, District, Block, CscKeyword, CscNameType, SocialMediaLink, Banner
 from services.models import Service
 from blog.models import Blog, Category, Tag
 from posters.models import Poster
+from .models import CscCenterAction
 
 class BaseAdminView(LoginRequiredMixin, View):
     login_url = reverse_lazy("authentication:login")
@@ -562,7 +563,7 @@ class DeleteProductCategoryView(BaseAdminView, View):
 ##################################### CSC CENTER START #####################################
 
 @method_decorator(never_cache, name="dispatch")
-class BaseAdminCscCenterView(BaseAdminView, View):
+class BaseAdminCscCenterView(BaseAdminView):
     model = CscCenter
 
     def get_context_data(self, **kwargs):
@@ -576,6 +577,217 @@ class BaseAdminCscCenterView(BaseAdminView, View):
         return context
 
 
+class ListCscCenterRequestView(BaseAdminCscCenterView, ListView):
+    queryset = CscCenter.objects.filter(is_active = False, status = "Not Viewed").order_by("-created")
+    template_name = 'admin_csc_center/request_list.html'
+    context_object_name = "csc_centers"
+
+
+class CscCenterRequestDetailView(BaseAdminCscCenterView, DetailView):
+    context_object_name = 'csc_center'
+    template_name = 'admin_csc_center/request_detail.html'
+    slug_url_kwarg = 'slug'
+
+
+class RejectCscCenterRequestView(BaseAdminCscCenterView, UpdateView):
+    success_url = reverse_lazy('csc_admin:csc_center_requests')
+    redirect_url = success_url
+    fields = ['status']
+
+    def get_redirect_url(self):
+        try:
+            self.object = self.get_object()
+            return reverse_lazy('csc_admin:csc_center_request', kwargs={'slug': self.object.slug}) if self.object else None
+        except Http404:
+            return redirect(self.redirect_url)    
+        except Exception as e:
+            print("Error: {e}")
+
+    def post(self, request, *args, **kwargs):
+        rejection_reason = request.POST.get('rejection_reason')
+        rejection_reason = rejection_reason.strip() if rejection_reason else None
+        self.object = self.get_object()
+
+        if rejection_reason:
+            self.object.status = "Rejected"
+            self.object.save()
+
+            CscCenterAction.objects.create(csc_center = self.object, rejection_reason = rejection_reason)
+            messages.success(request, "Request Rejected")
+            return redirect(self.get_success_url())
+        else:
+            messages.error(request, "Request rejection failed.")
+            return redirect(self.get_redirect_url())
+
+
+class ListRejectedCscCenterRequestView(BaseAdminCscCenterView, ListView):
+    model = CscCenterAction
+    queryset = model.objects.exclude(rejection_reason = "").order_by("-created")
+    template_name = 'admin_csc_center/rejected_list.html'
+    context_object_name = "csc_centers"
+
+
+class RejectedCscCenterRequestDetailView(BaseAdminCscCenterView, DetailView):
+    model = CscCenterAction
+    context_object_name = 'csc_center'
+    template_name = 'admin_csc_center/rejected_detail.html'
+    slug_url_kwarg = 'slug'
+
+
+class CancelCscCenterRejectionView(BaseAdminCscCenterView, UpdateView):
+    fields = ['status']
+    success_url = reverse_lazy('csc_admin:rejected_csc_centers')
+    redirect_url = success_url
+
+    def get_redirect_url(self):
+        try:
+            return reverse_lazy('csc_admin:rejected_csc_center', kwargs = {'slug' : self.kwargs.get('slug')})
+        except Http404:
+            return redirect(self.redirect_url)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+            self.object.status = "Not Viewed"
+            self.object.save()
+            try:
+                csc_center_action = get_object_or_404(CscCenterAction, csc_center__slug = self.kwargs.get('slug'))
+                csc_center_action.delete()
+            except Http404:
+                pass
+            messages.success(request, "Cancelled csc center request rejection")
+            return redirect(self.get_success_url())
+        except Exception as e:
+            print("Error: ", e)
+            messages.error(request, "Cancelling csc center request rejection failed")
+            return redirect(self.get_redirect_url())
+
+
+class ReturnCscCenterRequestView(BaseAdminCscCenterView, UpdateView):
+    success_url = reverse_lazy('csc_admin:csc_center_requests')
+    redirect_url = success_url
+    fields = ['status']
+
+    def get_redirect_url(self):
+        try:
+            self.object = self.get_object()
+            return reverse_lazy('csc_admin:csc_center_request', kwargs={'slug': self.object.slug}) if self.object else None
+        except Http404:
+            return redirect(self.redirect_url)    
+        except Exception as e:
+            print("Error: {e}")
+
+    def post(self, request, *args, **kwargs):
+        feedback = request.POST.get('feedback')
+        feedback = feedback.strip() if feedback else None
+        self.object = self.get_object()
+
+        if feedback:
+            self.object.status = "Returned"
+            self.object.save()
+
+            CscCenterAction.objects.create(csc_center = self.object, feedback = feedback)
+            messages.success(request, "Request Returned")
+            return redirect(self.get_success_url())
+        else:
+            messages.error(request, "Request returning failed.")
+            return redirect(self.get_redirect_url())
+
+
+class ListReturnedCscCenterRequestView(BaseAdminCscCenterView, ListView):
+    model = CscCenterAction
+    queryset = model.objects.exclude(feedback = "").order_by('-created')
+    template_name = 'admin_csc_center/returned_list.html'
+    context_object_name = "csc_centers"
+
+
+class ReturnedCscCenterRequestDetailView(BaseAdminCscCenterView, DetailView):
+    model = CscCenterAction
+    context_object_name = 'csc_center'
+    template_name = 'admin_csc_center/returned_detail.html'
+    slug_url_kwarg = 'slug'
+
+
+class CancelCscCenterReturnView(BaseAdminCscCenterView, UpdateView):
+    fields = ['status']
+    success_url = reverse_lazy('csc_admin:returned_csc_centers')
+    redirect_url = success_url
+
+    def get_redirect_url(self):
+        try:
+            return reverse_lazy('csc_admin:returned_csc_center', kwargs = {'slug' : self.kwargs.get('slug')})
+        except Http404:
+            return redirect(self.redirect_url)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+            self.object.status = "Not Viewed"
+            self.object.save()
+            try:
+                csc_center_action = get_object_or_404(CscCenterAction, csc_center__slug = self.kwargs.get('slug'))
+                csc_center_action.delete()
+            except Http404:
+                pass
+            messages.success(request, "Cancelled csc center request return")
+            return redirect(self.get_success_url())
+        except Exception as e:
+            print("Error: ", e)
+            messages.error(request, "Cancelling csc center request return failed")
+            return redirect(self.get_redirect_url())
+
+
+class ApproveCscCenterRequestView(BaseAdminCscCenterView, UpdateView):
+    success_url = reverse_lazy('csc_admin:csc_center_requests')
+    fields = ['status']
+
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        self.object.status = "Approved"
+        self.object.save()
+
+        messages.success(request, "Request Approved")
+        return redirect(self.get_success_url())
+    
+
+class ListApprovedCscCenterRequestView(BaseAdminCscCenterView, ListView):    
+    queryset = CscCenter.objects.filter(status = "Approved").order_by('-created')
+    template_name = 'admin_csc_center/approved_list.html'
+    context_object_name = "csc_centers"
+
+
+class ApprovedCscCenterRequestDetailView(BaseAdminCscCenterView, DetailView):    
+    context_object_name = 'csc_center'
+    template_name = 'admin_csc_center/approved_detail.html'
+    slug_url_kwarg = 'slug'
+
+
+class CancelCscCenterApprovalView(BaseAdminCscCenterView, UpdateView):
+    fields = ['status']
+    success_url = reverse_lazy('csc_admin:approved_csc_centers')
+    redirect_url = success_url
+
+    def get_redirect_url(self):
+        try:
+            return reverse_lazy('csc_admin:approved_csc_center', kwargs = {'slug' : self.kwargs.get('slug')})
+        except Http404:
+            return redirect(self.redirect_url)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+            self.object.status = "Not Viewed"
+            self.object.save()        
+            messages.success(request, "Cancelled csc center request approval")
+            return redirect(self.get_success_url())
+        except Exception as e:
+            print("Error: ", e)
+            messages.error(request, "Cancelling csc center request approval Failed")
+            return redirect(self.get_redirect_url())
+
+
 class ListCscCenterView(BaseAdminCscCenterView, ListView):
     template_name = "admin_csc_center/list.html"
     ordering = ['name']
@@ -584,11 +796,14 @@ class ListCscCenterView(BaseAdminCscCenterView, ListView):
 
     def get(self, request, *args, **kwargs):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            state = request.GET.get('state', None).strip()
-            district = request.GET.get('district', None).strip()
-            block = request.GET.get('block', None).strip()
+            state = request.GET.get('state', None)
+            state = state.strip() if state else None
 
-            print(f"{state}, {district}, {block}")
+            district = request.GET.get('district', None)
+            district = district.strip() if district else None
+
+            block = request.GET.get('block', None)
+            block = block.strip() if block else None
 
             if state and district and block:
                 kwargs = {'state__pk': state, 'district__pk': district, 'block__pk': block}
@@ -597,6 +812,7 @@ class ListCscCenterView(BaseAdminCscCenterView, ListView):
             elif state:
                 kwargs = {'state__pk': state}
 
+            kwargs['is_active'] = True
             center_list = []
             centers = CscCenter.objects.filter(**kwargs).order_by('name')
 
@@ -830,6 +1046,9 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         return context
     
     def post(self, request, *args, **kwargs):
+        files = request.FILES.getlist('file')
+        print(files if files else "no files")
+
         name = request.POST.get('name').strip()
         type = request.POST.get('type').strip()
         keywords = request.POST.getlist('keywords')
@@ -842,7 +1061,8 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         landmark_or_building_name = request.POST.get('landmark_or_building_name').strip()
         street = request.POST.get('address').strip()
         logo = request.FILES.get('logo') # dropzone
-        banner = request.FILES.get('banner') # dropzone
+        # banner = request.FILES.get('banner') # dropzone
+        banners = request.FILES.getlist('banner') # dropzone
         description = request.POST.get('description').strip()
         owner = request.POST.get('owner').strip()
         email = request.POST.get('email').strip()
@@ -920,6 +1140,10 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         
         self.object = self.get_object()
 
+        for uploaded_file in files:
+            self.object.banner = uploaded_file
+            self.object.save()
+
         self.object.name = name
         self.object.type = type
         self.object.state = state
@@ -934,9 +1158,10 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
             logo = self.object.logo
         self.object.logo = logo
 
-        if not banner:
-            banner = self.object.banner
-        self.object.banner = banner
+        if banners:
+            for banner in banners:
+                Banner.objects.create(csc_center = self.object, banner = banner)
+                
 
         self.object.description = description
         self.object.owner = owner
@@ -1072,6 +1297,54 @@ class RemoveSocialMediaLinkView(BaseAdminCscCenterView, UpdateView):
         self.object.save()
         
         return JsonResponse({'message': 'success'})
+    
+
+class CscOwnersListView(BaseAdminCscCenterView, ListView):
+    queryset = CscCenter.objects.all().order_by("owner")
+    template_name = "admin_csc_center/owners_list.html"
+    context_object_name = 'csc_centers'
+
+    def get_queryset(self):
+        try:
+            list_centers = self.queryset        
+            for center in self.queryset:
+                while list_centers.filter(email = center.email).count() > 1:
+                    removing_center_pk = list_centers.filter(email = center.email).last().pk
+                    list_centers = list_centers.exclude(pk = removing_center_pk)            
+            return list_centers
+        except Exception as e:
+            print("Error: ", e)
+
+    def get(self, request, *args, **kwargs):
+        list_centers = self.get_queryset()
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            kwargs = {}
+            data = {}
+
+            state = self.request.GET.get("state")
+            district = self.request.GET.get("district")
+            block = self.request.GET.get("block")
+
+            if state:
+                state = state.strip()
+                kwargs['state__pk'] = state
+                data['districts'] = list(District.objects.filter(state__pk = state).values('id', 'district'))
+
+                if district:
+                    district = district.strip()
+                    kwargs['district__pk'] = district
+                    data['blocks'] = list(Block.objects.filter(state__pk = state, district__pk = district).values('id', 'block'))
+
+                    if block:
+                        block = block.strip()
+                        kwargs['block__pk'] = block
+
+
+            data['csc_centers'] = list(list_centers.filter(**kwargs).values('owner', 'email', 'contact_number', 'mobile_number', 'whatsapp_number')) if kwargs else None            
+
+            return JsonResponse(data)
+        return super().get(request, *args, **kwargs)
+
 
 
 # Nuclear

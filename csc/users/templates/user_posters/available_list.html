@@ -69,67 +69,20 @@
 		{% endif %}
 	</div>
 
+<div id="poster-content">
+  {% if posters %}
+  <h3>Loading . . .</h3>
+  {% else %}
+  <h3 style="color:red;">Your current csc center is not yet activated.</h3>
+  {% endif %}
+</div>
 
-	<div class="row">
-
-		<!-- Listings -->
-		<div class="col-lg-12 col-md-12">
-			<div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
-				<h4>Available Posters</h4>
-				<br>
-				<table id="poster-table">
-					<thead>
-						<tr>
-							<th>No</th>
-							<th id="th-image">Image</th>
-							<th style="text-align:center">Title</th>
-							<th></th>
-						</tr>
-					</thead>          
-					<tbody id="poster-tbody">
-						{% for poster in posters %}
-						<tr class="poster-items" onclick="window.location='#'">
-							<td>{{ forloop.counter }}</td>
-							<td id="td-image">
-								<img src="{% if poster.poster %} {{poster.poster.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
-							</td>
-							<td style="text-align:center">{{ poster.title }}</td>
-							<td style="text-align: right; padding-right: 10px;"><a href="{% url 'users:create_poster' poster.slug %}" class="button gray"><i class="sl sl-icon-plus"></i> Create Poster</a></td>
-						</tr>
-						{% endfor %}
-					</tbody>
-				</table>                        				
-			</div>
-			<!-- Pagination -->
-			<div class="clearfix"></div>
-			<div class="row" id="pagination-row">
-			  <div class="col-md-12">
-				<!-- Pagination -->
-				<div class="pagination-container margin-top-20 margin-bottom-40">
-				  <nav class="pagination" id="pagination-nav">
-					<ul>
-					  <li>
-						<a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
-					  </li>                
-					  <li><a href="#" id="first-page">1</a></li>
-					  <li><a href="#" id="second-page">2</a></li>
-					  <li><a href="#" id="third-page" >3</a></li>
-					  <li>
-						<a href="#" class="next-page" id="next-page"><i class="sl sl-icon-arrow-right"></i></a>
-					  </li>
-					</ul>
-				  </nav>
-				</div>
-			  </div>
-			</div>
-		</div>
-
-
-		<!-- Copyrights -->
-		<div class="col-md-12">
-			<div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
-		</div>
-	</div>
+<div class="row">
+  <!-- Copyrights -->
+  <div class="col-md-12">
+    <div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
+  </div>
+</div>
 
 {% endblock content %}
 
@@ -147,12 +100,116 @@
 </script>
 
 <script>
-    $(document).ready(() => {
+  function defaultPosterView() {
+    $('#poster-content').html(`
+      <div class="row">
+        <!-- Listings -->
+        <div class="col-lg-12 col-md-12">
+          <div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
+            <h4>Available Posters</h4>
+            <br>
+            <table id="poster-table">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th id="th-image">Image</th>
+                  <th style="text-align:center">Title</th>
+                  <th></th>
+                </tr>
+              </thead>          
+              <tbody id="poster-tbody">
+                {% for poster in posters %}
+                <tr class="row-items" onclick="window.location='#'">
+                  <td>{{ forloop.counter }}</td>
+                  <td id="td-image">
+                    <img src="{% if poster.poster %} {{poster.poster.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
+                  </td>
+                  <td style="text-align:center">{{ poster.title }}</td>
+                  <td style="text-align: right; padding-right: 10px;"><a href="{% url 'users:create_poster' poster.slug %}" class="button gray"><i class="sl sl-icon-plus"></i> Create Poster</a></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>                        				
+          </div>
+          <!-- Pagination -->
+          <div class="clearfix"></div>
+          <div class="row" id="pagination-row">
+            <div class="col-md-12">
+            <!-- Pagination -->
+            <div class="pagination-container margin-top-20 margin-bottom-40">
+              <nav class="pagination" id="pagination-nav">
+              <ul>
+                <li>
+                <a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
+                </li>                
+                <li><a href="#" id="first-page">1</a></li>
+                <li><a href="#" id="second-page">2</a></li>
+                <li><a href="#" id="third-page" >3</a></li>
+                <li>
+                <a href="#" class="next-page" id="next-page"><i class="sl sl-icon-arrow-right"></i></a>
+                </li>
+              </ul>
+              </nav>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `)
+  }
+
+    $(document).ready(() => {      
+      function getAvalablePosters(center) {
+        $.ajax({
+          type: 'GET',
+          url: `/users/available_posters/`,
+          dataType: 'json',
+          data: {'center_slug': center},
+          success: response => {
+            if (response.csc_center) {
+              defaultPosterView();
+              if (response.posters) {
+                response.posters.forEach((poster, index) => {
+                  $('#poster-tbody').append(`
+                    <tr class="row-items">
+                      <td>${ index + 1 }</td>
+                      <td id="td-image">
+                        <img src="${ poster.poster ? poster.poster : '/static/w3/images/no_image.png'}" alt="Product Image">
+                      </td>
+                      <td style="text-align:center">${ poster.title }</td>
+                      <td style="text-align: right; padding-right: 10px;"><a href="/users/create_poster/${poster.slug}" class="button gray"><i class="sl sl-icon-plus"></i> Create Poster</a></td>
+                    </tr>
+                  `);
+                })
+              } 
+            } else {
+              $('#poster-content').html(`<h3 style="color:red;">Your current csc center is not yet activated.</h3>`);
+            }
+          },
+          error: error => {
+            console.error('Error: ', error);
+            defaultPosterView();
+          },
+        });
+      };
+
+      const center = localStorage.getItem('centerSlug');
+      const user = localStorage.getItem('cscUser');
+
+      console.log(center);
+
+      if (user == `{{request.user.email}}` && center != `{{center.slug}}` ) {
+        console.log("entered")
+        getAvalablePosters(center);
+      } else {
+        getAvalablePosters(`{{center.slug}}`);
+      }
+
         // Pagination
       function paginator () {
         let itemsPerPage = 10;
         let currentPage = 1;
-        let totalItems = $('.poster-items').length;
+        let totalItems = $('.row-items').length;
         let totalPages = Math.ceil(totalItems / itemsPerPage);
   
         $('.prev-page').hide();      
@@ -207,8 +264,8 @@
         paginationBtnVisibility();
   
         function renderPage(page) {
-            $('.poster-items').hide();
-            $('.poster-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
+            $('.row-items').hide();
+            $('.row-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
             $('#pagination a').removeClass('active');
             $('#pagination a').eq(page).addClass('active');
             $('.prev-page').toggleClass('disabled', page === 1);

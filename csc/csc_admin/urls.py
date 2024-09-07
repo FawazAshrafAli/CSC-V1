@@ -24,7 +24,18 @@ from .views import (
     AddCscCenterView, GetDistrictView, GetBlockView,
     ListCscCenterView, DetailCscCenterView, UpdateCscCenterView,
     DeleteCscCenterView, RemoveCscCenterLogoView, RemoveCscCenterBannerView,
-    RemoveSocialMediaLinkView,
+    RemoveSocialMediaLinkView, CscOwnersListView,
+    
+    ListCscCenterRequestView, CscCenterRequestDetailView,
+
+    RejectCscCenterRequestView, ListRejectedCscCenterRequestView, 
+    RejectedCscCenterRequestDetailView, CancelCscCenterRejectionView,
+    
+    ReturnCscCenterRequestView, ListReturnedCscCenterRequestView, 
+    ReturnedCscCenterRequestDetailView, CancelCscCenterReturnView,
+
+    ApproveCscCenterRequestView, ListApprovedCscCenterRequestView, 
+    ApprovedCscCenterRequestDetailView, CancelCscCenterApprovalView,
 
     PosterListView, CreatePosterView, PosterDetailView,
     DeletePosterView, UpdatePosterView,
@@ -89,6 +100,24 @@ urlpatterns = [
     path('update_poster/<str:slug>', UpdatePosterView.as_view(), name = "update_poster"),
     path('delete_poster/<str:slug>', DeletePosterView.as_view(), name = "delete_poster"),
 
+    path('csc_center_requests/', ListCscCenterRequestView.as_view(), name = "csc_center_requests"),
+    path('csc_center_request/<str:slug>', CscCenterRequestDetailView.as_view(), name = "csc_center_request"),
+
+    path('reject_csc_center_request/<str:slug>', RejectCscCenterRequestView.as_view(), name = "reject_csc_center_request"),
+    path('rejected_csc_centers/', ListRejectedCscCenterRequestView.as_view(), name = "rejected_csc_centers"),
+    path('rejected_csc_center/<str:slug>', RejectedCscCenterRequestDetailView.as_view(), name = "rejected_csc_center"),
+    path('cancel_csc_center_rejection/<str:slug>', CancelCscCenterRejectionView.as_view(), name = "cancel_csc_center_rejection"),
+
+    path('return_csc_center_request/<str:slug>', ReturnCscCenterRequestView.as_view(), name = "return_csc_center_request"),
+    path('returned_csc_centers/', ListReturnedCscCenterRequestView.as_view(), name = "returned_csc_centers"),
+    path('returned_csc_center/<str:slug>', ReturnedCscCenterRequestDetailView.as_view(), name = "returned_csc_center"),
+    path('cancel_csc_center_return/<str:slug>', CancelCscCenterReturnView.as_view(), name = "cancel_csc_center_return"),
+
+    path('approve_csc_center_request/<str:slug>', ApproveCscCenterRequestView.as_view(), name = "approve_csc_center_request"),
+    path('approved_csc_centers/', ListApprovedCscCenterRequestView.as_view(), name = "approved_csc_centers"),
+    path('approved_csc_center/<str:slug>', ApprovedCscCenterRequestDetailView.as_view(), name = "approved_csc_center"),
+    path('cancel_csc_center_approval/<str:slug>', CancelCscCenterApprovalView.as_view(), name = "cancel_csc_center_approval"),
+
     path('csc_centers/', ListCscCenterView.as_view(), name = "csc_centers"),
     path('add_csc/', AddCscCenterView.as_view(), name = "add_csc"),
     path('csc_center/<str:slug>', DetailCscCenterView.as_view(), name = "csc_center"),
@@ -97,6 +126,8 @@ urlpatterns = [
     path('remove_csc_logo/<str:slug>', RemoveCscCenterLogoView.as_view(), name = "remove_csc_logo"),
     path('remove_csc_banner/<str:slug>', RemoveCscCenterBannerView.as_view(), name = "remove_csc_banner"),
     path('remove_social_media_link/<str:slug>', RemoveSocialMediaLinkView.as_view(), name="remove_social_media_link"),
+
+    path('csc_owners/', CscOwnersListView.as_view(), name="csc_owners"),
 
     path('get_districts/', GetDistrictView.as_view(), name="get_districts"),
     path('get_blocks/', GetBlockView.as_view(), name="get_blocks"),

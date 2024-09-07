@@ -3,6 +3,10 @@
 
 {% block title_prefix %}Update CSC Center{% endblock title_prefix %}
 
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.css">
+{% endblock styles %}
+
 {% block content %}
 <style>
     #update-csc-btns-div {
@@ -55,7 +59,7 @@
 <div class="container">
     <div class="row">
         <div class="col-lg-12">
-            <form method="post" action="{% url 'csc_admin:update_csc' center.slug %}" enctype="multipart/form-data" id="add-csc-form">
+            <form method="post" action="{% url 'csc_admin:update_csc' center.slug %}" enctype="multipart/form-data" id="update-csc-form">
                 {% csrf_token %}
                 <div id="add-listing" class="separated-form">
                     <!-- Section -->
@@ -184,8 +188,10 @@
                             </div>
                             <div class="col-md-6">
                                 <h5>Upload Banner</h5>
-                                <input type="file" name="banner" id="csc-banner-input" required>
+                                <input type="file" name="banner" id="csc-banner-input" multiple required>
                                 <span id="current-csc-banner">{% if center.banner %} current banner: <a href="{{center.banner.url}}" target="_blank" style="color:blue">{{center.banner.name}}</a>&nbsp;&nbsp;<button type="button" onclick="removeCscBanner({{center.pk}})">Clear</button> {% endif %}</span>
+
+                                {% comment %} <div class="dropzone" id="file-dropzone"></div> {% endcomment %}
                             </div>
                         </div>
                     </div>
@@ -566,7 +572,43 @@
 
 {% block scripts %}
 <!-- DropZone | Documentation: http://dropzonejs.com -->
-<script type="text/javascript" src="{% static 'scripts/dropzone.js' %}"></script>
+{% comment %} <script type="text/javascript" src="{% static  'scripts/dropzone.js' %}"></script> {% endcomment %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
+
+<script>
+    Dropzone.options.fileDropzone = {
+        autoProcessQueue: false,  // Prevent Dropzone from automatically uploading files
+        paramName: "file",  // The name used to transfer the file
+        addRemoveLinks: true,  // Optional: Adds 'remove' links to each file preview
+        url: document.getElementById("update-csc-form").action,  // Use the form's action URL
+        
+        
+        init: function() {
+            var myDropzone = this;
+                        
+            // Prevent default form submission and process Dropzone queue first
+            document.getElementById("update-csc-form").addEventListener("submit", function(e) {
+                e.preventDefault();  // Prevent default form submission
+
+                window.alert("Working");
+
+                // Check if there are files to be uploaded
+                if (myDropzone.getQueuedFiles().length > 0) {
+                    window.alert("True")
+                    myDropzone.processQueue();  // Process files in Dropzone
+                } else {
+                    window.alert("False")
+                    this.submit();  // If no files, submit the form normally
+                }
+            });
+
+            // On file upload completion, submit the form
+            myDropzone.on("queuecomplete", function() {
+                document.getElementById("update-csc-form").submit();
+            });
+        }
+    };
+</script>
 
 
 <!-- Style Switcher
@@ -690,30 +732,30 @@
     $(document).ready(() => {
         $('#preview-btn').click(function () {
             if ($(this).html() != 'Edit Form') {
-                $('#add-csc-form input').prop('readonly', true);
-                $('#add-csc-form textarea').prop('readonly', true);
+                $('#update-csc-form input').prop('readonly', true);
+                $('#update-csc-form textarea').prop('readonly', true);
 
                 $('#dropzone-uploads').css('pointer-events', 'none');
                 $('#add-link-btn').css('pointer-events', 'none');
                 $('#map').css('pointer-events', 'none');
 
 
-                $('#add-csc-form input:checkbox').prop('disabled', true);
-                $('#add-csc-form select').prop('disabled', true).trigger('chosen:updated');
+                $('#update-csc-form input:checkbox').prop('disabled', true);
+                $('#update-csc-form select').prop('disabled', true).trigger('chosen:updated');
 
                 $(this).html('Edit Form');
                 $('#update-csc-btns-div button').show();
             } else {
-                $('#add-csc-form input').prop('readonly', false);
-                $('#add-csc-form textarea').prop('readonly', false);
+                $('#update-csc-form input').prop('readonly', false);
+                $('#update-csc-form textarea').prop('readonly', false);
 
                 $('#dropzone-uploads').css('pointer-events', 'auto');
                 $('#add-link-btn').css('pointer-events', 'auto');
                 $('#map').css('pointer-events', 'auto');
 
 
-                $('#add-csc-form input:checkbox').prop('disabled', false);
-                $('#add-csc-form select').prop('disabled', false).trigger('chosen:updated');
+                $('#update-csc-form input:checkbox').prop('disabled', false);
+                $('#update-csc-form select').prop('disabled', false).trigger('chosen:updated');
 
                 $(this).html('Preview <i class="fa fa-arrow-circle-right"></i>');
                 $('#update-csc-btns-div button').hide();
@@ -722,21 +764,21 @@
     });
 
     $('#update-csc-btns-div button').on('click', function () {
-        $('#add-csc-form input').prop('readonly', false);
-        $('#add-csc-form textarea').prop('readonly', false);
+        $('#update-csc-form input').prop('readonly', false);
+        $('#update-csc-form textarea').prop('readonly', false);
 
         $('#dropzone-uploads').css('pointer-events', 'auto');
         $('#add-link-btn').css('pointer-events', 'auto');
         $('#map').css('pointer-events', 'auto');
 
 
-        $('#add-csc-form input:checkbox').prop('disabled', false);
-        $('#add-csc-form select').prop('disabled', false).trigger('chosen:updated');
+        $('#update-csc-form input:checkbox').prop('disabled', false);
+        $('#update-csc-form select').prop('disabled', false).trigger('chosen:updated');
 
         $(this).html('Preview <i class="fa fa-arrow-circle-right"></i>');
         $('#update-csc-btns-div button').hide();
         
-        $('#add-csc-form').submit()
+        $('#update-csc-form').submit()
     });
 </script>
 
