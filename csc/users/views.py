@@ -13,7 +13,7 @@ from django.utils.decorators import method_decorator
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, logout
-from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q
 import base64
 
 from authentication.models import User
@@ -66,11 +66,26 @@ class HomeView(BaseUserView, TemplateView):
 class GetCenterDataView(BaseUserView, View):
     def get(self, request, *args, **kwargs):
         center_slug = request.GET.get('center_slug')
+        data = {}
 
         try:
-            center = get_object_or_404(CscCenter, slug = center_slug, is_active = True)
+            center = get_object_or_404(CscCenter, slug = center_slug)
+
+            data['services_count'] = center.services.all().count()
+            data['products_count'] = center.products.all().count()
+
+            if not center.is_active:
+                if center.live_days < 10:
+                    data['warning_message'] = f"You have not yet completed your payment. Please make the payment in the next {10 - center.live_days} days to avoid suspension of your account."
+                else:
+                    print("entered")
+                    data['warning_message'] = f"Your account is in danger. Please make the payment as soon as possible to avoid suspension of your account."
+
             service_enquiries = ServiceEnquiry.objects.filter(csc_center = center)
             product_enquiries = ProductEnquiry.objects.filter(csc_center = center)
+
+            data["service_enquiries_count"] = service_enquiries.count()
+            data["product_enquiries_count"] = product_enquiries.count()
 
             service_enquiry_list = []
             for enquiry in service_enquiries:
@@ -79,6 +94,8 @@ class GetCenterDataView(BaseUserView, View):
                     "service": enquiry.service.first_name,
                     "slug": enquiry.slug
                 })
+                
+            data['service_enqui8ries'] = service_enquiry_list
 
             product_enquiry_list = []
             for enquiry in product_enquiries:
@@ -87,23 +104,13 @@ class GetCenterDataView(BaseUserView, View):
                     "product": enquiry.product.name,
                     "slug": enquiry.slug
                 })
+
+            data['product_enquiries'] = product_enquiry_list
             
-            data = {
-                # 'csc_center': center,
-                'csc_center': True,
-                'services_count': center.services.all().count(),
-                'products_count': center.products.all().count(),
-                "service_enquiries_count" : service_enquiries.count(),
-                "product_enquiries_count" : product_enquiries.count(),
-                'service_enquiries': service_enquiry_list,
-                'product_enquiries': product_enquiry_list
-            }
-
-            print(data['csc_center'])
-
-            return JsonResponse(data)
         except Http404:
-            return JsonResponse({"error": "Selected center is not yet active."})
+            data = {"error": "Selected center is not yet active."}
+            
+        return JsonResponse(data)
 
         
 
@@ -725,18 +732,30 @@ class AvailablePosterView(BasePosterView, ListView):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             data = {}
             center_slug = request.GET.get('center_slug')
+            service_slug = request.GET.get('service_slug')
+            query = request.GET.get('query')
             try:
                 center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email, is_active = True)
                 data['csc_center'] = True if center else False
                 posters = self.model.objects.filter(state = center.state) if center else None
+
+                if service_slug:
+                    try:
+                        service = get_object_or_404(Service, slug = service_slug)
+                        posters = posters.filter(service = service) if posters else None
+                    except Http404:
+                        pass
+
+                if query:
+                    posters = posters.filter(Q(title__icontains = query) | Q(service__name__icontains = query))
+
                 if posters:
                     list_posters = []
                     for poster in posters:
                         list_posters.append({"title": poster.title, "slug": poster.slug, "service": poster.service.first_name, "poster": poster.poster.url if poster.poster else None})
                     data["posters"] = list_posters
-                    print(list_posters)
             except Http404:
-                data = {{'error': 'Not an active csc center'}}
+                data = {'error': 'Not an active csc center'}
 
             return JsonResponse(data)
         return super().get(request, *args, **kwargs)
@@ -758,24 +777,28 @@ class MyPosterListView(BasePosterView, ListView):
     def get(self, request, *args, **kwargs):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             center_slug = request.GET.get('center_slug')
+            data = {}
             try:
                 center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email, is_active = True)
-                print(center)
-
+                data['csc_center'] =  True
                 posters = CustomPoster.objects.filter(csc_center = center)
 
-                poster_list = []
-                for count, poster in enumerate(posters):
-                    poster_list.append({
-                        'title': poster.title, 
-                        'poster': poster.poster.url if poster.poster else None, 
-                        'slug': poster.slug, 
-                        'count': count+1,
-                        'get_absolute_url': poster.get_absolute_url if poster.get_absolute_url else '#',
-                        })
-                return JsonResponse({'posters': poster_list, 'csc_center': True if center else False})
+                if posters:
+                    poster_list = []
+                    for count, poster in enumerate(posters):
+                        poster_list.append({
+                            'title': poster.title, 
+                            'poster': poster.poster.url if poster.poster else None,
+                            'service': poster.service.first_name,
+                            'slug': poster.slug, 
+                            'count': count+1,
+                            'get_absolute_url': poster.get_absolute_url if poster.get_absolute_url else '#',
+                            })
+                    data['posters'] = poster_list                    
             except Http404:
-                return JsonResponse({'csc_center': False})
+                data['csc_center'] = False
+
+            return JsonResponse(data)
         return super().get(request, *args, **kwargs)
 
     

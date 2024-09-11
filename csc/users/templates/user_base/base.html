@@ -166,11 +166,12 @@
 
 						<li><a href="{% url 'users:csc_centers' %}" {% if center_page %} class="current" {% endif %}>CSC Centers</a></li>
 
+						<li><a href="{% url 'users:my_posters' %}" {% if poster_page %} class="current" {% endif %}>Posters</a></li>
+						
 						<li><a href="{% url 'users:service_enquiries' %}" {% if service_page %} class="current" {% endif %}>Service Enquiries</a></li>
 
 						<li><a href="{% url 'users:product_enquiries' %}" {% if product_page %} class="current" {% endif %}>Product Enquiries</a></li>
 
-						<li><a href="{% url 'users:my_posters' %}" {% if poster_page %} class="current" {% endif %}>Posters</a></li>
 					</ul>
 				</nav>
 				<div class="clearfix"></div>

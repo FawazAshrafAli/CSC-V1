@@ -7,6 +7,7 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 import base64
 from django.conf import settings
+from django.utils import timezone
 
 from django.urls import reverse
 
@@ -238,6 +239,12 @@ class CscCenter(models.Model):
         qr_code_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
         return qr_code_base64
     
+    @property
+    def live_days(self):
+        today = timezone.now().date()
+        created_date = self.created.date()
+        return (today - created_date).days
+    
     def generate_qr_code_image(self):
         url = self.get_absolute_url  # Call the method correctly
         protocol = settings.SITE_PROTOCOL  # e.g., 'http' or 'https'
@@ -260,7 +267,7 @@ class CscCenter(models.Model):
 
         # Save the image to the model's ImageField
         filename = f'qr_code_{self.pk}.png'  # Use self.pk or other unique identifier
-        self.qr_code_image.save(filename, ContentFile(buffer.read()), save=False)
+        self.qr_code_image.save(filename, ContentFile(buffer.read()), save=False)    
 
     class Meta:
         db_table = 'csc_center'

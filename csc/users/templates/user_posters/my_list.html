@@ -76,55 +76,7 @@
   <!-- Delete Confirmation Box Start-->
 
 <div id="poster-content">
-  {% if posters %}
-  <div class="row">
-    <!-- Listings -->
-    <div class="col-lg-12 col-md-12">
-      <div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
-        <h4>My Posters</h4>
-        <br>
-        <table id="poster-table">
-          <thead>
-            <tr>
-              <th>No</th>
-              <th id="th-image">Image</th>
-              <th style="text-align:center">Title</th>
-              <th style="text-align:center">Service</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="poster-tbody">            
-            <tr><td colspan="4" style="text-align:center">Loading . . .</td></tr>            
-          </tbody>
-        </table>
-      </div>
-      <!-- Pagination -->
-      <div class="clearfix"></div>
-      <div class="row" id="pagination-row">
-        <div class="col-md-12">
-          <!-- Pagination -->
-          <div class="pagination-container margin-top-20 margin-bottom-40">
-            <nav class="pagination" id="pagination-nav">
-              <ul>
-                <li>
-                  <a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
-                </li>
-                <li><a href="#" id="first-page">1</a></li>
-                <li><a href="#" id="second-page">2</a></li>
-                <li><a href="#" id="third-page" >3</a></li>
-                <li>
-                  <a href="#" class="next-page" id="next-page"><i class="sl sl-icon-arrow-right"></i></a>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  {% else %}
-  <h3 style="color:red;">Your current csc center is not yet activated.</h3>
-  {% endif %}
+  <h3>Loading . . .</h3>  
 </div>
 <div class="row">
   <!-- Copyrights -->
@@ -150,7 +102,58 @@
 
 <script>
     $(document).ready(() => {
-      
+      function defaultPosterView() {
+        $('#poster-content').html(`
+          <div class="row">
+            <!-- Listings -->
+            <div class="col-lg-12 col-md-12">
+              <div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
+                <h4>My Posters</h4>
+                <br>
+                <table id="poster-table">
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th id="th-image">Image</th>
+                      <th style="text-align:center">Title</th>
+                      <th style="text-align:center">Service</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="poster-tbody">
+                    
+                    <tr><td colspan="4" style="text-align:center">Loading . . .</td></tr>
+                    
+                  </tbody>
+                </table>
+              </div>
+              <!-- Pagination -->
+              <div class="clearfix"></div>
+              <div class="row" id="pagination-row">
+                <div class="col-md-12">
+                <!-- Pagination -->
+                <div class="pagination-container margin-top-20 margin-bottom-40">
+                  <nav class="pagination" id="pagination-nav">
+                    <ul>
+                      <li>
+                        <a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
+                      </li>
+                      <li><a href="#" id="first-page">1</a></li>
+                      <li><a href="#" id="second-page">2</a></li>
+                      <li><a href="#" id="third-page" >3</a></li>
+                      <li>
+                        <a href="#" class="next-page" id="next-page"><i class="sl sl-icon-arrow-right"></i></a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </div>
+        `);
+      }
+
+
       // get posters on the basis of the current center
       function getPosters(center) {
         $.ajax({
@@ -160,54 +163,8 @@
           data: {'center_slug': center},
           success: response => {
             if (response.csc_center) {
-              $('#posters-content').html(`
-                <div class="row">
-                  <!-- Listings -->
-                  <div class="col-lg-12 col-md-12">
-                    <div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
-                      <h4>My Posters</h4>
-                      <br>
-                      <table id="poster-table">
-                        <thead>
-                          <tr>
-                            <th>No</th>
-                            <th id="th-image">Image</th>
-                            <th style="text-align:center">Title</th>
-                            <th style="text-align:center">Service</th>
-                            <th></th>
-                          </tr>
-                        </thead>
-                        <tbody id="poster-tbody">
-                          
-                          <tr><td colspan="4" style="text-align:center">Loading . . .</td></tr>
-                          
-                        </tbody>
-                      </table>
-                    </div>
-                    <!-- Pagination -->
-                    <div class="clearfix"></div>
-                    <div class="row" id="pagination-row">
-                      <div class="col-md-12">
-                      <!-- Pagination -->
-                      <div class="pagination-container margin-top-20 margin-bottom-40">
-                        <nav class="pagination" id="pagination-nav">
-                          <ul>
-                            <li>
-                              <a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
-                            </li>
-                            <li><a href="#" id="first-page">1</a></li>
-                            <li><a href="#" id="second-page">2</a></li>
-                            <li><a href="#" id="third-page" >3</a></li>
-                            <li>
-                              <a href="#" class="next-page" id="next-page"><i class="sl sl-icon-arrow-right"></i></a>
-                            </li>
-                          </ul>
-                        </nav>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              `);
+              defaultPosterView();
+              console.log("working")
               $('#poster-tbody').html('');
               $(`#center-dropdown option[value='${center}']`).prop('selected', true).trigger('chosen:updated');
 
@@ -226,6 +183,7 @@
             } else {
               $('#poster-content').html('<h3 style="color:red;">Your current csc center is not yet activated.</h3>')
             }
+            paginator();
           },
           error: error => console.error("Error: ", error),
         })

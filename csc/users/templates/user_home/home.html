@@ -28,69 +28,7 @@
 
 
 <div id="home-content">
-    {% if center %}
-    <!-- Content -->
-    <div class="row">
-    
-        <!-- Item -->
-        {% comment %} <div class="col-lg-3 col-md-6">
-            <div class="dashboard-stat color-1">
-                <div class="dashboard-stat-content"><h4 id="services-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Services</span></div>
-                <div class="dashboard-stat-icon"><i class="fa fa-handshake"></i></div>
-            </div>
-        </div>
-    
-        <!-- Item -->
-        <div class="col-lg-3 col-md-6">
-            <div class="dashboard-stat color-2">
-                <div class="dashboard-stat-content"><h4 id="products-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Products</span></div>
-                <div class="dashboard-stat-icon"><i class="fa fa-box"></i></div>
-            </div>
-        </div> {% endcomment %}
-    
-        <!-- Item -->
-        <div class="col-lg-6 col-md-6">
-            <div class="dashboard-stat color-3">
-                <div class="dashboard-stat-content"><h4 id="service-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Service Enquiries</span></div>
-                <div class="dashboard-stat-icon"><i class="fa fa-question-circle"></i></div>
-            </div>
-        </div>
-    
-        <!-- Item -->
-        <div class="col-lg-6 col-md-6">
-            <div class="dashboard-stat color-4">
-                <div class="dashboard-stat-content"><h4 id="product-enquiries-count"><span style="font-size: 15px;">Loading . . .</span></h4> <span>Product Enquiries</span></div>
-                <div class="dashboard-stat-icon"><i class="fa fa-cart-plus"></i></div>
-            </div>
-        </div>
-    </div>
-    
-    
-    <div class="row">
-    
-        <!-- Recent Activity -->
-        <div class="col-lg-6 col-md-12">
-            <div class="dashboard-list-box with-icons margin-top-20">
-                <h4>Service Enquiries</h4>
-                <ul id="service-enquiries">
-                    <li>Loading . . .</li>
-                </ul>
-            </div>
-        </div>
-    
-        <!-- Invoices -->
-        <div class="col-lg-6 col-md-12">
-            <div class="dashboard-list-box invoices with-icons margin-top-20">
-                <h4>Product Enquiries</h4>
-                <ul id="product-enquiries">
-                    <li>Loading . . .</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    {% else %}
-    <h3 style="color:red;">Your current csc center is not yet activated.</h3>
-    {% endif %}
+    <h3>Loading . . .</h3>  
 </div>
 <div class="row">
     <!-- Copyrights -->
@@ -153,13 +91,13 @@
                 dataType: 'json',
                 data: {'center_slug': center},
                 success: response => {                    
-                    if (!response.csc_center){
-                        $('#home-content').html('<h3 style="color:red;">Your current csc center is not yet activated.</h3>');
-                    };
-                    if (response.csc_center) {
+                    // if (!response.csc_center){
+                    //     $('#home-content').html('<h3 style="color:red;">Your current csc center is not yet activated.</h3>');
+                    // };
+                    if (response) {
                         $('#home-content').html(`
                             <div class="row">
-        
+                                ${ response.warning_message && `<div class="col-md-12" style="background-color: orangered; margin-bottom: 5px;"><h5 style="color: #fff"> ${response.warning_message} <span style="display: inline-block;">Click <a href="#" style="color: blue; text-decoration: underline;">Pay Now</a> for payment</span></h5></div>`}
                                 <!-- Item -->
                                 {% comment %} <div class="col-lg-3 col-md-6">
                                     <div class="dashboard-stat color-1">

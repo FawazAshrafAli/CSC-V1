@@ -70,11 +70,7 @@
 	</div>
 
 <div id="poster-content">
-  {% if posters %}
-  <h3>Loading . . .</h3>
-  {% else %}
-  <h3 style="color:red;">Your current csc center is not yet activated.</h3>
-  {% endif %}
+  <h3>Loading . . .</h3>  
 </div>
 
 <div class="row">
@@ -106,14 +102,15 @@
         <!-- Listings -->
         <div class="col-lg-12 col-md-12">
           <div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <h4>Available Posters</h4>
-
-              <div class="col-lg-9">
+            <div class="row">
+              <div class="col-lg-3">
+                <h4>Available Posters</h4>
+              </div>
+              <div class="col-lg-9" style="padding: 0; dis">
                 <!-- Sort by -->
                 <div class="sort-by">
-                    <div class="sort-by-select">
-                        <select data-placeholder="List By Service" id="block-filter-dropdown" class="chosen-select-no-single">
+                    <div class="sort-by-select" style="width: 340px;">
+                        <select data-placeholder="List By Service" class="chosen-select-no-single" id="service-dropdown" style="background: #fff; border: 1px solid silver; margin-bottom: 25px;">
                             <option value="" hidden disabled selected>List By Service</option>
                             {% for service in services %}
                             <option value="{{service.slug}}">{{service.first_name}}</option>
@@ -122,6 +119,14 @@
                     </div>
                 </div>
                 <!-- Sort by / End -->
+              </div>
+              </div>
+
+            <div class="row">
+              <div class="col-md-12" style="display: flex; justify-content: flex-end;">
+                <form method="#" id="poster-search-form" class="search-poster-input" style="height: 35px; padding: 0 10px; width: 360px;">                  
+                  <input style="height: 35px; margin-bottom: 0; border-radius: 50px;" class="search-field" type="text" placeholder="Search Posters" name="q" id="search-input" value="{{query}}" />		
+                </form>
               </div>
             </div>
 
@@ -178,7 +183,7 @@
     `)
   }
 
-    $(document).ready(() => {      
+    $(document).ready(function () {
       function getAvalablePosters(center) {
         $.ajax({
           type: 'GET',
@@ -186,7 +191,7 @@
           dataType: 'json',
           data: {'center_slug': center},
           success: response => {
-            if (response.csc_center) {
+            if (response.csc_center) {              
               defaultPosterView();
               if (response.posters) {
                 response.posters.forEach((poster, index) => {
@@ -219,13 +224,117 @@
       const user = localStorage.getItem('cscUser');
 
       if (user == `{{request.user.email}}` && center != `{{center.slug}}` ) {
-        console.log("entered")
+        console.log("Entered normal")
         getAvalablePosters(center);
       } else {
+        console.log("Entered alternate")
         getAvalablePosters(`{{center.slug}}`);
       }
 
-        // Pagination
+      // Filtering using service
+      function fetchFilteredPosters(center) {
+        const serviceSlug = $('#service-dropdown').val();
+        $.ajax({
+          type: 'GET',
+          url: '/users/available_posters/',
+          dataType: 'json',
+          data: {
+            'center_slug': center,
+            'service_slug': serviceSlug
+          },
+          success: response => {
+            if (response.posters) {
+              $('#poster-tbody').empty();
+              $.each(response.posters, (index, poster) => {
+                const html = `<tr class="row-items">
+                  <td>${ index + 1 }</td>
+                  <td id="td-image">
+                    <img src="${ poster.poster ? poster.poster : 'static/w3/images/no_image.png' }" alt="Poster Image">
+                  </td>
+                  <td style="text-align:center">${ poster.title }</td>
+                  <td style="text-align:center">${ poster.service }</td>
+                  <td style="text-align: right; padding-right: 10px;"><a href="/users/create_poster/${poster.slug}" class="button gray"><i class="sl sl-icon-plus"></i> Create Poster</a></td>
+                </tr>`;
+                $('#poster-tbody').append(html);
+              })
+            } else {
+              $('#poster-tbody').html('<tr><td colspan="5" style="color: red">Posters are unavailable for the selected service</td></tr>')
+            }
+            paginator();
+          },
+          error: error => console.error("Error: ", error),
+        });
+      }
+      
+      $(document).on('change', '#service-dropdown', function () {
+        if (user == `{{request.user.email}}` && center != `{{center.slug}}` ) {
+          fetchFilteredPosters(center);
+        } else {
+          fetchFilteredPosters(`{{center.slug}}`);
+        }
+      });
+
+      // Search Functionality Start
+      function searchPosters(center) {
+        const query = $('#search-input').val();
+        console.log(query)
+        $.ajax({
+          type: 'GET',
+          url: '/users/available_posters/',
+          dataType: 'json',
+          data: {
+            'center_slug': center,
+            'query': query
+          },
+          success: response => {
+            if (response.posters) {
+              $('#poster-tbody').empty();
+              $.each(response.posters, (index, poster) => {
+                const html = `<tr class="row-items">
+                  <td>${ index + 1 }</td>
+                  <td id="td-image">
+                    <img src="${ poster.poster ? poster.poster : 'static/w3/images/no_image.png' }" alt="Poster Image">
+                  </td>
+                  <td style="text-align:center">${ poster.title }</td>
+                  <td style="text-align:center">${ poster.service }</td>
+                  <td style="text-align: right; padding-right: 10px;"><a href="/users/create_poster/${poster.slug}" class="button gray"><i class="sl sl-icon-plus"></i> Create Poster</a></td>
+                </tr>`;
+                $('#poster-tbody').append(html);
+              })
+            } else {
+              $('#poster-tbody').html(`<tr><td colspan="5" style="color: red">No posters for query: '${query}'</td></tr>`)
+            }
+            paginator();
+          },
+          error: error => console.error("Error: ", error),
+        });
+      }
+
+      
+      $(document).on('submit', '#poster-search-form', function (e) {
+        e.preventDefault();
+        
+        if (user == `{{request.user.email}}` && center != `{{center.slug}}` ) {
+          searchPosters(center);
+        } else {
+          searchPosters(`{{center.slug}}`);
+        }
+      })
+
+      $(document).on('input', '#search-input', function (e) {
+        e.preventDefault();
+        
+        if (user == `{{request.user.email}}` && center != `{{center.slug}}` ) {
+          searchPosters(center);
+        } else {
+          searchPosters(`{{center.slug}}`);
+        }
+      })
+      // Search Functionality End
+
+      // Filtering End
+
+      // Pagination
       function paginator () {
         let itemsPerPage = 10;
         let currentPage = 1;
@@ -331,8 +440,12 @@
         // Initialize the first page
         renderPage(currentPage);
       };
-  
+      
       paginator();
-    })
+
+    });
+
+
+
 </script>
 {% endblock scripts %}
