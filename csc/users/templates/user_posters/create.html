@@ -260,13 +260,8 @@
                                         <h5>Poster Title <i class="tip" data-tip-content="Title of Poster"></i></h5>
                                         <input class="search-field" type="text" name="title"
                                             placeholder="Title of Poster" id="poster-title-input" value="{{poster.title}}" required/>
-                                    </div>                                    
-                                    <div class="col-md-12">
-                                        <div class="form">
-                                            <h5>Description</h5>
-                                            <textarea class="WYSIWYG" name="description" cols="40" rows="3" id="poster-description-input"
-                                                spellcheck="true">"{{poster.description}}"</textarea>
-                                        </div>
+
+                                        <span><h5>Service: {{poster.service.first_name}}</h5></span>
                                     </div>                                    
                                 </div>
                             </div>
@@ -556,7 +551,8 @@ $(document).ready(function () {
                     'csrfmiddlewaretoken': '{{csrf_token}}',
                     'title': title,
                     'description': description,
-                    'csc_center': csc_center
+                    'csc_center': csc_center,
+                    'service': `{{poster.service.slug}}`
                 },
                 success: response => {
                     if (response.message) {

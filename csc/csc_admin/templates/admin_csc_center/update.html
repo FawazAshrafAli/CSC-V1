@@ -3,10 +3,6 @@
 
 {% block title_prefix %}Update CSC Center{% endblock title_prefix %}
 
-{% block styles %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.css">
-{% endblock styles %}
-
 {% block content %}
 <style>
     #update-csc-btns-div {
@@ -189,9 +185,9 @@
                             <div class="col-md-6">
                                 <h5>Upload Banner</h5>
                                 <input type="file" name="banner" id="csc-banner-input" multiple required>
-                                <span id="current-csc-banner">{% if center.banner %} current banner: <a href="{{center.banner.url}}" target="_blank" style="color:blue">{{center.banner.name}}</a>&nbsp;&nbsp;<button type="button" onclick="removeCscBanner({{center.pk}})">Clear</button> {% endif %}</span>
+                                <span id="current-csc-banner">{% if center.banner %} current banner: <a href="{{center.banner.url}}" target="_blank" style="color:blue">{{center.banner.name}}</a>&nbsp;&nbsp;<button type="button" onclick="removeCscBanner({{center.pk}})">Clear</button> {% endif %}</span>                                
 
-                                {% comment %} <div class="dropzone" id="file-dropzone"></div> {% endcomment %}
+                                <span><small>Note: While choosing files select multiple images by holding ctrl button.</small></span>
                             </div>
                         </div>
                     </div>
@@ -571,45 +567,6 @@
 {% endblock content %}
 
 {% block scripts %}
-<!-- DropZone | Documentation: http://dropzonejs.com -->
-{% comment %} <script type="text/javascript" src="{% static  'scripts/dropzone.js' %}"></script> {% endcomment %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
-
-<script>
-    Dropzone.options.fileDropzone = {
-        autoProcessQueue: false,  // Prevent Dropzone from automatically uploading files
-        paramName: "file",  // The name used to transfer the file
-        addRemoveLinks: true,  // Optional: Adds 'remove' links to each file preview
-        url: document.getElementById("update-csc-form").action,  // Use the form's action URL
-        
-        
-        init: function() {
-            var myDropzone = this;
-                        
-            // Prevent default form submission and process Dropzone queue first
-            document.getElementById("update-csc-form").addEventListener("submit", function(e) {
-                e.preventDefault();  // Prevent default form submission
-
-                window.alert("Working");
-
-                // Check if there are files to be uploaded
-                if (myDropzone.getQueuedFiles().length > 0) {
-                    window.alert("True")
-                    myDropzone.processQueue();  // Process files in Dropzone
-                } else {
-                    window.alert("False")
-                    this.submit();  // If no files, submit the form normally
-                }
-            });
-
-            // On file upload completion, submit the form
-            myDropzone.on("queuecomplete", function() {
-                document.getElementById("update-csc-form").submit();
-            });
-        }
-    };
-</script>
-
 
 <!-- Style Switcher
 ================================================== -->

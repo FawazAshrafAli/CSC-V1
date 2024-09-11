@@ -1,5 +1,6 @@
+from django.db.models.query import QuerySet
 from django.shortcuts import redirect, get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 from django.views.generic import View, TemplateView, CreateView, DetailView, UpdateView, ListView
@@ -15,21 +16,20 @@ import re
 
 from contact_us.models import Enquiry
 from faq.models import Faq
-from posters.forms import PosterDescriptionForm
 from authentication.models import User
 from .forms import (
     CreateServiceForm, UpdateServiceForm, CreateBlogForm,
     UpdateBlogForm
     )
 
-from products.models import Product, Category as ProductCategory
+from products.models import Product, Category as ProductCategory, ProductEnquiry
 from csc_center.models import CscCenter, State, District, Block, CscKeyword, CscNameType, SocialMediaLink, Banner
-from services.models import Service
+from services.models import Service, ServiceEnquiry
 from blog.models import Blog, Category, Tag
 from posters.models import Poster
 from .models import CscCenterAction
 
-class BaseAdminView(LoginRequiredMixin, View):
+class BaseAdminView(LoginRequiredMixin):
     login_url = reverse_lazy("authentication:login")
 
     def dispatch(self, request, *args, **kwargs):
@@ -876,7 +876,7 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
         landmark_or_building_name = request.POST.get('landmark_or_building_name').strip()
         street = request.POST.get('address').strip()
         logo = request.FILES.get('logo') # dropzone
-        banner = request.FILES.get('banner') # dropzone
+        banners = request.FILES.getlist('banner') # dropzone
         description = request.POST.get('description').strip()
         owner = request.POST.get('owner').strip()
         email = request.POST.get('email').strip()
@@ -887,7 +887,9 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
         services = request.POST.getlist('services')
         products = request.POST.getlist('products')
 
-        show_opening_hours = request.POST.get('show_opening_hours').strip()
+        show_opening_hours = request.POST.get('show_opening_hours')
+        if show_opening_hours: 
+            show_opening_hours = show_opening_hours.strip()
 
         mon_opening_time = request.POST.get('mon_opening_time').strip() if show_opening_hours else None #timefield
         tue_opening_time = request.POST.get('tue_opening_time').strip() if show_opening_hours else None #timefield
@@ -921,7 +923,9 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
         sat_closing_time = sat_closing_time if  sat_closing_time != "" else None
         sun_closing_time = sun_closing_time if  sun_closing_time != "" else None
 
-        show_social_media_links = request.POST.get('show_social_media_links').strip()
+        show_social_media_links = request.POST.get('show_social_media_links')
+        if show_social_media_links:
+            show_social_media_links = show_social_media_links.strip()
 
         social_medias = request.POST.getlist('social_medias') if show_social_media_links else None # manytomany
         social_links = request.POST.getlist('social_links') if show_social_media_links else None # manytomany
@@ -957,7 +961,7 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
             name = name, type = type, state = state,
             district = district,block = block,location = location,
             zipcode = zipcode, landmark_or_building_name = landmark_or_building_name,
-            street = street, logo = logo, banner = banner,
+            street = street, logo = logo,
             description = description, contact_number = contact_number,
             owner = owner, email = email, website = website, 
             mobile_number = mobile_number, whatsapp_number = whatsapp_number,
@@ -982,6 +986,12 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
         self.object.products.set(products)
         self.object.save()
 
+        if banners:
+            for banner in banners:
+                banner_obj, created = Banner.objects.get_or_create(csc_center = self.object, banner_image = banner)
+                self.object.banners.add(banner_obj)
+            self.object.save()
+
         if social_medias and social_links:
             social_media_length = len(social_medias)
             if social_media_length > 0:
@@ -997,6 +1007,11 @@ class AddCscCenterView(BaseAdminCscCenterView, CreateView):
                 
                     self.object.social_media_links.set(social_media_list)
                     self.object.save()
+
+        messages.success(request, "Added CSC center")
+        if not User.objects.filter(email = email).exists():            
+            return redirect(reverse('authentication:user_registration', kwargs={'email': self.object.email}))
+        
         
         return redirect(self.success_url)
 
@@ -1045,9 +1060,7 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
 
         return context
     
-    def post(self, request, *args, **kwargs):
-        files = request.FILES.getlist('file')
-        print(files if files else "no files")
+    def post(self, request, *args, **kwargs):        
 
         name = request.POST.get('name').strip()
         type = request.POST.get('type').strip()
@@ -1060,9 +1073,8 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         zipcode = request.POST.get('zipcode').strip()
         landmark_or_building_name = request.POST.get('landmark_or_building_name').strip()
         street = request.POST.get('address').strip()
-        logo = request.FILES.get('logo') # dropzone
-        # banner = request.FILES.get('banner') # dropzone
-        banners = request.FILES.getlist('banner') # dropzone
+        logo = request.FILES.get('logo')
+        banners = request.FILES.getlist('banner')
         description = request.POST.get('description').strip()
         owner = request.POST.get('owner').strip()
         email = request.POST.get('email').strip()
@@ -1140,10 +1152,6 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
         
         self.object = self.get_object()
 
-        for uploaded_file in files:
-            self.object.banner = uploaded_file
-            self.object.save()
-
         self.object.name = name
         self.object.type = type
         self.object.state = state
@@ -1160,7 +1168,11 @@ class UpdateCscCenterView(BaseAdminCscCenterView, UpdateView):
 
         if banners:
             for banner in banners:
-                Banner.objects.create(csc_center = self.object, banner = banner)
+                banner_obj, created = Banner.objects.get_or_create(csc_center = self.object, banner_image = banner)
+                self.object.banners.add(banner_obj)
+            self.object.save()
+
+
                 
 
         self.object.description = description
@@ -1743,7 +1755,7 @@ class DeleteCscNameTypeView(BaseAdminCscCenterView, View):
         return JsonResponse({"status": "success"}, safe=False)
 ##################################### CSC CENTER END #####################################
 
-class BasePosterView(BaseAdminView, View):
+class BasePosterView(BaseAdminView):
     model = Poster
     
     def get_context_data(self, **kwargs):
@@ -1764,24 +1776,36 @@ class PosterDetailView(BasePosterView, DetailView):
     slug_url_kwarg = 'slug'
 
 class CreatePosterView(BasePosterView, CreateView):
-    form_class = PosterDescriptionForm
+    fields = ["title", "poster", "state", "service"]
     template_name = 'admin_poster/create.html'
     success_url = reverse_lazy('csc_admin:posters')
-    redirect_url = success_url
+    redirect_url = reverse_lazy('csc_admin:create_poster')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['states'] = State.objects.all()
+        return context
 
     def post(self, request, *args, **kwargs):
-        form = self.get_form()
         title = request.POST.get('title').strip()
         poster = request.FILES.get('poster')
+        state_id = request.POST.get('state').strip()
+        service_slug = request.POST.get('service').strip() 
+
+        try:
+            state = get_object_or_404(State, pk = state_id)
+        except Http404:
+            messages.error(request, 'Invalid State')
+            return redirect(self.redirect_url)
+        
+        try:
+            service = get_object_or_404(Service, slug = service_slug)
+        except Http404:
+            messages.error(request, 'Invalid Service')
+            return redirect(self.redirect_url)
 
         if title:
-            self.poster = self.model.objects.create(title = title, poster = poster)
-            if form.is_valid():
-                description = form.cleaned_data['description']
-                print(description)
-                self.poster.description = description
-                self.poster.save()
-
+            self.poster = self.model.objects.create(title = title, poster = poster, state = state, service = service)            
             messages.success(request, 'Added Poster')
             return redirect(self.success_url)
         else:
@@ -1805,20 +1829,46 @@ class DeletePosterView(BasePosterView, View):
         
 
 class UpdatePosterView(BasePosterView, UpdateView):
-    form_class = PosterDescriptionForm
+    fields = ["title", "poster", "state", "service"]
     template_name = 'admin_poster/update.html'
     success_url = reverse_lazy('csc_admin:posters')
     redirect_url = success_url
     slug_url_kwarg = 'slug'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['states'] = State.objects.all()
+        return context
+
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        form = self.get_form()
         title = request.POST.get('title').strip()
         poster = request.FILES.get('poster')
+        state_id = request.POST.get('state').strip()
+        service_slug = request.POST.get('service').strip() 
+
+        try:
+            state = get_object_or_404(State, pk = state_id)
+        except Http404:
+            messages.error(request, 'Invalid State')
+            return redirect(self.redirect_url)
+        
+        try:
+            service = get_object_or_404(Service, slug = service_slug)
+        except Http404:
+            messages.error(request, 'Invalid Service')
+            return redirect(self.redirect_url)
 
         if not title:
-            messages.warning(request, 'Please provide the poster title.')            
+            messages.warning(request, 'Title is required.')            
+            return redirect(self.redirect_url)
+        
+        if not state:
+            messages.warning(request, 'State is required.')            
+            return redirect(self.redirect_url)
+        
+        if not service:
+            messages.warning(request, 'Service is required.')            
             return redirect(self.redirect_url)
         
         if not poster:
@@ -1826,12 +1876,8 @@ class UpdatePosterView(BasePosterView, UpdateView):
 
         self.object.title = title
         self.object.poster = poster
-        if form.is_valid():
-            description = form.cleaned_data['description']
-            self.object.description = description
-            self.object.save()
-        else:
-            form = self.get_form(instance = self.object)
+        self.object.state = state
+        self.object.service = service
         self.object.save()
 
         messages.success(request, 'Updated Poster')
@@ -2058,9 +2104,8 @@ class EnquiryBaseView(BaseAdminView):
 
 
 class EnquiryListView(EnquiryBaseView, ListView):
-    model = Enquiry
     template_name = 'admin_enquiry/list.html'
-    queryset = model.objects.all()
+    queryset = Enquiry.objects.all()
     context_object_name = 'enquiries'
 
 
@@ -2084,5 +2129,24 @@ class DeleteEnquiryView(EnquiryBaseView, View):
         except Exception as e:
             print(F"Error: {e}")
             return redirect(self.redirect_url)
+        
 
+class CscCenterEnquiriesListView(EnquiryBaseView, ListView):
+    model = CscCenter
+    context_object_name = 'csc_centers'
+    template_name = "admin_enquiry/list_centers_enquiries.html"
+
+    def get_queryset(self):
+        data = []
+        for csc_center in self.model.objects.all():
+            service_enquiries_count = ServiceEnquiry.objects.filter(csc_center = csc_center).count()
+            product_enquiries_count = ProductEnquiry.objects.filter(csc_center = csc_center).count()
+            if service_enquiries_count > 0 or product_enquiries_count > 0:
+                data.append({
+                    'name': csc_center.full_name,
+                    'service_enquiries_count': ServiceEnquiry.objects.filter(csc_center = csc_center).count(),
+                    'product_enquiries_count': ProductEnquiry.objects.filter(csc_center = csc_center).count()
+                })
+        return data
+        
 ############### ENQUIRY END ###############

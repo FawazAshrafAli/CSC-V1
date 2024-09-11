@@ -323,13 +323,11 @@
 		})
 
 		$('#pop-up-dropdown').on('change', () => {
-			console.log('Worked')
 			$('#pop-up-add-btn').prop('disabled', false);
 		})
 
 		// Save the current csc name along with user when switched
 		$('#pop-up-form').on('submit', () => {
-			console.log("Worked")
 			if ($('#pop-up-box-heading').html() == 'Select CSC Center') {
 					const center = $('#pop-up-dropdown').val();
 					localStorage.setItem('centerSlug', center);

@@ -39,28 +39,37 @@
 						</h2>
 						<h4>CSC - Common Services Centre programme is an initiative of the Ministry of Electronics and IT (MeitY), Government of India.</h4>
 					</div>
+					
 
 					<form method="get" action="{% url 'home:csc_centers' %}">
-						<div class="main-search-input">
+						
+						<div class="add-listing-headline" style="background-color: inherit; display: flex; justify-content: space-between; align-items: center; width: 320px; margin-bottom: 0;">
+							<h3> Pincode Search</h3>
+							<!-- Switcher -->
+							<label class="switch"><input type="checkbox" id="pincode-checkbox-btn"><span
+									class="slider round"></span></label>
+						</div>
 
-							<div class="main-search-input-item">
+						<div class="main-search-input" style="margin-top: 0;">
+
+							<div class="main-search-input-item" id="pincode-input-div" style="display: none;">
 								<input type="text" placeholder="Search With Pincode" name="pincode" value=""/>
 							</div>
-							<div class="main-search-input-item">
-								<select class="chosen-select" data-placeholder="Select State" id="state-dropdown" name="state">
+							<div class="main-search-input-item" id="state-input-div">
+								<select class="chosen-select" data-placeholder="Select State" id="state-dropdown" name="state" required>
 									<option label="Select State"></option>
 									{% for state in states %}
 									<option value="{{state.pk}}">{{state.state}}</option>
 									{% endfor %}
 								</select>
 							</div>
-							<div class="main-search-input-item">
+							<div class="main-search-input-item" id="district-input-div">
 								<select class="chosen-select" data-placeholder="Select District" id="district-dropdown" name="district">
 									<option label="Select District"></option>
 								</select>
 							</div>
 													
-														<div class="main-search-input-item">
+							<div class="main-search-input-item" id="block-input-div">
 								<select class="chosen-select" data-placeholder="Select Block" id="block-dropdown" name="block">
 									<option label="Select Block"></option>
 								</select>
@@ -435,7 +444,22 @@
 					}
 				)
 			}			
-		});		
+		});	
+		
+		// Pincode Search Toggle
+		$('#pincode-checkbox-btn').click((e) => {
+			if (e.target.checked == true) {
+				$('#pincode-input-div').show();
+				$('#pincode-input-div input').prop({'required': true, 'disabled': false});
+				$('#state-input-div select').prop({'required': false, 'disabled': true});
+				$('#state-input-div, #district-input-div, #block-input-div').hide();
+			} else {
+				$('#pincode-input-div').hide();
+				$('#pincode-input-div input').prop({'required': false, 'disabled': true});
+				$('#state-input-div select').prop({'required': true, 'disabled': false});
+				$('#state-input-div, #district-input-div, #block-input-div').show();
+			}
+		})
 	})
 </script>
 {% endblock scripts %}

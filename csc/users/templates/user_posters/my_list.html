@@ -89,6 +89,7 @@
               <th>No</th>
               <th id="th-image">Image</th>
               <th style="text-align:center">Title</th>
+              <th style="text-align:center">Service</th>
               <th></th>
             </tr>
           </thead>
@@ -172,6 +173,7 @@
                             <th>No</th>
                             <th id="th-image">Image</th>
                             <th style="text-align:center">Title</th>
+                            <th style="text-align:center">Service</th>
                             <th></th>
                           </tr>
                         </thead>
@@ -216,6 +218,7 @@
                   <img src="${poster.poster ? poster.poster : '/static/w3/images/no_image.png'}" alt="Product Image">
                 </td>
                 <td style="text-align:center">${ poster.title }</td>
+                <td style="text-align:center">${ poster.service }</td>
                 <td style="text-align: right; padding-right: 10px;"><button type="button" class="button gray" onclick="event.stopPropagation(); togglePosterDeletion('${poster.slug}', '${poster.title}')"><i class="sl sl-icon-plus"></i> Delete</button></td>
               </tr>`
                 $('#poster-tbody').append(html);
@@ -242,6 +245,7 @@
                 <img src="{% if poster.poster %} {{poster.poster.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
               </td>
               <td style="text-align:center">{{ poster.title }}</td>
+              <td style="text-align:center">{{ poster.service.name }}</td>
               <td style="text-align: right; padding-right: 10px;"><button type="button" class="button gray" onclick="event.stopPropagation(); togglePosterDeletion('{{poster.slug}}', '{{poster.title}}')"><i class="sl sl-icon-plus"></i> Delete</button></td>
             </tr>
           {% endfor %}

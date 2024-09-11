@@ -5,7 +5,7 @@ from django.contrib import messages
 from datetime import datetime
 from django.http import Http404
 
-from .models import CscCenter, CscKeyword, CscNameType, State, District, Block, SocialMediaLink
+from .models import CscCenter, CscKeyword, CscNameType, State, District, Block, SocialMediaLink, Banner
 from services.models import Service
 from products.models import Product
 from authentication.models import User
@@ -51,7 +51,7 @@ class AddCscCenterView(CreateView):
         landmark_or_building_name = request.POST.get('landmark_or_building_name')
         street = request.POST.get('address')
         logo = request.FILES.get('logo') # dropzone
-        banner = request.FILES.get('banner') # dropzone
+        banners = request.FILES.getlist('banner') # dropzone
         description = request.POST.get('description')
         owner = request.POST.get('owner')
         email = request.POST.get('email')
@@ -132,7 +132,7 @@ class AddCscCenterView(CreateView):
             name = name, type = type, state = state,
             district = district,block = block,location = location,
             zipcode = zipcode, landmark_or_building_name = landmark_or_building_name,
-            street = street, logo = logo, banner = banner,
+            street = street, logo = logo,
             description = description, contact_number = contact_number,
             mobile_number = mobile_number, whatsapp_number = whatsapp_number, owner = owner,
             email = email, website = website, mon_opening_time = mon_opening_time, 
@@ -152,6 +152,12 @@ class AddCscCenterView(CreateView):
         self.object.products.set(products)
         self.object.save()
 
+        if banners:
+            for banner in banners:
+                banner_obj, created = Banner.objects.get_or_create(csc_center = self.object, banner_image = banner)
+                self.object.banners.add(banner_obj)
+            self.object.save()
+
         if social_medias and social_links:
             social_media_length = len(social_medias)
             if social_media_length > 0:
@@ -169,10 +175,9 @@ class AddCscCenterView(CreateView):
                     self.object.save()
 
 
-        if not User.objects.filter(email = email).exists():
-            # return redirect(UserRegistrationView, context = {'center': self.object})
+        messages.success(request, "Added CSC center")
+        if not User.objects.filter(email = email).exists():            
             return redirect(reverse('authentication:user_registration', kwargs={'email': self.object.email}))
         
-        messages.success(request, "Added CSC center")      
         
         return redirect(self.success_url)

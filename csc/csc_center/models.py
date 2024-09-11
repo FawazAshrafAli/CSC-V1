@@ -91,7 +91,7 @@ class SocialMediaLink(models.Model):
     
 
 class Banner(models.Model):
-    csc_center_id = models.ForeignKey('CscCenter', on_delete=models.CASCADE, related_name = "banner_csc_center")
+    csc_center = models.ForeignKey('CscCenter', on_delete=models.CASCADE, related_name = "banner_csc_center")
     banner_image = models.ImageField(upload_to='csc_center_banners/')
     
 
@@ -112,7 +112,7 @@ class CscCenter(models.Model):
     street = models.CharField(max_length=100)
     
     logo = models.ImageField(upload_to='csc_center_logos/')
-    banner = models.ImageField(upload_to='csc_center_banners/')
+    banners = models.ManyToManyField(Banner)
 
     description = models.TextField()
     owner = models.CharField(max_length=150)

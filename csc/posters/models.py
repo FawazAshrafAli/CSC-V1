@@ -4,10 +4,15 @@ from ckeditor.fields import RichTextField
 from csc_center.models import CscCenter
 from django.urls import reverse
 
+from services.models import Service
+from csc_center.models import State
+
 class Poster(models.Model):
     title = models.CharField(max_length=100)
     poster = models.ImageField(upload_to="posters/")
-    description = RichTextField(blank=True, null=True)
+    state = models.ForeignKey(State, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+
     slug = models.SlugField(blank=True, null=True)
 
     created = models.DateTimeField(auto_now_add=True)
@@ -39,7 +44,8 @@ class CustomPoster(models.Model):
     csc_center = models.ForeignKey(CscCenter, on_delete=models.CASCADE)
     poster = models.ImageField(upload_to="custom_posters/", null=False, blank=False)
     title =  models.CharField(max_length=100)
-    description = models.TextField(null=False, blank=False)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, null=True)
+
     slug = models.SlugField(null=True, blank=True)
 
     created = models.DateTimeField(auto_now_add=True)

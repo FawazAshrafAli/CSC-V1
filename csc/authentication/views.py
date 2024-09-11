@@ -196,7 +196,7 @@ class UserRegistrationView(CreateView):
         user.save()
 
         self.send_verification_email(user)
-        messages.success(request, "A verification email has been send to your email address.")
+        messages.success(request, "A verification email has been send to your email address.")        
         return redirect(self.success_url)
         
 
@@ -217,6 +217,7 @@ class UserRegistrationView(CreateView):
 
 
 class VerifyEamilAddressView(View):
+    success_url = reverse_lazy('authentication:login')
 
     def get(self, request, *args, **kwargs):
         try:
@@ -230,7 +231,8 @@ class VerifyEamilAddressView(View):
                 user.verification_token = None  # Clear the token
                 user.save()
                 messages.success(request, "Your email has been verified successfully.")
+                logout(request)
         except User.DoesNotExist:
             messages.error(request, "Invalid verification link.")
 
-        return redirect('authentication:login')
+        return redirect(self.success_url)

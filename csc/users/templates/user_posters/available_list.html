@@ -106,7 +106,25 @@
         <!-- Listings -->
         <div class="col-lg-12 col-md-12">
           <div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
-            <h4>Available Posters</h4>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h4>Available Posters</h4>
+
+              <div class="col-lg-9">
+                <!-- Sort by -->
+                <div class="sort-by">
+                    <div class="sort-by-select">
+                        <select data-placeholder="List By Service" id="block-filter-dropdown" class="chosen-select-no-single">
+                            <option value="" hidden disabled selected>List By Service</option>
+                            {% for service in services %}
+                            <option value="{{service.slug}}">{{service.first_name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <!-- Sort by / End -->
+              </div>
+            </div>
+
             <br>
             <table id="poster-table">
               <thead>
@@ -114,6 +132,7 @@
                   <th>No</th>
                   <th id="th-image">Image</th>
                   <th style="text-align:center">Title</th>
+                  <th style="text-align:center">Service</th>
                   <th></th>
                 </tr>
               </thead>          
@@ -125,6 +144,7 @@
                     <img src="{% if poster.poster %} {{poster.poster.url}} {% else %} {% static 'w3/images/no_image.png' %} {% endif %}" alt="Product Image">
                   </td>
                   <td style="text-align:center">{{ poster.title }}</td>
+                  <td style="text-align:center">{{ poster.service.first_name }}</td>
                   <td style="text-align: right; padding-right: 10px;"><a href="{% url 'users:create_poster' poster.slug %}" class="button gray"><i class="sl sl-icon-plus"></i> Create Poster</a></td>
                 </tr>
                 {% endfor %}
@@ -177,6 +197,7 @@
                         <img src="${ poster.poster ? poster.poster : '/static/w3/images/no_image.png'}" alt="Product Image">
                       </td>
                       <td style="text-align:center">${ poster.title }</td>
+                      <td style="text-align:center">${ poster.service }</td>
                       <td style="text-align: right; padding-right: 10px;"><a href="/users/create_poster/${poster.slug}" class="button gray"><i class="sl sl-icon-plus"></i> Create Poster</a></td>
                     </tr>
                   `);
@@ -185,6 +206,7 @@
             } else {
               $('#poster-content').html(`<h3 style="color:red;">Your current csc center is not yet activated.</h3>`);
             }
+            paginator();
           },
           error: error => {
             console.error('Error: ', error);
@@ -195,8 +217,6 @@
 
       const center = localStorage.getItem('centerSlug');
       const user = localStorage.getItem('cscUser');
-
-      console.log(center);
 
       if (user == `{{request.user.email}}` && center != `{{center.slug}}` ) {
         console.log("entered")

@@ -61,14 +61,26 @@
                                 <input type="file" name="poster" required>
                             </div>
                         </div>
-                        <!-- Description -->
-                        <div class="form">
-                            <h5>Description</h5>
-                            {% comment %} <div> {% endcomment %}
-                                {{ form.media }}
-						        {{ form.description }}
-                            {% comment %} </div> {% endcomment %}
-                        </div>
+                        <div class="row with-forms">
+                            <div class="col-md-6">
+                                <h5>State <i class="tip" data-tip-content="State"></i></h5>
+                                <select class="chosen-select" name="state" data-placeholder="Select State" required>
+                                    <option label="Select State"></option>
+                                    {% for state in states %}
+                                    <option value="{{state.pk}}">{{state.state}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Service <i class="tip" data-tip-content="Service"></i></h5>
+                                <select class="chosen-select" name="service" data-placeholder="Select Service" required>
+                                    <option label="Select Service"></option>
+                                    {% for service in services %}
+                                    <option value="{{service.slug}}">{{service.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>                        
                         
                     </div>
                     <!-- Section / End -->                    

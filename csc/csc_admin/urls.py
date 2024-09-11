@@ -6,7 +6,7 @@ from .views import (
     CreateFaqView, ListFaqView, FaqDetailView,
     UpdateFaqView, DeleteFaqView,
 
-    EnquiryListView, DeleteEnquiryView,
+    EnquiryListView, DeleteEnquiryView, CscCenterEnquiriesListView,
     
     ListServiceView, DetailServiceView, UpdateServiceView, 
     CreateServiceView, DeleteServiceView, RemoveServiceImageView,
@@ -67,6 +67,7 @@ urlpatterns = [
 
     path('enquiries/', EnquiryListView.as_view(), name="enquiries"),
     path('delete_enquiry/<str:slug>', DeleteEnquiryView.as_view(), name="delete_enquiry"),
+    path('centers_enquiries/', CscCenterEnquiriesListView.as_view(), name="centers_enquiries"),
 
     path("services/", ListServiceView.as_view(), name="services"),
     path("service/<str:slug>", DetailServiceView.as_view(), name="service"),

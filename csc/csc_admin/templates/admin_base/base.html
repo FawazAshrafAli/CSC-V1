@@ -254,7 +254,7 @@
 
                         <li><a href="{% url 'csc_admin:faqs' %}" {% if faq_page %} class="current" {% endif %}>FAQ</a></li>
 
-                        <li><a href="{% url 'csc_admin:enquiries' %}" {% if enquiry_page %} class="current" {% endif %}>Enquiry</a></li>
+                        <li><a href="{% url 'csc_admin:enquiries' %}" {% if enquiry_page %} class="current" {% endif %}>Enquiries</a></li>
 					</ul>
 				</nav>
 				<div class="clearfix"></div>
@@ -353,8 +353,12 @@
 					</ul>	
 				</li>
 
-                <li {% if enquiry_page %} class="active" {% endif %}><a href="{% url 'csc_admin:enquiries' %}"><i class="fa fa-comment"></i> Enquiry</a></li>
-
+                <li {% if enquiry_page %} class="active" {% endif %}><a><i class="fa fa-question"></i> Enquiries</a>
+					<ul>
+						<li><a href="{% url 'csc_admin:enquiries' %}">List Enquiries</a></li>
+						<li><a href="{% url 'csc_admin:centers_enquiries' %}">List CSC Centers Enquiries</a></li>						
+					</ul>	
+				</li>
 			</ul>
             
             <ul data-submenu-title="Components">

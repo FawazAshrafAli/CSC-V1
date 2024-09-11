@@ -162,7 +162,8 @@
                             </div>
                             <div class="col-md-6">
                                 <h5>Upload Banner</h5>
-                                <input type="file" name="banner" required>
+                                <input type="file" name="banner" multiple required>
+                                <span><small>Note: While choosing files select multiple images by holding ctrl button.</small></span>
                             </div>
                         </div>
                     </div>
@@ -517,8 +518,6 @@
 {% endblock content %}
 
 {% block scripts %}
-<!-- DropZone | Documentation: http://dropzonejs.com -->
-<script type="text/javascript" src="{% static 'scripts/dropzone.js' %}"></script>
 
 
 <!-- Style Switcher

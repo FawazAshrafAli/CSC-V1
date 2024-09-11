@@ -3,7 +3,7 @@ from django.db.models.query import QuerySet
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView, ListView, View, CreateView, DetailView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.http import Http404
 from django.contrib import messages
 from datetime import datetime
@@ -16,15 +16,13 @@ from django.contrib.auth import authenticate, logout
 from django.views.decorators.csrf import csrf_exempt
 import base64
 
-from posters.forms import PosterFooterTextForm
-
 from authentication.models import User
 from posters.models import Poster, CustomPoster
 from products.models import Product, ProductEnquiry
 from services.models import Service, ServiceEnquiry
 from csc_center.models import (CscCenter, SocialMediaLink, State,
                                 District, Block, CscKeyword, 
-                                CscNameType)
+                                CscNameType, Banner)
 
 class BaseUserView(LoginRequiredMixin):
     login_url = reverse_lazy('authentication:login')
@@ -91,7 +89,8 @@ class GetCenterDataView(BaseUserView, View):
                 })
             
             data = {
-                'csc_center': center,
+                # 'csc_center': center,
+                'csc_center': True,
                 'services_count': center.services.all().count(),
                 'products_count': center.products.all().count(),
                 "service_enquiries_count" : service_enquiries.count(),
@@ -331,12 +330,12 @@ class AddCscCenterView(CscCenterBaseView, CreateView):
         zipcode = request.POST.get('zipcode')
         landmark_or_building_name = request.POST.get('landmark_or_building_name')
         street = request.POST.get('address')
-        logo = request.FILES.get('logo') # dropzone
-        banner = request.FILES.get('banner') # dropzone
+        logo = request.FILES.get('logo') 
+        banners = request.FILES.getlist('banner')
         description = request.POST.get('description')
         owner = request.POST.get('owner')
         email = request.POST.get('email')
-        website = request.POST.get('website') # optional
+        website = request.POST.get('website')
         contact_number = request.POST.get('contact_number')
         mobile_number = request.POST.get('mobile_number')
         whatsapp_number = request.POST.get('whatsapp_number')        
@@ -413,7 +412,7 @@ class AddCscCenterView(CscCenterBaseView, CreateView):
             name = name, type = type, state = state,
             district = district,block = block,location = location,
             zipcode = zipcode, landmark_or_building_name = landmark_or_building_name,
-            street = street, logo = logo, banner = banner,
+            street = street, logo = logo,
             description = description, contact_number = contact_number,
             mobile_number = mobile_number, whatsapp_number = whatsapp_number, owner = owner,
             email = email, website = website, mon_opening_time = mon_opening_time, 
@@ -428,15 +427,19 @@ class AddCscCenterView(CscCenterBaseView, CreateView):
         )
 
         if not User.objects.filter(email = email).exists():
-            User.objects.create_user(username = email, email = email, password = contact_number)
-
-        messages.success(request, "Added CSC center")      
+            User.objects.create_user(username = email, email = email, password = contact_number)              
         
         # after creation of object
         self.object.keywords.set(keywords)
         self.object.services.set(services)
         self.object.products.set(products)
         self.object.save()
+
+        if banners:
+            for banner in banners:
+                banner_obj, created = Banner.objects.get_or_create(csc_center = self.object, banner_image = banner)
+                self.object.banners.add(banner_obj)
+            self.object.save()
 
         if social_medias and social_links:
             social_media_length = len(social_medias)
@@ -453,6 +456,10 @@ class AddCscCenterView(CscCenterBaseView, CreateView):
                 
                     self.object.social_media_links.set(social_media_list)
                     self.object.save()
+
+        messages.success(request, "Added CSC center")
+        if not User.objects.filter(email = email).exists():            
+            return redirect(reverse('authentication:user_registration', kwargs={'email': self.object.email}))
         
         return redirect(self.success_url)
     
@@ -514,7 +521,7 @@ class UpdateCscCenterView(CscCenterBaseView, UpdateView):
         landmark_or_building_name = request.POST.get('landmark_or_building_name')
         street = request.POST.get('address')
         logo = request.FILES.get('logo') # dropzone
-        banner = request.FILES.get('banner') # dropzone
+        banners = request.FILES.getlist('banner') # dropzone
         description = request.POST.get('description')
         owner = request.POST.get('owner')
         email = request.POST.get('email')
@@ -607,6 +614,12 @@ class UpdateCscCenterView(CscCenterBaseView, UpdateView):
             logo = self.object.logo
         self.object.logo = logo
 
+        if banners:
+            for banner in banners:
+                banner_obj, created = Banner.objects.get_or_create(csc_center = self.object, banner_image = banner)
+                self.object.banners.add(banner_obj)
+            self.object.save()
+
         if not banner:
             banner = self.object.banner
         self.object.banner = banner
@@ -697,27 +710,31 @@ class AvailablePosterView(BasePosterView, ListView):
     context_object_name = 'posters'
     template_name = "user_posters/available_list.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["services"] = Service.objects.all()
+        return context
+
     def get_queryset(self):
         center = CscCenter.objects.filter(email = self.request.user.email, is_active = True).first()
         if center:
-            return self.model.objects.all()
+            return self.model.objects.filter(state = center.state)
         return None
     
     def get(self, request, *args, **kwargs):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             data = {}
             center_slug = request.GET.get('center_slug')
-            print(center_slug)
             try:
                 center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email, is_active = True)
                 data['csc_center'] = True if center else False
-                posters = self.model.objects.all() if center else None
+                posters = self.model.objects.filter(state = center.state) if center else None
                 if posters:
                     list_posters = []
                     for poster in posters:
-                        list_posters.append({"title": poster.title, "slug": poster.slug, "poster": poster.poster.url if poster.poster else None})
+                        list_posters.append({"title": poster.title, "slug": poster.slug, "service": poster.service.first_name, "poster": poster.poster.url if poster.poster else None})
                     data["posters"] = list_posters
-                # return JsonResponse(data)
+                    print(list_posters)
             except Http404:
                 data = {{'error': 'Not an active csc center'}}
 
@@ -788,7 +805,7 @@ class CreatePosterView(BasePosterView, CreateView):
     template_name = "user_posters/create.html"
     success_url = reverse_lazy('users:available_posters')
     redirect_url = success_url
-    fields = ["csc_center", "poster", "title", "description"]
+    fields = ["csc_center", "poster", "title", "service"]
 
     def get_object(self, **kwargs):
         try:
@@ -799,26 +816,15 @@ class CreatePosterView(BasePosterView, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['poster'] = self.get_object()
-        context['form'] = PosterFooterTextForm()        
         return context
-
-    # def get(self, request, *args, **kwargs):
-    #     poster = self.get_object()
-    #     context = self.get_context_data(**kwargs)
-    #     return render(request, self.template_name, context)
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Successfully created custom poster.")
+        return response
     
     def post(self, request, *args, **kwargs):
-        form = PosterFooterTextForm()
-
-        if form.is_valid():
-            text = form.cleaned_data['text']
-            # self.object.description = description
-            # self.object.save()
-        else:
-            form = PosterFooterTextForm()
-        # self.object.save()
-
-        messages.success(request, 'Updated Poster')
+        messages.success(request, 'Created Poster')
         return redirect(self.get_success_url())
 
 
@@ -842,7 +848,12 @@ class SavePosterView(BasePosterView, View):
         try:
             image = request.POST.get('image')
             title =request.POST.get('title')
-            description = request.POST.get('description')
+            service_slug = request.POST.get('service')
+            try:
+                service = get_object_or_404(Service, slug = service_slug)
+            except Http404:
+                messages.error(request, "Invalid Service")
+                return redirect(self.redirect_url)
             if CscCenter.objects.filter(email = request.user.email).count() > 1:
                 csc_center = request.POST.get('csc_center')
                 try:
@@ -859,7 +870,7 @@ class SavePosterView(BasePosterView, View):
             # Decode the base64 string
             image = ContentFile(base64.b64decode(imgstr), name='my_1poster_image.' + ext)
 
-            CustomPoster.objects.create(csc_center = csc_center, poster = image, title = title, description = description)
+            CustomPoster.objects.create(csc_center = csc_center, poster = image, title = title, service = service)
 
             return JsonResponse({'message': 'Success', 'success_url': '/users/my_posters'})
         except Exception as e:

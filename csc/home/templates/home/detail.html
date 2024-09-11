@@ -3,7 +3,6 @@
 
 {% block title_prefix %} {{center.name}} {% endblock title_prefix %}
 
-{% block csc_page %} current {% endblock csc_page %}
 
 {% block content %}
 <style>
@@ -85,6 +84,12 @@
 <section style="padding: 0; margin: 0; bottom: 0; position: relative; top: 0px; ">
 
     <div class="listing-slider mfp-gallery-container margin-bottom-0">
+        {% if center.banners.all|length > 0 %}
+        {% for banner in center.banners.all %}
+        <a href="{{banner.banner_image.url}}" data-background-image="{{banner.banner_image.url}}"
+            class="item mfp-gallery" title="{{center.name}} banner image {{forloop.counter}}"></a>
+        {% endfor %}
+        {% else %}
         <a href="{% static 'images/single-listing-01.jpg' %}" data-background-image="{% static 'images/single-listing-01.jpg' %}"
             class="item mfp-gallery" title="Title 1"></a>
         <a href="{% static 'images/single-listing-02.jpg' %}" data-background-image="{% static 'images/single-listing-02.jpg' %}"
@@ -93,6 +98,7 @@
             class="item mfp-gallery" title="Title 2"></a>
         <a href="{% static 'images/single-listing-04.jpg' %}" data-background-image="{% static 'images/single-listing-04.jpg' %}"
             class="item mfp-gallery" title="Title 4"></a>
+        {% endif %}
     </div>
 
 
@@ -184,7 +190,10 @@
             </form>
         </div>
 
-        {% include "components/message.html" %}        
+        {% include "components/message.html" %}      
+        <div class="col-md-12" style="display: flex; justify-content: center;">
+            <img src="{{center.qr_code_image.url}}" alt="" style="width: 95px;">        
+        </div>
         <div class="col-md-12">
             <h3 class="headline centered margin-bottom-45">
                 <strong class="headline-with-separator">Our Services</strong>
@@ -438,7 +447,6 @@
     <div class="container">
 
         {% if faqs %}
-        {{faqs}}
         <div class="row">
             <div class="col-md-12">
                 <h3 class="headline centered"> Frequently Asked Questions (FAQ) </h3>

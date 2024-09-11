@@ -50,7 +50,7 @@ class ServiceEnquiry(models.Model):
     service = models.ForeignKey("services.Service", on_delete=models.CASCADE)
     message = models.TextField()
 
-    slug = models.SlugField(blank=True, null=True)
+    slug = models.SlugField(blank=True, null=True, max_length=150)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

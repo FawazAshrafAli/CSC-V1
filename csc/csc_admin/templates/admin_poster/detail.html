@@ -72,8 +72,24 @@
                     </div>
                 </div>
                 <div class="col-lg-8" id="poster-description-div" style="background-color: #fff;">
-                    <h5>Description</h5>                    
-                    <div>{{poster.description|safe}}</div>
+                    <br>
+                    <table>
+                        <tr>
+                            <th>Title</th>
+                            <th>&nbsp;:&nbsp;</th>
+                            <td>{{poster.title}}</td>
+                        </tr>
+                        <tr>
+                            <th>State</th>
+                            <th>&nbsp;:&nbsp;</th>
+                            <td>{{poster.state}}</td>
+                        </tr>
+                        <tr>
+                            <th>Service</th>
+                            <th>&nbsp;:&nbsp;</th>
+                            <td>{{poster.service}}</td>
+                        </tr>                                                
+                    </table>
                 </div>
             </div>
         </div>
