@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    HomeView, 
+    HomeView, CheckPaymentView,
     
     ServiceEnquiryListView, DeleteServiceEnquiryView,    
     
@@ -21,6 +21,8 @@ app_name = "users"
 
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
+
+    path('check_payment/', CheckPaymentView.as_view(), name='check_payment'),
 
     path('service_enquiries/', ServiceEnquiryListView.as_view(), name="service_enquiries"),
     path('delete_service_enquiry/<str:slug>', DeleteServiceEnquiryView.as_view(), name="delete_service_enquiry"),    

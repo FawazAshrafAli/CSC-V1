@@ -24,6 +24,29 @@ from csc_center.models import (CscCenter, SocialMediaLink, State,
                                 District, Block, CscKeyword, 
                                 CscNameType, Banner)
 
+def check_payment(center, data):
+    if not center.is_active:
+        if center.live_days < 15:
+            data['light_warning_message'] = f"You are on the 15 days trail period. Please make the payment in the next {15 - center.live_days} days to avoid suspension of your account."
+        else:
+            data['hard_warning_message'] = f"Your account is in danger. Please make the payment as soon as possible to avoid suspension of your account."
+        
+    return data
+
+def check_payment_response(request):
+    center_slug = request.GET.get('center_slug')
+    data = {}
+
+    try:
+        center = get_object_or_404(CscCenter, slug=center_slug)
+        data = check_payment(center, data)
+    
+    except Http404:
+        data['error'] = 'CSC center not found'
+    
+    return data
+
+
 class BaseUserView(LoginRequiredMixin):
     login_url = reverse_lazy('authentication:login')
 
@@ -41,7 +64,17 @@ class BaseUserView(LoginRequiredMixin):
             print(e)
 
         return context
-    
+
+
+class CheckPaymentView(BaseUserView, View):
+    def get(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            
+            data = check_payment_response(request)
+
+            return JsonResponse(data)
+        return super().get(request, *args, *kwargs)
+
 
 class HomeView(BaseUserView, TemplateView):
     template_name = 'user_home/home.html'
@@ -53,7 +86,7 @@ class HomeView(BaseUserView, TemplateView):
         center_slug = self.request.GET.get('center_slug')     
         if center_slug:
             try:
-                csc_center = get_object_or_404(CscCenter, slug = center_slug, is_active = True)
+                csc_center = get_object_or_404(CscCenter, slug = center_slug)
             except Http404:
                 pass
 
@@ -66,20 +99,16 @@ class HomeView(BaseUserView, TemplateView):
 class GetCenterDataView(BaseUserView, View):
     def get(self, request, *args, **kwargs):
         center_slug = request.GET.get('center_slug')
+
         data = {}
 
         try:
             center = get_object_or_404(CscCenter, slug = center_slug)
 
-            data['services_count'] = center.services.all().count()
-            data['products_count'] = center.products.all().count()
+            data = check_payment(center, data)
 
-            if not center.is_active:
-                if center.live_days < 10:
-                    data['warning_message'] = f"You have not yet completed your payment. Please make the payment in the next {10 - center.live_days} days to avoid suspension of your account."
-                else:
-                    print("entered")
-                    data['warning_message'] = f"Your account is in danger. Please make the payment as soon as possible to avoid suspension of your account."
+            data['services_count'] = center.services.all().count()
+            data['products_count'] = center.products.all().count()            
 
             service_enquiries = ServiceEnquiry.objects.filter(csc_center = center)
             product_enquiries = ProductEnquiry.objects.filter(csc_center = center)
@@ -95,7 +124,7 @@ class GetCenterDataView(BaseUserView, View):
                     "slug": enquiry.slug
                 })
                 
-            data['service_enqui8ries'] = service_enquiry_list
+            data['service_enquiries'] = service_enquiry_list
 
             product_enquiry_list = []
             for enquiry in product_enquiries:
@@ -106,15 +135,12 @@ class GetCenterDataView(BaseUserView, View):
                 })
 
             data['product_enquiries'] = product_enquiry_list
-            
+
         except Http404:
             data = {"error": "Selected center is not yet active."}
             
+        
         return JsonResponse(data)
-
-        
-
-        
 
 
 # Service
@@ -145,8 +171,12 @@ class ServiceEnquiryListView(BaseServiceView, ListView):
     def get(self, request, *args, **kwargs):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             center_slug = request.GET.get('center_slug')
+            data = {}
             try:
-                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email, is_active = True)
+                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email)
+
+                data = check_payment(center, data)
+
                 enquiries = self.model.objects.filter(csc_center = center)
                 enquiries_list = []
                 for count, enquiry in enumerate(enquiries):
@@ -157,9 +187,11 @@ class ServiceEnquiryListView(BaseServiceView, ListView):
                         'message': enquiry.message, 
                         'service': enquiry.service.first_name, 
                         'slug': enquiry.slug, 'count': count+1})
-                return JsonResponse({'enquiries': enquiries_list, 'center': True if center else False})
+                    
+                data['enquiries'] = enquiries_list
             except Http404:
-                return JsonResponse({'error': 'Not an active csc center.'})
+                data['error'] = 'Not an active csc center.'
+            return JsonResponse(data)
         return super().get(request, *args, **kwargs)
 
 
@@ -201,17 +233,16 @@ class ProductEnquiryListView(ProductBaseView, ListView):
         enquiries = self.model.objects.filter(csc_center = center).order_by('-created') if center else None
         return enquiries
     
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     csc_center = CscCenter.objects.filter(email = self.request.user.email, is_active = True).first()
-    #     context['csc_center'] = csc_center
-    #     return context
-    
     def get(self, request, *args, **kwargs):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             center_slug = request.GET.get('center_slug')
+
+            data = {}
             try:
-                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email, is_active = True)
+                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email)
+
+                data = check_payment(center, data)
+
                 enquiries = self.model.objects.filter(csc_center = center)
                 enquiries_list = []
                 for count, enquiry in enumerate(enquiries):
@@ -223,9 +254,12 @@ class ProductEnquiryListView(ProductBaseView, ListView):
                         'product': enquiry.product.name, 
                         'slug': enquiry.slug, 
                         'count': count+1})
-                return JsonResponse({'enquiries': enquiries_list, 'csc_center': True if center else False})
+                    
+                data['enquiries'] = enquiries_list
             except Http404:
-                return JsonResponse({'error': 'Not an active csc center.'})
+                data['error'] = 'Not an active csc center.'
+                
+            return JsonResponse(data)
         return super().get(request, *args, **kwargs)
 
 
@@ -278,6 +312,15 @@ class CscCenterListView(CscCenterBaseView, ListView):
 
     def get_queryset(self):
         return CscCenter.objects.filter(email = self.request.user.email)
+    
+    def get(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            
+            data = check_payment_response(request)
+
+            return JsonResponse(data)
+
+        return super().get(request, *args, **kwargs)
     
 
 class DetailCscCenterView(CscCenterBaseView, DetailView):
@@ -735,8 +778,10 @@ class AvailablePosterView(BasePosterView, ListView):
             service_slug = request.GET.get('service_slug')
             query = request.GET.get('query')
             try:
-                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email, is_active = True)
-                data['csc_center'] = True if center else False
+                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email)
+
+                data = check_payment(center, data)
+
                 posters = self.model.objects.filter(state = center.state) if center else None
 
                 if service_slug:
@@ -779,11 +824,13 @@ class MyPosterListView(BasePosterView, ListView):
             center_slug = request.GET.get('center_slug')
             data = {}
             try:
-                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email, is_active = True)
-                data['csc_center'] =  True
+                center = get_object_or_404(CscCenter, slug = center_slug, email = request.user.email)
+
+                data = check_payment(center, data)
+
                 posters = CustomPoster.objects.filter(csc_center = center)
 
-                if posters:
+                if posters and posters.count() > 0:
                     poster_list = []
                     for count, poster in enumerate(posters):
                         poster_list.append({
@@ -794,9 +841,10 @@ class MyPosterListView(BasePosterView, ListView):
                             'count': count+1,
                             'get_absolute_url': poster.get_absolute_url if poster.get_absolute_url else '#',
                             })
-                    data['posters'] = poster_list                    
+                    data['posters'] = poster_list                
+
             except Http404:
-                data['csc_center'] = False
+                data['error'] = "Invalid csc center."
 
             return JsonResponse(data)
         return super().get(request, *args, **kwargs)
@@ -947,7 +995,7 @@ class DownloadPosterView(BasePosterView, View):
 
 ########## My Profile Start ##########
 
-class BaseMyProfileView(BaseUserView, View):
+class BaseMyProfileView(BaseUserView):
     model = User
 
 
@@ -966,6 +1014,14 @@ class MyProfileView(BaseMyProfileView, TemplateView):
         context['user'] = self.get_object()
         return context
     
+    def get(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+
+            data = check_payment_response(request)
+
+            return JsonResponse(data)
+        return super().get(request, *args, *kwargs)
+
 
 class UpdateProfileView(MyProfileView, UpdateView):
     success_url = reverse_lazy('users:my_profile')
