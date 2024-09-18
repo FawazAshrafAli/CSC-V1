@@ -5,6 +5,46 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{% static 'w3/admin_product/css/admin_product.css' %}">
+
+<style>
+    #pop-up-message {
+        display: none;
+
+        z-index: 999;
+
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        padding: 15px;
+        min-width: 360px;
+        
+        background-color: #fff;
+        box-shadow: 0 0 5px #777;
+    }
+
+    #close-pop-up-message {
+        display: flex;
+        align-items: center;
+        height: 25px;
+        border: 1px solid silver;
+        background-color: #fff;
+    }
+
+    #close-pop-up-message:hover {
+        background-color: red;
+    }
+
+    #close-pop-up-message span {
+        color: red;
+    }
+
+    #close-pop-up-message:hover span {
+        color: #fff;
+    }
+
+</style>
 {% endblock styles %}
 
 {% block content %}
@@ -41,7 +81,7 @@
 <!-- Delete Confirmation Box Start-->
 <div id="delete-confirmation-box" style="display: none;">
     <div class="modal-content">            
-        <h4><span>Deleting</span> Poster '{{poster.name}}' . . .</h4>
+        <h4><span>Deleting</span> Poster '{{poster.title}}' . . .</h4>
         <h5>Are you sure?</h5>                        
     </div>
     <br>
@@ -51,11 +91,14 @@
     </form>
 </div>
 <!-- Delete Confirmation Box Start-->
+
+<div id="pop-up-message" style="display: fixed; top:50%; left:50%; transform: translate(-50%, -50%);"></div>	
+
 <div class="row">
     <div class="col-lg-12 col-md-12" id="payment-content">
     </div>
 </div>
-<div class="row" style="background-color: #fff;">		
+<div class="row" style="background-color: #fff;">
     <!-- Listings -->
     <div class="col-lg-12 col-md-12" id="poster-card-col">
         <div class="dashboard-list-box margin-top-0">
@@ -104,17 +147,15 @@
 <script>    
         $('#poster-more-option-btn').click(() => {
             $('#delete-toggle-btn').show();
-            $('#update-toggle-btn').show();
             setTimeout(() => {
                 $('#delete-toggle-btn').hide();
-                $('#update-toggle-btn').hide();
             }, 5000)
         });
 
         $('#delete-toggle-btn').click(() => {
             $('#delete-confirmation-box').show();
             $('#delete-toggle-btn').hide()
-            $('#update-toggle-btn').hide()
+            $('#pop-up-message').hide()
         });
 
         $('#cancel-deletion-btn').click(() => {
@@ -125,6 +166,55 @@
 
 <script>
     $(document).ready(() => {
+        $('#download-poster-btn').click(() => {
+
+            $('#delete-confirmation-box').hide();
+
+            const unpaid = localStorage.getItem('unpaidCsc');
+
+            
+            if (unpaid && (unpaid == true || unpaid == 'true')) {
+                
+                $('#pop-up-message').html(`
+                    <div style="display: flex; justify-content: flex-end;">
+                        <button id="close-pop-up-message"><span>X</span></button>
+                    </div>
+                    <h3><span style="color:red;">Oops!</span> You have not completed the payment</h3>
+                    <h5>Please complete the payment for getting access to poster downloading.<h5>
+                    <br>
+                    <div style="text-align: center;;">
+                        <a href="#" class="button" style="text-transform: uppercase;">Complete Payment</a>
+                    </div>
+                `)
+                $('#pop-up-message').show()
+            } else {
+                 // Get the image URL
+            var imageUrl = `{{poster.poster.url}}`;
+            
+            // Create a temporary anchor element
+            var link = document.createElement('a');
+            link.href = imageUrl;
+            
+            // Set download attribute with a filename
+            link.download = 'downloaded_image.jpg';
+            
+            // Append the anchor to the body
+            document.body.appendChild(link);
+            
+            // Trigger the download by simulating a click
+            link.click();
+            
+            // Remove the anchor from the DOM
+            document.body.removeChild(link);
+            }
+
+        });
+        
+        // Close pop up message
+        $(document).on('click', '#close-pop-up-message', function () {
+            $('#pop-up-message').hide();
+        })
+        
         // Check Payment
         function checkPayment(center) {
             $.ajax({
@@ -139,6 +229,12 @@
                     ${ response.light_warning_message ? `<div class="col-md-12" style="background-color: orange; margin-bottom: 5px;"><h5 style="color: #fff"> ${response.light_warning_message} <span style="display: inline-block;">Click <a href="#" style="color: blue; text-decoration: underline;">Pay Now</a> for payment</span></h5></div>`: ''}
                     ${ response.hard_warning_message ? `<div class="col-md-12" style="background-color: orangered; margin-bottom: 5px;"><h5 style="color: #fff"> ${response.hard_warning_message} <span style="display: inline-block;">Click <a href="#" style="color: blue; text-decoration: underline;">Pay Now</a> for payment</span></h5></div>`: ''}
                   `)
+
+                  if (response.light_warning_message || response.hard_warning_message) {
+                    localStorage.setItem('unpaidCsc', true);
+                  } else {
+                    localStorage.removeItem('unpaidCsc');
+                  }
                 }
               },
               error: error => console.error("Error: ", error),

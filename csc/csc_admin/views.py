@@ -28,6 +28,23 @@ from services.models import Service, ServiceEnquiry
 from blog.models import Blog, Category, Tag
 from posters.models import Poster
 from .models import CscCenterAction
+from payment.models import PaymentHistory
+
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
+def send_confirm_creation(center, payment_link):
+    subject = 'Welcome to Our Website'
+    from_email = 'w3digitalpmna@gmail.com'
+    to_email = [center.email]
+    
+    html_content = render_to_string('admin_email_templates/csc_approve.html', {'name': center.name, 'owner': center.owner if center.owner else center.email, 'payment_link': payment_link})
+    text_content = strip_tags(html_content)
+    
+    email = EmailMultiAlternatives(subject, text_content, from_email, to_email)
+    email.attach_alternative(html_content, "text/html")
+    email.send()
 
 class BaseAdminView(LoginRequiredMixin):
     login_url = reverse_lazy("authentication:login")
@@ -747,6 +764,12 @@ class ApproveCscCenterRequestView(BaseAdminCscCenterView, UpdateView):
 
         self.object.status = "Approved"
         self.object.save()
+
+        payment_link = f"http://www.example.com/"
+        
+        if self.object.email and payment_link:
+            
+            send_confirm_creation(center = self.object, payment_link = payment_link)
 
         messages.success(request, "Request Approved")
         return redirect(self.get_success_url())
@@ -2150,3 +2173,15 @@ class CscCenterEnquiriesListView(EnquiryBaseView, ListView):
         return data
         
 ############### ENQUIRY END ###############
+
+
+class PaymentHistoryView(BaseAdminView, ListView):
+    model = PaymentHistory
+    queryset = model.objects.all().order_by('-created')
+    template_name = "admin_csc_center/payment_history.html"
+    context_object_name = 'payments'
+
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+        context['csc_center_page'] = True
+        return context

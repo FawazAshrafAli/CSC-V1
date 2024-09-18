@@ -1,0 +1,130 @@
+{% extends "base/base.html" %}
+
+{% block title_prefix %} Payment {% endblock title_prefix %}
+
+{% block styles %}
+<script src="https://js.stripe.com/v3/"></script>
+
+<style>
+
+    .payment-form {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h4 {
+        text-align: center;
+        text-transform: uppercase;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    input[type="text"], input[type="email"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #218838;
+    }
+
+    .error-message {
+        color: red;
+        margin-bottom: 10px;
+    }
+
+    /* Style for Stripe's card element */
+    .StripeElement {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    /* Placeholder styling for Stripe Elements */
+    .StripeElement--focus {
+        border-color: #28a745;
+    }
+
+    .StripeElement--invalid {
+        border-color: #dc3545;
+    }
+
+    .StripeElement--webkit-autofill {
+        background-color: #fefde5 !important;
+    }
+</style>
+{% endblock styles %}
+
+{% block content %}
+<div class="main-search-container plain-color">
+	<div class="main-search-inner">
+
+		<div class="container">
+            <style>
+                table {
+                    width: 100%;
+                }
+                td {
+                    text-align: right;
+                }
+            </style>
+			<div class="row">
+				{% include "components/message.html" %}
+				<div class="col-md-12">
+                    <div class="payment-form">
+                        <h4>Payment</h4>
+                        <hr>
+                        <table style="text-overflow: ellipsis; overflow-x: hidden;">                       
+                            <tr>
+                                <th>Amount</th>
+                                <th>&nbsp;:&nbsp;</th>
+                                <td>{{amount}} INR</td>                                
+                            </tr>                            
+                        </table>
+                        
+                        <br>                       
+                        <form action="{% url 'payment:success' %}" method="POST">
+                            <script
+                                src="https://checkout.razorpay.com/v1/checkout.js"
+                                data-key="{{ razorpay_key_id }}"  <!-- Razorpay API Key -->
+                                data-amount="{{ amount|floatformat:2 }}"  <!-- INR amount -->
+                                data-currency="{{ currency }}"  <!-- INR currency -->
+                                data-order_id="{{ razorpay_order_id }}"  <!-- Razorpay Order ID -->
+                                data-buttontext="Pay with Razorpay"
+                                data-name="Your Test Store"
+                                data-description="Payment for Test Order"
+                                data-theme.color="#F37254">
+                            </script>
+                            <input type="hidden" name="razorpay_order_id" value="{{razorpay_order_id}}">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                        </form>
+                    </div>            
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

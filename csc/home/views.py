@@ -86,6 +86,18 @@ class HomePageView(BaseHomeView, TemplateView):
 
 #         return JsonResponse(response_data, safe=False, status=200)    
 
+import json
+
+def getStates(request):
+    # Open and read the JSON file
+    with open(r'C:\Users\HP\Downloads\cities.json', 'r') as file:
+        data = json.load(file)
+
+        return JsonResponse(data, safe=False)
+        # print(f"Name: {data['name']}")
+        # print(f"Age: {data['age']}")
+        # print(f"City: {data['city']}")
+        # print(f"Skills: {', '.join(data['skills'])}")
 
 
 

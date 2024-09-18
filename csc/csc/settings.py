@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'users',
     'posters',
     'faq',
+    'payment',
 ]
 
 MIDDLEWARE = [
@@ -255,3 +256,8 @@ LOGGING = {
 
 SITE_PROTOCOL = 'https'
 SITE_DOMAIN = 'cscindia.info'
+
+
+# Razor Pay
+RAZORPAY_KEY_ID = "rzp_test_m4LydPsT6mF9n1"
+RAZORPAY_KEY_SECRET = "p90CiA9zQAcNEI74kjLvpph5"

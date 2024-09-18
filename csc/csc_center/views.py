@@ -4,12 +4,13 @@ from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from datetime import datetime
 from django.http import Http404
+import uuid
+
 
 from .models import CscCenter, CscKeyword, CscNameType, State, District, Block, SocialMediaLink, Banner
 from services.models import Service
 from products.models import Product
 from authentication.models import User
-
 
 class AddCscCenterView(CreateView):
     template_name = 'csc_center/add.html'
@@ -176,8 +177,11 @@ class AddCscCenterView(CreateView):
 
 
         messages.success(request, "Added CSC center")
+        unique_token = str(uuid.uuid4())
+
+        amount = 1
+        
         if not User.objects.filter(email = email).exists():            
             return redirect(reverse('authentication:user_registration', kwargs={'email': self.object.email}))
-        
         
         return redirect(self.success_url)

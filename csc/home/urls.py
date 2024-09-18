@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     HomePageView, SearchCscCenterView,
     FilterAndSortCscCenterView, CscCenterDetailView,
-    NearMeCscCenterView, ServiceRequestView, ProductRequestView
+    NearMeCscCenterView, ServiceRequestView, ProductRequestView, getStates
 )
 
 app_name = "home"
@@ -18,4 +18,6 @@ urlpatterns = [
 
 
     path('csc_center/<slug>', CscCenterDetailView.as_view(), name="csc_center"),
+
+    path('states/', getStates, name="states"),
 ]
