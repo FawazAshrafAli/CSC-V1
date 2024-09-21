@@ -172,6 +172,8 @@
 
 						<li><a href="{% url 'users:product_enquiries' %}" {% if product_page %} class="current" {% endif %}>Product Enquiries</a></li>
 
+						<li><a href="{% url 'users:order_histories' %}" {% if order_page %} class="current" {% endif %}>Order History</a></li>
+
 					</ul>
 				</nav>
 				<div class="clearfix"></div>
@@ -242,6 +244,8 @@
 				<li {% if service_page %} class="active" {% endif %}><a href="{% url 'users:service_enquiries' %}"><i class="fa fa-handshake"></i> Service Enquiries</a></li>				
 
 				<li {% if product_page %} class="active" {% endif %}><a href="{% url 'users:product_enquiries' %}"><i class="fa fa-box"></i> Product Enquiries</a></li>
+
+				<li {% if order_page %} class="active" {% endif %}><a href="{% url 'users:order_histories' %}"><i class="fa fa-history"></i> Order History</a></li>
 
 			</ul>					
 

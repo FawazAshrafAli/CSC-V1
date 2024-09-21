@@ -17,6 +17,10 @@ from services.models import Service, ServiceEnquiry
 from products.models import Product, ProductEnquiry
 from faq.models import Faq
 
+
+class Error404(TemplateView):
+    template_name = "error404.html"
+
 class BaseHomeView(View):
     def get_context_data(self, **kwargs):
         context = {}

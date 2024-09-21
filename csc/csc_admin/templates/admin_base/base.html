@@ -53,7 +53,7 @@
 <!-- Pop Up Box Style -->
 <style>
     #pop-up-box {
-        display: none;
+        {% comment %} display: none; {% endcomment %}
         position: fixed;
         left: 50%;
         top: 50%;
@@ -154,7 +154,7 @@
         align-items: center;
     }
 
-    #pop-up-add-btn {
+    #pop-up-add-btn, #save-price-btn {
         color: #fff;
         text-transform: uppercase;
         background: linear-gradient(to bottom, darkgreen, green, darkgreen);
@@ -162,7 +162,7 @@
         margin-bottom: 5px;
     }
 
-    #pop-up-add-btn:hover {
+    #pop-up-add-btn:hover, #save-price-btn {
         background: linear-gradient(to bottom, lime, green, darkgreen);
     }
 
@@ -315,7 +315,7 @@
                         <li><a href="{% url 'csc_admin:approved_csc_centers' %}">Approved Center Requests</a></li>
                         <li><a href="{% url 'csc_admin:returned_csc_centers' %}">Returned Center Requests</a></li>
                         <li><a href="{% url 'csc_admin:rejected_csc_centers' %}">Rejected Center Requests</a></li>
-                        <li><a href="{% url 'csc_admin:payment_history' %}">Payment History</a></li>
+                        <li><a href="{% url 'csc_admin:payment_histories' %}">Payment History</a></li>
 					</ul>	
 				</li>
 
@@ -375,6 +375,7 @@
 					<ul>
 						<li id="toggle-name-type-pop-up"><a href="#">Name Type</a></li>
 						<li id="toggle-keyword-pop-up"><a href="#">Keywords</a></li>
+                        <li id="toggle-price-pop-up"><a href="#">Price</a></li>
 					</ul>	
 				</li>
             </ul>
@@ -394,7 +395,20 @@
             <h3 id="pop-up-box-heading"></h3>
             <button class="close-btn" aria-label="Close" title="Close">&times;</button>
             <span id="pop-up-msg"></span>
-            <form id="pop-up-form"> </form>
+            <form id="pop-up-form">
+                <div class="form-group">
+                    <input type="checkbox" name="offer" id="offer-input" style="width: 13px;">
+                </div>
+                <div class="form-group">
+                    <label for="price">Price (&#8377;)<span style="color:red">*</span></label>
+                    <input type="number" name="price" id="price-input" placeholder="Enter Price" />
+                </div>                
+                
+                <div id="pop-up-add-btn-div">
+                    <button id="save-price-btn" type="submit">Save Price</button>
+                    <button id="pop-up-cancel-btn" type="button">Cancel</button>
+                </div>
+            </form>
         </div>
         <!-- Pop Up Box Start -->
 	{% block content %}
@@ -637,6 +651,50 @@
 
         $('#toggle-keyword-pop-up').click(() => {
             getKeywords(event);
+            $('#pop-up-box').show();
+        });
+
+        // To populate with price data on toggling price btn
+        function defaultPriceForm() {
+            $('#pop-up-form').html(`
+                {% csrf_token %}
+                
+            `);                    
+        }
+
+        function getPrice(e) {
+            e.preventDefault();
+            popUpDefaultView();
+            $('#pop-up-edit-toggle').hide();
+            $('#pop-up-delete-toggle').hide();
+            $('#pop-up-box-heading').html('Price');
+
+            $.ajax({
+                type: 'get',
+                url: '/payment/get_price/',
+                dataType: 'json',
+                success: response => {
+                    defaultPriceForm();
+                    $('#pop-up-form').prop({"method": "post", "action": `{% url 'csc_admin:add_price' %}` })
+                    $('#pop-up-add-btn').show();                  
+                    if (response.price) {
+                        $('#price-input').val(response.price);
+                    }
+                    if (response.cgst) {
+                        $('#cgst-input').val(response.cgst);
+                    }
+                    if (response.sgst) {
+                        $('#sgst-input').val(response.sgst);
+                    }
+                },
+                error: (jqXHR, textStatus, errorThrow) => {
+                    console.error("Error: ", textStatus, errorThrow);
+                }
+            });
+        };
+
+        $('#toggle-price-pop-up').click(() => {
+            getPrice(event);
             $('#pop-up-box').show();
         });
 
@@ -1077,7 +1135,7 @@
             });
         });
 
-        popUpDefaultView();
+        // popUpDefaultView();
     });
 </script>
 

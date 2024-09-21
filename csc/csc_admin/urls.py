@@ -49,7 +49,9 @@ from .views import (
     EditKeywordView, DeleteKeywordView, CreateCscNameTypeView, 
     EditCscNameTypeView, DeleteCscNameTypeView,
 
-    PaymentHistoryView,
+    PaymentHistoryListView, PaymentHistoryDetailView,
+
+    AddPriceView,
     )
 
 app_name = "csc_admin"
@@ -165,5 +167,8 @@ urlpatterns = [
     path('delete_name_type/<str:slug>', DeleteCscNameTypeView.as_view(), name="delete_name_type"),
     # Pop up box urls end    
 
-    path('payment_history/', PaymentHistoryView.as_view(), name="payment_history"),
+    path('payment_histories/', PaymentHistoryListView.as_view(), name="payment_histories"),
+    path('payment_history/<str:slug>', PaymentHistoryDetailView.as_view(), name="payment_history"),
+
+    path("add_price/", AddPriceView.as_view(), name="add_price"),
     ]

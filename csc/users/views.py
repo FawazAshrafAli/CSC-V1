@@ -14,8 +14,10 @@ from django.core.files.base import ContentFile
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, logout
 from django.db.models import Q
+from datetime import datetime
 import base64
 
+from payment.models import Payment
 from authentication.models import User
 from posters.models import Poster, CustomPoster
 from products.models import Product, ProductEnquiry
@@ -1129,3 +1131,76 @@ class ChangePasswordView(MyProfileView, UpdateView):
         except Exception as e:
             print(f"Exception: {e}")
             return redirect(self.redirect_url)
+
+# Order History
+class OrderHistoryBaseView(BaseUserView):
+    model = Payment
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["order_page"] = True
+        return context
+
+class OrderHistoryListView(OrderHistoryBaseView, ListView):
+    model = Payment
+    template_name = "user_order_history/list.html"
+
+    def get_queryset(self):
+        try:
+            return Payment.objects.filter(csc_center__email = self.request.user.email).first()
+        except Http404:
+            messages.error(self.request, "Invalid CSC Center")
+            return redirect(reverse_lazy('users:login'))
+        
+    def get(self, request, *args, **kwargs):
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            data = {}
+            try:
+                center_slug = request.GET.get('center_slug')
+
+                payments = self.model.objects.filter(csc_center__slug = center_slug).order_by("-created")
+
+                list_payments = []
+
+                for payment in payments:
+                    list_payments.append({
+                        "center" : payment.csc_center.full_name,
+                        "order_id": payment.order_id,
+                        "payment_id": payment.payment_id,
+                        "amount": payment.amount,
+                        "created": datetime.strftime(payment.created, "%d-%b-%Y")
+                    })
+
+                data["payments"] = list_payments
+
+            except Exception as e:
+                print(f"Error: {e}")
+                data["error"] = f"{e}"
+
+            return JsonResponse(data)
+
+        return super().get(request, *args, **kwargs)
+
+
+
+class OrderHistoryDetailView(OrderHistoryBaseView, DetailView):
+    model = Payment
+    template_name = "user_order_history/detail.html"
+    context_object_name = "payment"
+
+    def get_object(self):
+        try:
+            return get_object_or_404(self.model, payment_id = self.kwargs.get('payment_id'))
+        except Http404:
+            messages.warning(self.request, "Invalid payment object")
+            return redirect(reverse_lazy('users:order_histories'))
+        
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        self.object = self.get_object()
+        context["payment"] = self.object
+        service_charge = 50
+        context["service_charge"] = service_charge
+        context["total"] = self.object.amount + service_charge
+        return context

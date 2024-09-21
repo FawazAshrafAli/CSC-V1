@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    HomeView, CheckPaymentView,
+    HomeView, CheckPaymentView, OrderHistoryDetailView, OrderHistoryListView,
     
     ServiceEnquiryListView, DeleteServiceEnquiryView,    
     
@@ -49,4 +49,7 @@ urlpatterns = [
     path('my_profile/', MyProfileView.as_view(), name = 'my_profile'),
     path('update_profile/', UpdateProfileView.as_view(), name='update_profile'),
     path('change_password/', ChangePasswordView.as_view(), name='change_password'),
+
+    path('order_histories/', OrderHistoryListView.as_view(), name="order_histories"),
+    path('order_history/<str:payment_id>', OrderHistoryDetailView.as_view(), name="order_history"),
 ]

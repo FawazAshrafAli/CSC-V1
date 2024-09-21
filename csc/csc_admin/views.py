@@ -28,7 +28,7 @@ from services.models import Service, ServiceEnquiry
 from blog.models import Blog, Category, Tag
 from posters.models import Poster
 from .models import CscCenterAction
-from payment.models import PaymentHistory
+from payment.models import Payment, Price
 
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
@@ -2174,14 +2174,52 @@ class CscCenterEnquiriesListView(EnquiryBaseView, ListView):
         
 ############### ENQUIRY END ###############
 
-
-class PaymentHistoryView(BaseAdminView, ListView):
-    model = PaymentHistory
-    queryset = model.objects.all().order_by('-created')
-    template_name = "admin_csc_center/payment_history.html"
-    context_object_name = 'payments'
+class PaymentHistoryBaseView(BaseAdminView):
+    model = Payment
 
     def get_context_data(self, **kwargs):
         context =  super().get_context_data(**kwargs)
         context['csc_center_page'] = True
         return context
+
+class PaymentHistoryListView(PaymentHistoryBaseView, ListView):
+    queryset = Payment.objects.all().order_by('-created')
+    template_name = "admin_csc_center/list_payment_history.html"
+    context_object_name = 'payments'
+
+
+class PaymentHistoryDetailView(PaymentHistoryBaseView, DetailView):
+    context_object_name = 'payment'
+    template_name = "admin_csc_center/detail_payment_history.html"
+
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+        service_charge = 50
+        context['service_charge'] = service_charge
+        self.object = self.get_object()
+        context['total'] = self.object.amount + service_charge
+        return context
+    
+
+# Price
+class AddPriceView(BaseAdminView, CreateView):
+    model = Price
+    fields = ("price", "cgst", "sgst")
+
+    def post(self, request, *args, **kwargs):
+        if request.headers.get('X-Requested-With') == "XMLHttpRequest":
+            try:
+                price_type = request.POST.get("price_type")
+                price = request.POST.get("price")
+
+                if price_type == "Without GST":
+                    cgst = sgst = price * 0.09
+                    
+                for price_obj in Price.objects.all():
+                    price_obj.delete()
+                Price.objects.create(price=price, cgst=cgst, sgst=sgst)
+                return JsonResponse({"success": True})
+            except Exception as e:
+                print(e)
+                return JsonResponse({"success": False})
+        return super().post(request, *args, **kwargs)

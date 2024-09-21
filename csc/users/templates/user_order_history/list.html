@@ -1,141 +1,102 @@
-{% extends "admin_base/base.html" %}
+{% extends "user_base/base.html" %}
 {% load static %}
 
-{% block title_prefix %}Payment History{% endblock title_prefix %}
-
-{% block content %}
+{% block title_prefix %} Order History {% endblock title_prefix %}
 
 {% block styles %}
-<link rel="stylesheet" href="{% static 'w3/admin_csc_center/css/admin_csc_center.css' %}">
+<link rel="stylesheet" href="{% static 'w3/admin_service/css/admin_service.css' %}">
 
+<!-- Table Styles -->
 <style>
     #payment-table {
-        width: 100%;
-        border-collapse: collapse;
+        min-width: 100%;
         background-color: #fff;
     }
-
     #payment-table tr {
         border-bottom: 1px solid silver;
     }
-
-
+    #payment-table tbody tr{
+        cursor: pointer;
+    }
+    #payment-table tbody tr:hover {
+        color: blue;
+    }
     #payment-table td:first-child,
     #payment-table th:first-child,
     #td-image,
     #th-image {
-        text-align: payment;
+        text-align: center;
     }
-
     #payment-table img {
         padding: 3px 0;
         height: 50px;
     }
-
     #payment-table button {
         height: 0;
         padding: 0 10px;
     }
-
-    .table-responsive {
-        overflow-x: auto;
-        width: 100%;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    th,td {
-        text-align:payment;
-        vertical-align: top;
+    #payment-table tbody tr:hover button {
+        height: 100%;
+        padding: 5px 10px;
     }
 </style>
 {% endblock styles %}
 
-    <!-- Titlebar -->
-    <div id="titlebar">
-        <div class="row">
-            <div class="col-md-12">
-                <h2>Payment History</h2>
-                <!-- Breadcrumbs -->
-                <nav id="breadcrumbs">
-                    <ul>
-                        <li><a href="{% url 'csc_admin:home' %}">Home</a></li>
-                        <li>Payment History</li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-        {% include "components/message.html" %}
+{% block content %}
+
+<!-- Titlebar -->
+<div id="titlebar">
+  <div class="row">
+    <div class="col-md-12">
+      <h2>Order History</h2>
+      <!-- Breadcrumbs -->
+      <nav id="breadcrumbs">
+        <ul>
+          <li><a href="{% url 'users:home' %}">Home</a></li>						
+          <li>Order History</li>
+        </ul>
+      </nav>
     </div>
+  </div>
+  {% include "components/message.html" %}
+</div>
 
+<div id="payment-content">
     <div class="row">
-
-        <!-- Delete Confirmation Box Start-->
-        <div id="delete-confirmation-box" style="display: none;">
-            <div class="modal-content">
-                <h4><span>Deleting</span> CSC Center Request<span id="csc-name" style="color: black"></span> . . .</h4>
-                <h5>Are you sure?</h5>
-            </div>
-            <br>
-            <form method="GET" action="#">
-                <button type="submit" id="confirm-deletion-btn">Delete</button>
-                <button class="cancel-btn" type="button" id="cancel-deletion-btn">Cancel</button>
-            </form>
-        </div>
-        <!-- Delete Confirmation Box Start-->        
-
-        <div class="col-lg-12 col-md-8 padding-right-30">
-            <div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
-                <div class="row">
-                    <div class="col-lg-3">
-                        <h4>Payment History</h4>
-                    </div>                
-                </div>
-                <br>
-                <div class="table-responsive">
-                    <table id="payment-table">
-                        <thead>
-                            <tr>
-                                <th>&nbsp;No</th>
-                                <th>&nbsp;CSC Center</th>
-                                <th style="text-align: center;">Transaction Id</th>
-                                <th style="text-align: center;">Amount</th>
-                                <th style="text-align: center;">Status</th>
-                                <th style="text-align: center;">Payment Method</th>
-                                <th style="text-align: center;">Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="payment-tbody">
-                            {% if payments and payments|length != 0 %}
-                            {% for payment in payments %}
-                            <tr class="row-items" onclick="#" id="tbody-tr-{{payment.pk}}">
-                                <td>&nbsp;{{ forloop.counter }}</td>
-                                <td>&nbsp;{{ payment.csc_center.name }}</td>
-                                <td style="text-align: center;">{{payment.transaction_id}}</td>
-                                <td style="text-align: center;">{{payment.currency}} {{payment.amount}}</td>
-                                <td style="text-align: center;">{{payment.status}}</td>
-                                <td style="text-align: center;">{% if payment.status == "Paid" %} {{payment.payment_method}} {% else %} Nil {% endif %}</td>
-                                <td style="text-align: center;">{{payment.created}}</td>                                     
-                            </tr>
-                            {% endfor %}
-                            {% else %}
-                            <tr><td colspan="6" style="color:red;">No Data</td></tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>                
-            </div>
+        <!-- Listings -->
+        <div class="col-lg-12 col-md-12">
+          <div class="dashboard-list-box margin-top-0" style="background-color: #fff;">              
+          <h4>Order History</h4>
+          <br>
+          <table id="payment-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                {% comment %} <th>Center</th> {% endcomment %}
+                <th style="text-align:center">Order ID</th>
+                <th style="text-align:center">Payment ID</th>
+                <th style="text-align:center">Amount</th>
+                <th style="text-align:center">Date & Time</th>
+              </tr>
+            </thead>
+            <tbody id="payment-tbody">
+              
+              <tr><td colspan="4" style="text-align:center">Loading . . .</td></tr>
+              
+            </tbody>
+          </table>
         </div>
         <!-- Pagination -->
-      <div class="clearfix"></div>
-      <div class="row" id="pagination-row">
-        <div class="col-md-12">
+        <div class="clearfix"></div>
+        <div class="row" id="pagination-row">
+          <div class="col-md-12">
           <!-- Pagination -->
           <div class="pagination-container margin-top-20 margin-bottom-40">
             <nav class="pagination" id="pagination-nav">
               <ul>
                 <li>
                   <a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
-                </li>                
+                </li>
                 <li><a href="#" id="first-page">1</a></li>
                 <li><a href="#" id="second-page">2</a></li>
                 <li><a href="#" id="third-page" >3</a></li>
@@ -145,42 +106,68 @@
               </ul>
             </nav>
           </div>
-        </div>
-      </div>
-        <!-- Csc Posts / End -->        
+        </div>            
     </div>
-
-
-    <!-- Copyrights -->
-    <div class="col-md-12">
-        <div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/"
-                target="_blank">Zentrix Technologies</a></div>
-    </div>
+</div>
+<div class="row">
+  <!-- Copyrights -->
+  <div class="col-md-12">
+    <div class="copyrights">© 2021 CSCIndia. All Rights Reserved.| Powered by <a href="https://www.zentrix.in/" target="_blank">Zentrix Technologies</a></div>
+  </div>
 </div>
 
 {% endblock content %}
 
 {% block scripts %}
 
-
-<script>
-    function toggleCscDeletion(cscSlug, cscName) {
-        $('#delete-confirmation-box form').prop('action', `/admin/delete_csc/${cscSlug}`);
-        $('#csc-name').html(`'${cscName}'`);
-        $('.close-btn').click();
-        $('#delete-confirmation-box').show();
-    };
-
-    $('.cancel-btn').click(function () {
-        $('#delete-confirmation-box').hide();
-        $('.close-btn').click();
-    })
-</script>
-
 <script>
     $(document).ready(() => {
 
-    // Pagination
+      // get payments on the basis of the current center
+      function getOrders(center) {
+        $.ajax({
+          type: 'GET',
+          url: `/users/order_histories/`,
+          dataType: 'json',
+          data: {'center_slug': center},
+
+          success: response => {
+            if (response) {
+              $('#payment-tbody').empty();
+              $(`#center-dropdown option[value='${center}']`).prop('selected', true).trigger('chosen:updated');
+
+              if (response.payments && response.payments.length > 0) {
+                response.payments.forEach((payment, index) => {
+                  let html = `<tr class="row-items" onclick="window.location='/users/order_history/${payment.payment_id}'">
+                  <td>${ index + 1 }</td>
+                  <!-- <td>${ payment.center }</td> -->
+                  <td style="text-align:center">${ payment.order_id }</td>
+                  <td style="text-align:center">${ payment.payment_id }</td>
+                  <td style="text-align:center">${ payment.amount }</td>
+                  <td style="text-align:center">${ payment.created }</td>                  
+                </tr>`
+                  $('#payment-tbody').append(html);
+                })
+              } else {
+                $('#payment-tbody').html(`<tr><td colspan="6" style="color:red; text-transform: capitalize;">No payment to display</tr>`);
+              } 
+            }
+            paginator();
+          },
+          error: error => console.error("Error: ", error),
+        })
+      };
+
+      const center =  localStorage.getItem('centerSlug');
+      const user = localStorage.getItem('cscUser');
+
+      if (user == `{{request.user.username}}` && center) {      
+        getOrders(center);
+      } else {
+        getOrders(`{{center.slug}}`);        
+      }
+
+        // Pagination
       function paginator () {
         let itemsPerPage = 10;
         let currentPage = 1;
@@ -239,8 +226,8 @@
         paginationBtnVisibility();
   
         function renderPage(page) {
-            $('.-items').hide();
-            $('.-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
+            $('.row-items').hide();
+            $('.row-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
             $('#pagination a').removeClass('active');
             $('#pagination a').eq(page).addClass('active');
             $('.prev-page').toggleClass('disabled', page === 1);
@@ -290,5 +277,4 @@
       paginator();
     })
 </script>
-
 {% endblock scripts %}
