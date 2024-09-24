@@ -1,6 +1,47 @@
 {% extends "base/base.html" %}
 {% block page_title %}CSC{% endblock page_title %}
 
+{% block schema_markup %}
+<script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "ItemList",
+      "name": "Table of Contents",
+      "numberOfItems": "3",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Info",
+            "url": "url/cscSlug/#info"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Chapter 2",
+            "url": "URL_of_Chapter_2"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Chapter 3",
+            "url": "URL_of_Chapter_3"
+          }
+        }
+        // Add more chapters as needed
+      ]
+    }
+  </script>
+{% endblock schema_markup %}
+
 {% block main %}
     <div class="row container-fluid mt-3 px-5" style="height: 620px">
         <div class="col-md-6 d-flex justify-content-center border-end">

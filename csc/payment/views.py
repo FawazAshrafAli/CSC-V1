@@ -11,6 +11,7 @@ from django.conf import settings
 from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.templatetags.static import static
+from django.utils import timezone
 
 from .models import PaymentHistory, Payment, Price
 from csc_center.models import CscCenter
@@ -28,7 +29,14 @@ class PaymentView(CreateView):
 
         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
-        amount = 500
+        price_obj = Price.objects.all().first()
+        amount = price_obj.price
+
+        today = timezone.now().date()
+
+        if today >= price_obj.from_date and today <= price_obj.to_date:
+            amount = price_obj.offer_price
+            
         currency = "INR"
 
         payment_data = {
@@ -166,14 +174,17 @@ class PaymentSuccessView(View):
 
 def get_price(request):
     price = Price.objects.all().first()
-    
     if price:
-        data = {
-            "price": price.price,
-            "sgst": price.sgst,
-            "cgst": price.cgst
-        }
-
+        data = {"price": price.price}
+        if price.offer_price:
+            today = timezone.now().date()
+            if today >= price.from_date and today <= price.to_date:
+                data = {
+                "price": price.offer_price,
+                "from_date": price.from_date if price.from_date else None,
+                "to_date": price.to_date if price.to_date else None,
+                "description": price.description if price.description else None,
+            }
     else:
         data = {"error": "No price found!"}
 

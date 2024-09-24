@@ -1,19 +1,21 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block title_prefix %} Blogs {% endblock title_prefix %}
+{% block title_prefix %}Blogs{% endblock title_prefix %}
 
 {% block meta_description %}
-Discover insightful blogs about Common Service Centers (CSC) in India, their services, benefits, and success stories. Stay informed and updated with our latest posts.
+"Discover insightful blogs about Common Service Centers (CSC) in India and their services. Stay informed and updated with our latest posts."
 {% endblock meta_description %}
 
 {% block meta_keywords %}
-CSC Centers in India, Common Service Centre Blogs, CSC Blogs, CSC Services, CSC Success Stories
+"CSC Centers in India, Common Service Centre Blogs, CSC Blogs, CSC Services"
 {% endblock meta_keywords %}
 
-{% block meta_canonical %}
-https://{{ request.get_host }}{{ request.path }}
-{% endblock meta_canonical %}
+{% block og_title_prefix %}Blogs{% endblock og_title_prefix %}
+
+{% block og_description %}
+"Discover insightful blogs about Common Service Centers (CSC) in India and their services. Stay informed and updated with our latest posts."
+{% endblock og_description %}
 
 {% block meta_tags %}{% endblock meta_tags %}
 
@@ -77,7 +79,7 @@ https://{{ request.get_host }}{{ request.path }}
 
 
 
-<script type="application/ld+json">
+{% comment %} <script type="application/ld+json">
 	{
 		"@context": "http://schema.org",
 		"@type": "ItemList",
@@ -90,34 +92,34 @@ https://{{ request.get_host }}{{ request.path }}
 			"item": {
 			"@type": "BlogPosting",
 			"headline": "{{blog.title}}",
-			"image": "{% if blog.image %} {{blog.image.url}} {% endif %}",
-			"datePublished": "{% if blog.published_at %} {{blog.published_at|date:'Y-m-d'}} {% endif %}",
+			"image": "{% if blog.image %}https://{{request.get_host}}{{blog.image.url}}{% endif %}",
+			"datePublished": "{% if blog.published_at %}{{blog.published_at|date:'Y-m-d'}}{% endif %}",
 			"dateModified": "{{blog.updated_at|date:'Y-m-d'}}",
 			"author": {
 				"@type": "Person",
-				"name": "{{blog.author.username}}"
+				"name": "CSCIndia.info"
 			},
 			"publisher": {
 				"@type": "Organization",
 				"name": "CSC Locator",
 				"logo": {
 					"@type": "ImageObject",
-					"url": "/static/images/logo.png"
+					"url": "https://{{request.get_host}}/{% static 'images/logo.png' %}"
 				}
 			},
 			"mainEntityOfPage": {
 				"@type": "WebPage",
 				"@id": "https://{{request.get_host}}/blog/{{blog.slug}}"
 			},
-			"articleBody": "{{blog.summary}}",
+			"articleBody": "<h3>{{blog.title}}</h3><p>{{blog.summary}}</p>",
 			"keywords": "{{blog.get_tags}}",
-			"url": "https://{{request.get_host}}/blog/blog.slug"
+			"url": "https://{{request.get_host}}/blog/{{blog.slug}}"
 			}
 		},
 		{% endfor %}		
 		]
 	}
-</script>
+</script> {% endcomment %}
 
 
 
@@ -186,7 +188,7 @@ https://{{ request.get_host }}{{ request.path }}
 				<!-- Blog Post -->
 				<div id="list-blogs"> 
 					{% for blog in blogs %}
-					<div class="blog-post row-items">				
+					<div class="blog-post row-items" data-title="{{blog.title}}" data-image="{% if blog.image %}{{blog.image.url}}{% endif %}" data-published="{{blog.published_at|date:'Y-m-d'}}" data-modified="{{blog.updated_at|date:'Y-m-d'}}" data-slug="{{blog.slug}}" data-summary="{{blog.summary}}" data-tags="{{blog.list_tags}}">
 						<!-- Img -->
 						<a href="{% url 'blog:detail' blog.slug %}" class="post-img">
 							<img src={% if blog.image %} {{blog.image.url}} {% else %} "{% static 'images/blog-post-01.jpg' %}" {% endif %} alt="">
@@ -284,7 +286,7 @@ https://{{ request.get_host }}{{ request.path }}
 					<!-- Widget / End -->
 					<!-- Widget / End-->
 					<div class="clearfix"></div>
-					<div class="margin-bottom-40"></div>
+					<div class="margin-bottom-40"></div>					
 				</div>
 			</div>
 		</div>
@@ -299,14 +301,14 @@ https://{{ request.get_host }}{{ request.path }}
 
 <script>
 	$(document).ready(() => {
-		// Pagination
+	// Pagination
 	  function paginator () {
 		let itemsPerPage = 3;
 		let currentPage = 1;
 		let totalItems = $('.row-items').length;
 		let totalPages = Math.ceil(totalItems / itemsPerPage);
   
-		$('.prev-page').hide();      
+		$('.prev-page').hide();    
   
 		function paginationBtnVisibility() {
 		  $('#first-page, #second-page, #third-page').removeClass('current-page prev-page next-page uncoming-page earlier-page').hide();
@@ -407,6 +409,86 @@ https://{{ request.get_host }}{{ request.path }}
 	  };
   
 	  paginator();
-	})
+
+	  // Generate schema for blogs on the current page
+	  function generateSchema() {
+
+		// Collect the blogs currently visible in the #list-blogs container
+		const blogs = document.querySelectorAll('#list-blogs .blog-post');
+		const blogList = [];
+	
+		blogs.forEach((blog, index) => {
+			// Check if the blog is visible
+			if (getComputedStyle(blog).display !== 'none') {
+				const blogData = {
+					"@type": "ListItem",
+					"position": blogList.length + 1, // Position is based on visible blogs only
+					"item": {
+						"@type": "BlogPosting",
+						"headline": blog.getAttribute('data-title'),
+						"image": blog.getAttribute('data-image') ? `https://{{request.get_host}}${blog.getAttribute('data-image')}` : '',
+						"datePublished": blog.getAttribute('data-published'),
+						"dateModified": blog.getAttribute('data-modified'),
+						"author": {
+							"@type": "Person",
+							"name": "CSCIndia.info"
+						},
+						"publisher": {
+							"@type": "Organization",
+							"name": "CSC Locator",
+							"logo": {
+								"@type": "ImageObject",
+								"url": "https://{{request.get_host}}/static/images/logo.png"
+							}
+						},
+						"mainEntityOfPage": {
+							"@type": "WebPage",
+							"@id": `https://{{request.get_host}}/blog/${blog.getAttribute('data-slug')}`
+						},
+						"articleBody": `<h3>${blog.getAttribute('data-title')}</h3><p>${blog.getAttribute('data-summary')}</p>`,
+						"keywords": blog.getAttribute('data-tags'),
+						"url": `https://{{request.get_host}}/${blog.getAttribute('data-slug')}`
+					}
+				};
+				blogList.push(blogData);
+			}
+		});
+	
+		// Create the JSON-LD object
+		const schemaData = {
+			"@context": "http://schema.org",
+			"@type": "ItemList",
+			"name": "List of Blog Articles",
+			"itemListElement": blogList
+		};
+	
+		// Remove any existing schema script
+		function removeExistingSchema() {
+			const blogSchemaScript = document.getElementById('blog-schema');
+			if (blogSchemaScript) {
+				blogSchemaScript.remove();
+				console.log('Blog schema removed:', blogSchemaScript.textContent);
+			}
+		}
+
+		removeExistingSchema();
+	
+			// Inject new JSON-LD schema
+			const script = document.createElement('script');
+			script.type = 'application/ld+json';
+			script.id = 'blog-schema';
+			script.textContent = JSON.stringify(schemaData);
+			document.head.appendChild(script);
+		}
+
+		// Call the function when the page loads or when pagination is applied
+		generateSchema();
+		
+		// Optional: Hook this function to pagination changes if applicable
+		$(document).on('click', '.next-page, .prev-page', function() {
+			removeExistingSchema();
+			generateSchema();
+		});
+		})
   </script>
 {% endblock scripts %}

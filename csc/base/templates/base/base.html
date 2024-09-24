@@ -7,11 +7,9 @@
 ================================================== -->
 <title>{% block title_prefix %}{% endblock title_prefix %} - List of Common Service Centres (CSC) in India</title>
 
-<!-- <meta name="description" content="List of Common Service Centres (CSC) in India" /> -->
-<meta name="description" content="{% block meta_description %}{% endblock meta_description %}" />
+<meta name="description" content={% block meta_description %}{% endblock meta_description %} />
 
-<!-- <meta name="keywords" content="CSC Centers in India, Common Service Centres, List of CSC Centers, Find CSC Centers"> -->
-<meta name="keywords" content="{% block meta_keywords %}{% endblock meta_keywords %}" />
+<meta name="keywords" content={% block meta_keywords %}{% endblock meta_keywords %} />
 
 <meta name="author" content="CSCIndia.info" />
 
@@ -24,15 +22,15 @@
 
 <meta property="og:site_name" content="Common Service Centres (CSC) in India" />
 
-<meta property="og:title" content="List of Common Service Centres (CSC) in India" />
+<meta property="og:title" content="{% block og_title_prefix %}{% endblock og_title_prefix %} - List of Common Service Centres (CSC) in India"/>
 
-<meta property="og:image" content="https://cscindia.info/images/logo.png' %}" /> 
+<meta property="og:image" content="https://cscindia.info/images/logo.png" /> 
 
-<meta property="og:description" content="List of Common Service Centres (CSC) in India" />
+<meta property="og:description" content={% block og_description %}{% endblock og_description %} />
 
-<meta property="og:url" content="https://cscindia.info/" />
+<meta property="og:url" content="https://{{request.get_host}}{{request.path}}" />
 
-<link rel="canonical" href="{% block meta_canonical %}{% endblock meta_canonical %}" />
+<link rel="canonical" href="https://{{request.get_host}}{{request.path}}" />
 
 {% block meta_tags %}{% endblock meta_tags %}
 

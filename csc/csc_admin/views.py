@@ -2204,22 +2204,38 @@ class PaymentHistoryDetailView(PaymentHistoryBaseView, DetailView):
 # Price
 class AddPriceView(BaseAdminView, CreateView):
     model = Price
-    fields = ("price", "cgst", "sgst")
+    fields = ("price", "from", "to", "description")
 
     def post(self, request, *args, **kwargs):
         if request.headers.get('X-Requested-With') == "XMLHttpRequest":
             try:
-                price_type = request.POST.get("price_type")
                 price = request.POST.get("price")
+                price = price.strip() if price else None
+                from_date = request.POST.get("from")
+                from_date = from_date.strip() if from_date else None
+                to_date = request.POST.get("to")
+                to_date = to_date.strip() if to_date else None
+                description = request.POST.get("description")
+                description = description.strip() if description else None
 
-                if price_type == "Without GST":
-                    cgst = sgst = price * 0.09
+                if from_date and to_date:
+                    self.object = Price.objects.all().first() if Price.objects.all().count() > 0 else None
+                    if self.object:
+                        self.object.offer_price = price
+                        self.object.from_date = from_date
+                        self.object.to_date = to_date
+                        self.object.description = description
+                        self.object.save()
+                    else:
+                        default_amount = 500
+                        Price.objects.create(price=default_amount, offer_price = price, from_date = from_date, to_date = to_date, description = description)
+                else:
+                    for price_obj in Price.objects.all():
+                        price_obj.delete()
+                    Price.objects.create(price=price)
                     
-                for price_obj in Price.objects.all():
-                    price_obj.delete()
-                Price.objects.create(price=price, cgst=cgst, sgst=sgst)
-                return JsonResponse({"success": True})
+                return JsonResponse({"status": "success"})
             except Exception as e:
                 print(e)
-                return JsonResponse({"success": False})
+                return JsonResponse({"status": "error"})
         return super().post(request, *args, **kwargs)

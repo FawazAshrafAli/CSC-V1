@@ -1,9 +1,169 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block title_prefix %} Home {% endblock title_prefix %}
+{% block title_prefix %}Home{% endblock title_prefix %}
 
-{% block home_nav %} current {% endblock home_nav %}
+{% block meta_description %}"List of Common Service Centres (CSC) in India"{% endblock meta_description %}
+
+{% block meta_keywords %}"CSC Centers in India, Common Service Centres, List of CSC Centers, Find CSC Centers"{% endblock meta_keywords %}
+
+{% block og_title_prefix %}Home{% endblock og_title_prefix %}
+
+{% block og_description %}"List of Common Service Centres (CSC) in India"{% endblock og_description %}
+
+{% block meta_tags %}{% endblock meta_tags %}
+
+{% block schema_markup %}
+<script type="application/ld+json">
+	{
+	  "@context": "http://schema.org",
+	  "@type": "WebSite",
+	  "url": "https://cscindia.info",
+	  "potentialAction": {
+		"@type": "SearchAction",
+		"target": "https://cscindia.info/?state={{state}}&district={{district}}&block={{block}}&pincode={{pincode}}&from=googlesl",
+		"query-input": "required name=search_term_string"
+	  }
+	}
+	</script>
+	<script type="application/ld+json">
+		{
+		  "@context": "https://schema.org",
+		  "@type": "FAQPage",
+		  "mainEntity": [
+		  	{% for faq in faqs %}
+			{
+			  "@type": "Question",
+			  "name": "{{faq.question}}?",
+			  "acceptedAnswer": {
+				"@type": "Answer",
+				"text": "{{faq.answer}}"
+			  }
+			},
+			{% endfor %}
+		  ]
+		}
+		</script>
+		<script type="application/ld+json">
+			{
+			  "@context": "http://schema.org",
+			  "@type": "WebPage",
+			  "mainEntity": {
+				"@type": "CreativeWork",
+				"name": "Keyphrases",
+				"about": [
+				  {
+					"@type": "Thing",
+					"name": "CSC Centers in India"
+				  },
+				  {
+					"@type": "Thing",
+					"name": "Common Service Centres"
+				  },
+				  {
+					"@type": "Thing",
+					"name": "List of CSC Centers"
+				  },
+				  {
+					"@type": "Thing",
+					"name": "Find CSC Centers"
+				  }
+				]
+			  }
+			}
+		</script>
+		<script type="application/ld+json">
+			{
+			"@context": "http://schema.org",
+			"@type": "CollectionPage",
+			"name": "Tags Page",
+			"description": "A page listing various tags for categorizing content.",
+			"url": "https://{{request.get_host}}/tags",
+			"mainEntity": {
+			"@type": "ItemList",
+			"itemListElement": [
+			{% for service in services %}
+			{				
+			"@type": "ListItem",
+			"position": {{forloop.counter}},
+			"url": "https://{{request.get_host}}/tags/{{service.slug}}",
+			"name": "{{service.name}}"
+			},
+			{% endfor %}			
+			// Add more tags as needed
+			]
+			}
+			}
+			</script>
+			<script type="application/ld+json">
+				{
+				  "@context": "http://schema.org",
+				  "@type": "ItemList",
+				  "name": "List of Blog Articles",
+				  "itemListElement": [
+				  {% for blog in blogs %}
+					{
+					"@type": "ListItem",
+					"position": {{forloop.counter}},
+					"item": {
+						"@type": "BlogPosting",
+						"headline": "{{blog.title}}",
+						"image": "{{blog.image.path}}",
+						"datePublished": "{{blog.created_at|date:'Y-m-d'}}",
+						"dateModified": "{{blog.updated_at|date:'Y-m-d'}}",
+						"author": {
+						"@type": "Person",
+						"name": "CSCIndia.info"
+						},
+						"publisher": {
+						"@type": "Organization",
+						"name": "CSCIndia.info",
+						"logo": {
+							"@type": "ImageObject",
+							"url": "https://cscindia.info/images/logo.png"
+						}
+						},
+						"mainEntityOfPage": {
+						"@type": "WebPage",
+						"@id": "http://{{request.get_host}}{% url 'home:view' %}"
+						},
+						"articleBody": "<h3>{{blog.title}}</h3> <p>{{blog.summary}}</p>",
+						"keywords": "{{blog.list_tags}}",
+						"url": "https://{{request.get_host}}{% url 'blog:detail' blog.slug %}"
+					}
+					},
+					{% endfor %}				
+				  ]
+				}
+			</script>
+
+			<script type="application/ld+json">
+				{
+				  "@context": "http://schema.org",
+				  "@type": "ItemList",
+				  "itemListElement": [
+				  {% for service in services %}
+					{
+					  "@type": "ListItem",
+					  "position": 2,
+					  "item": {
+						"@type": "Service",
+						"provider": {
+						  "@type": "Organization",
+						  "name": "CSCIndia.info", 
+						  "url": "https://cscindia.info/",
+						  "logo": "https://cscindia.info/images/logo.png"
+						},
+						"name": "{{service.name}}",
+						"description": "Explore a variety of services offered by Common Service Centers (CSCs) across different locations. Find the best services tailored to your needs, including digital and government services."
+					  }
+					},
+					{% endfor %}					
+					// Add more products and services provided by companies as needed
+				  ]
+				}
+				</script>
+{% endblock schema_markup %}
 
 {% block content %}
 <style>

@@ -1,0 +1,41 @@
+<script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "ItemList",
+      "name": "List of Blog Articles",
+      "itemListElement": [
+      {% for blog in blogs %}
+        {
+          "@type": "ListItem",
+          "position": {{forloop.counter}},
+          "item": {
+            "@type": "BlogPosting",
+            "headline": "{{blog.title}}",
+            "image": "{{blog.image.path}}",
+            "datePublished": "{{blog.created}}",
+            "dateModified": "{{blog.updated}}",
+            "author": {
+              "@type": "Person",
+              "name": "CSCIndia"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "CSCIndia.info",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "{% static 'images/logo.png' %}"
+              }
+            },
+            "mainEntityOfPage": {
+              "@type": "WebPage",
+              "@id": "{% url 'home:view' %}"
+            },
+            "articleBody": "Summary or snippet of Blog Post 1", # from summary top in safe format
+            "keywords": "Keywords related to Blog Post 1", # "sadsa, sda, asd, sa,"
+            "url": "{% url 'blog:blog' blog.slug %}"
+          }
+        },
+        {% endfor %}				
+      ]
+    }
+</script>

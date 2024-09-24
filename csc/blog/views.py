@@ -26,7 +26,7 @@ class BaseBlogView(View):
 
 
 class BlogListView(BaseBlogView, ListView):
-    queryset = Blog.objects.all().order_by('-created_at')
+    queryset = Blog.objects.filter(status = "Published").order_by('-created_at')
     context_object_name = 'blogs'
     template_name = 'blog/list.html'
 

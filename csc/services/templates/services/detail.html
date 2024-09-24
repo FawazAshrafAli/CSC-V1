@@ -1,10 +1,55 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block services_nav %} current {% endblock services_nav %}
+{% block title_prefix %}{{service.name}}{% endblock title_prefix %}
+
+{% block meta_description %}"Explore a variety of services offered by Common Service Centers (CSCs) across different locations. Find the best services tailored to your needs, including digital, financial, and government services."{% endblock meta_description %}
+
+{% block meta_keywords %}"Common Service Center, CSC services, digital services, government services, online services, CSC center, public services"{% endblock meta_keywords %}
+
+{% block og_title_prefix %}{{service.name}}{% endblock og_title_prefix %}
+
+{% block og_description %}"Explore a variety of services offered by Common Service Centers (CSCs) across different locations. Find the best services tailored to your needs, including digital, financial, and government services."{% endblock og_description %}
+
+{% block schema_markup %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "CSC Locator",
+  "description": "Access fast and reliable {{service.first_name}} at your nearest Common Service Center. Get expert assistance and hassle-free solutions tailored to your needs.",
+  "provider": {
+    "@type": "Organization",
+    "name": "CSCIndia.Info",
+    "url": "https://cscindia.info/",
+    "logo": "https://cscindia.info/images/logo.png",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+91-9037559495",
+      "contactType": "Customer Service",
+      "areaServed": "IN",
+      "availableLanguage": ["English", "Malayalam", "Hindi", "Telugu", "Kannada", "Tamil"]
+    }
+  },
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "INR",
+    "price": "0000",
+    "eligibleRegion": {
+      "@type": "Place",
+      "name": "India"
+    }
+  },
+  "areaServed": "IN",
+  "additionalType": "Service",
+  "serviceType": "{{service.name}}",
+  "url": "https://{{request.get_host}}{{request.path}}",
+  "mainEntityOfPage": "https://{{request.get_host}}{{request.path}}"
+}
+</script>
+{% endblock schema_markup %}
 
 {% block content %}
-
 <!-- Titlebar
 ================================================== -->
 <div id="titlebar">

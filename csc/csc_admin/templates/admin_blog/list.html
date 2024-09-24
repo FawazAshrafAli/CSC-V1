@@ -257,7 +257,7 @@
 						</td>
 						<td>{{ blog.title }}</td>
 						<td style="text-align:center;">
-							<button type="button" class="status-btn {% if blog.status == 'Published' %} published-btn {% else %} draft-btn {% endif %}" {% if blog.status == 'Published' %} onclick="event.stopPropagation(); toggleSetDraft(`{{blog.slug}}`, `{{blog.title}}`);" {% else %} onclick="event.stopPropagation(); togglePublishBlog(`{{blog.slug}}`, `{{blog.title}}`);" {% endif %}>{{blog.status}}</button>
+							<button type="button"  id="blog-status-btn-{{blog.slug}}" class="status-btn {% if blog.status == 'Published' %} published-btn {% else %} draft-btn {% endif %}" {% if blog.status == 'Published' %} onclick="event.stopPropagation(); toggleSetDraft(`{{blog.slug}}`, `{{blog.title}}`);" {% else %} onclick="event.stopPropagation(); togglePublishBlog(`{{blog.slug}}`, `{{blog.title}}`);" {% endif %}>{{blog.status}}</button>
 						</td>
 						
 						<td>

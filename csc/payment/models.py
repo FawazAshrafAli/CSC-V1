@@ -5,11 +5,13 @@ from csc_center.models import CscCenter
 
 class Price(models.Model):
     price = models.FloatField()
-    sgst = models.PositiveIntegerField(null=True, blank=True)
-    cgst = models.PositiveIntegerField(null=True, blank=True)
+    offer_price = models.FloatField(null=True, blank=True)
+    from_date = models.DateField(null=True, blank=True)
+    to_date = models.DateField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
 
     created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(auto_now=True)    
 
 class Payment(models.Model):
     csc_center = models.ForeignKey(CscCenter, on_delete=models.CASCADE)

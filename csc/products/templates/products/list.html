@@ -1,17 +1,15 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block products_nav %}
-current
-{% endblock products_nav %}
+{% block title_prefix %}Products{% endblock title_prefix %}
 
-{% block title_prefix %} Products {% endblock title_prefix %}
+{% block meta_description %}"Discover top-quality products available at your nearest CSC center. Enjoy reliable service, affordable pricing, and easy access to essential products."{% endblock meta_description %}
 
-{% block meta_description %}Browse our diverse range of products designed for service centers. Find high-quality tools, equipment, and supplies to enhance your service offerings. Detailed product information and easy purchasing options available.{% endblock meta_description %}
+{% block meta_keywords %}"Service Center Products, Products for Service Centers, Common Service Center Products, CSC Products"{% endblock meta_keywords %}
 
-{% block meta_keywords %}Service Center Products, Products for Service Centers, Common Service Center Products, CSC Products{% endblock meta_keywords %}
+{% block og_title_prefix %}Products{% endblock og_title_prefix %}
 
-{% block meta_canonical %}https://{{request.get_host}}{{request.path}}{% endblock meta_canonical %}
+{% block og_description %}"Discover top-quality products available at your nearest CSC center. Enjoy reliable service, affordable pricing, and easy access to essential products."{% endblock og_description %}
 
 {% block schema_markup %}
 <script type="application/ld+json">
@@ -48,7 +46,7 @@ current
       {
         "@type": "ListItem",
         "position": {{forloop.counter}},
-        "url": "https://{{request.get_host}}{{request.path}}/tags/{{category.slug}}",
+        "url": "https://{{request.get_host}}{{request.path}}tags/{{category.slug}}",
         "name": "{{category.name}}"
       },
       {% endfor %}

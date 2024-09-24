@@ -1,19 +1,17 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block title_prefix %} {{blog.title}} {% endblock title_prefix %}
+{% block title_prefix %}{{blog.title}}{% endblock title_prefix %}
 
-{% block meta_description %}
+{% block meta_description %}"Explore detailed insights and updates on Common Service Centres (CSC) in India. Stay informed about initiatives, services, and developments impacting CSCs across the country."{% endblock meta_description %}
+
+{% block meta_keywords %}"CSC Centers in India, Common Service Centre Blogs, CSC Blogs, CSC Services"{% endblock meta_keywords %}
+
+{% block og_title_prefix %}{{blog.title}}{% endblock og_title_prefix %}
+
+{% block og_description %}
 Explore detailed insights and updates on Common Service Centres (CSC) in India. Stay informed about initiatives, services, and developments impacting CSCs across the country.
-{% endblock meta_description %}
-
-{% block meta_keywords %}
-CSC blog, Common Service Centres blog, CSC updates, CSC initiatives, CSC news
-{% endblock meta_keywords %}
-
-{% block meta_canonical %}
-https://{{ request.get_host }}{{ request.path }}
-{% endblock meta_canonical %}
+{% endblock og_description %}
 
 {% block meta_tags %}{% endblock meta_tags %}
 
@@ -90,14 +88,14 @@ https://{{ request.get_host }}{{ request.path }}
 		"dateModified": "{{blog.updated_at|date:'Y-m-d'}}",
 		"author": {
 		"@type": "Person",
-		"name": "{{blog.author.username}}"
+		"name": "CSCIndia.info"
 		},
 		"publisher": {
 		"@type": "Organization",
 		"name": "CSC Locator",
 		"logo": {
 			"@type": "ImageObject",
-			"url": "/static/images/logo.png"
+			"url": "https://{{request.get_host}}/{% static 'images/logo.png' %}"
 		}
 		},
 		"description": "{{blog.summary}}",

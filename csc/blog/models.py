@@ -62,8 +62,14 @@ class Blog(models.Model):
             return blogs[current_blog_index + 1]
         
         return None
-            
-            
+    
+    @property
+    def list_tags(self):
+        tag_string = ""
+        if self.tags.exists():
+            tag_list = [tag.name for tag in self.tags.all()]
+            tag_string = ",".join(tag_list)
+        return tag_string
 
     class Meta:
         ordering = ['-created_at']

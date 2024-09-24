@@ -53,7 +53,7 @@
 <!-- Pop Up Box Style -->
 <style>
     #pop-up-box {
-        {% comment %} display: none; {% endcomment %}
+        display: none;
         position: fixed;
         left: 50%;
         top: 50%;
@@ -154,7 +154,7 @@
         align-items: center;
     }
 
-    #pop-up-add-btn, #save-price-btn {
+    #pop-up-add-btn {
         color: #fff;
         text-transform: uppercase;
         background: linear-gradient(to bottom, darkgreen, green, darkgreen);
@@ -162,7 +162,7 @@
         margin-bottom: 5px;
     }
 
-    #pop-up-add-btn:hover, #save-price-btn {
+    #pop-up-add-btn:hover {
         background: linear-gradient(to bottom, lime, green, darkgreen);
     }
 
@@ -190,7 +190,7 @@
         background: linear-gradient(to bottom, orange, red, darkred);
     }
 
-    #pop-up-cancel-btn {
+    #pop-up-cancel-btn, #pop-up-done-btn {
         color: #fff;
         text-transform: uppercase;
         background: linear-gradient(to bottom, darkblue, blue, darkblue);
@@ -198,7 +198,7 @@
         margin-bottom: 5px;
     }
 
-    #pop-up-cancel-btn:hover {
+    #pop-up-cancel-btn:hover, #pop-up-done-btn:hover {
         background: linear-gradient(to bottom, steelblue, blue, darkblue);
     }
 </style>
@@ -396,21 +396,13 @@
             <button class="close-btn" aria-label="Close" title="Close">&times;</button>
             <span id="pop-up-msg"></span>
             <form id="pop-up-form">
-                <div class="form-group">
-                    <input type="checkbox" name="offer" id="offer-input" style="width: 13px;">
-                </div>
-                <div class="form-group">
-                    <label for="price">Price (&#8377;)<span style="color:red">*</span></label>
-                    <input type="number" name="price" id="price-input" placeholder="Enter Price" />
-                </div>                
-                
-                <div id="pop-up-add-btn-div">
-                    <button id="save-price-btn" type="submit">Save Price</button>
-                    <button id="pop-up-cancel-btn" type="button">Cancel</button>
-                </div>
+    
             </form>
         </div>
         <!-- Pop Up Box Start -->
+         <script>
+            
+         </script>
 	{% block content %}
 	{% endblock content %}
 	</div>
@@ -454,11 +446,10 @@
 
     $(document).ready(() => {
 
-        // Close pop up box
-        $('.close-btn').click(() => {
+        $(document).on('click', '.close-btn, #pop-up-done-btn', () => {
             $('#pop-up-box').hide();
             $('#delete-confirmation-box').hide();
-        });
+        })
 
         $(document).on('keydown', (event) => {
             if (event.key === 'Escape') {
@@ -657,8 +648,38 @@
         // To populate with price data on toggling price btn
         function defaultPriceForm() {
             $('#pop-up-form').html(`
-                {% csrf_token %}
-                
+                <div class="form-group" style="display:flex; justify-content: right;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100px;">
+                        <input type="checkbox" name="offer" id="offer-input" style="width: 13px; height: 13px; margin-bottom: 0;">
+                        <label for="offer" style="margin-bottom: 0;">Offer Price</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="price">Price (&#8377;)<span style="color:red">*</span></label>
+                    <input type="number" name="price" id="price-input" placeholder="Enter Price" />
+                </div>
+                <div class="row" id="date-input-div" style="display: none;">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="from">From</label>
+                            <input type="date" name="from" id="from-input">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="to">To</label>
+                            <input type="date" name="to" id="to-input">
+                        </div>  
+                    </div>
+                </div>
+                <div class="form-group" id="description-input-div" style="display: none;">
+                    <label for="description">Description</label>
+                    <textarea name="description" id="description-input" placeholder="Description"></textarea>
+                </div>
+                <div id="pop-up-add-btn-div">
+                    <button id="pop-up-add-btn" type="button">Save Price</button>
+                    <button id="pop-up-done-btn" type="button">Done</button>
+                </div>
             `);                    
         }
 
@@ -674,17 +695,20 @@
                 url: '/payment/get_price/',
                 dataType: 'json',
                 success: response => {
-                    defaultPriceForm();
-                    $('#pop-up-form').prop({"method": "post", "action": `{% url 'csc_admin:add_price' %}` })
+                    defaultPriceForm();                    
                     $('#pop-up-add-btn').show();                  
                     if (response.price) {
                         $('#price-input').val(response.price);
                     }
-                    if (response.cgst) {
-                        $('#cgst-input').val(response.cgst);
-                    }
-                    if (response.sgst) {
-                        $('#sgst-input').val(response.sgst);
+                    if (response.from_date && response.to_date) {
+                        $('#offer-input').prop('checked', true);
+                        $('#date-input-div').show();
+                        $('#from-input').val(response.from_date);
+                        $('#to-input').val(response.to_date);
+                    }                
+                    if (response.description) {
+                        $('#description-input-div').show();
+                        $('#description-input').html(response.description);
                     }
                 },
                 error: (jqXHR, textStatus, errorThrow) => {
@@ -696,7 +720,7 @@
         $('#toggle-price-pop-up').click(() => {
             getPrice(event);
             $('#pop-up-box').show();
-        });
+        });        
 
         // Return to the default pop up box
         function popUpDefaultView() {
@@ -832,7 +856,13 @@
                 url: requestUrl,
                 data: data,
                 dataType: 'json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
                 success: response => {
+                    console.log(response);
+                    console.log(response.status);
+                    console.log(response.error);
                     if (response.error) {
                         if (successCallback) successCallback(false, response.error);
                     } else if (response.status === 'success') {
@@ -891,12 +921,28 @@
             } else if (currentItem === 'Category') {
                 const category = $('#category-input').val().trim();
                 data = { 'category': category }
+            } else if (currentItem == 'Pric') {
+                const price = $('#price-input').val().trim();
+                console.log(price);
+                data = { 'price': price }
+                if ($('#offer-input').is(':checked')) {
+                    data['from'] = $('#from-input').val().trim();
+                    data['to'] = $('#to-input').val().trim();
+                    data['description'] = $('#description-input').val().trim();
+                }
+                endpoint = `${endpoint}e`
             }
 
             submitPopUpForm('post', `/admin/${endpoint}/`, data, (result, error) => {
                 if (result) {
+                    let message;
                     $('#pop-up-msg').show()
-                    $('#pop-up-msg').html(`Added New ${currentItem}`).css('color', 'green')
+                    if (currentItem == 'Pric') {
+                        message = `Updated ${currentItem}e`;
+                    } else {
+                        message = `Added New ${currentItem}`;
+                    }
+                    $('#pop-up-msg').html(message).css('color', 'green')
                     if (currentItem === 'State') {
                         $('#state-input').val('');
 
@@ -1137,6 +1183,19 @@
 
         // popUpDefaultView();
     });
+
+    // Hide or unhide special price inputs
+    $(document).on('click', '#offer-input', (e) => {
+        if (e.target.checked == true) {
+            $('#date-input-div, #description-input-div').show();
+            $('#from-input, #to-input').prop('disabled', false);
+            $('#description-input').prop('disabled', false);
+        } else {
+            $('#date-input-div, #description-input-div').hide();
+            $('#from-input, #to-input').prop('disabled', true).val('');
+            $('#description-input').prop('disabled', true).empty();
+        }
+    })
 </script>
 
 {% block scripts %}{% endblock scripts %}
