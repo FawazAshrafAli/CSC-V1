@@ -27,7 +27,7 @@ from csc_center.models import CscCenter, State, District, Block, CscKeyword, Csc
 from services.models import Service, ServiceEnquiry
 from blog.models import Blog, Category, Tag
 from posters.models import Poster
-from .models import CscCenterAction
+from .models import CscCenterAction, ServiceEnquiry as AdminServiceEnquiry, ProductEnquiry as AdminProductEnquiry
 from payment.models import Payment, Price
 
 from django.core.mail import EmailMultiAlternatives
@@ -75,8 +75,15 @@ class AdminHomeView(BaseAdminView, TemplateView):
 
 
 ##################################### SERVICE START #####################################
-@method_decorator(csrf_exempt, name="dispatch")
-class CreateServiceView(BaseAdminView, CreateView):
+# @method_decorator(csrf_exempt, name="dispatch")
+class AdminBaseServiceView(BaseAdminView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['service_page'] = True
+        return context
+
+
+class CreateServiceView(AdminBaseServiceView, CreateView):
     model = Service
     form_class = CreateServiceForm
     template_name = 'admin_service/create.html'
@@ -106,12 +113,10 @@ class CreateServiceView(BaseAdminView, CreateView):
         service = self.model.objects.all().last()
         context['service'] = service
         context['form'] = self.get_form()
-        context['service_page'] = True
         return context
                                     
 
-
-class UpdateServiceView(BaseAdminView, UpdateView):
+class UpdateServiceView(AdminBaseServiceView, UpdateView):
     model = Service
     form_class = UpdateServiceForm
     template_name = 'admin_service/update.html'
@@ -119,11 +124,6 @@ class UpdateServiceView(BaseAdminView, UpdateView):
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('csc_admin:service', kwargs = {'pk' : self.kwargs['pk']})
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['service_page'] = True
-        return context
     
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -156,20 +156,15 @@ class UpdateServiceView(BaseAdminView, UpdateView):
 
 
 @method_decorator(never_cache, name="dispatch")
-class ListServiceView(BaseAdminView, ListView):
+class ListServiceView(AdminBaseServiceView, ListView):
     model = Service
     queryset = Service.objects.all()
     template_name = 'admin_service/list.html'
     context_object_name = "services"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['service_page'] = True
-        return context
     
 
 @method_decorator(never_cache, name="dispatch")
-class DetailServiceView(BaseAdminView, DetailView):
+class DetailServiceView(AdminBaseServiceView, DetailView):
     model = Service
     template_name = 'admin_service/detail.html'
     context_object_name = "service"
@@ -179,12 +174,11 @@ class DetailServiceView(BaseAdminView, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = self.form_class(instance=self.object)
-        context['service_page'] = True
         return context
     
 
 @method_decorator(never_cache, name="dispatch")
-class DeleteServiceView(BaseAdminView, View):
+class DeleteServiceView(AdminBaseServiceView, View):
     model = Service
     success_url = reverse_lazy('csc_admin:services')
 
@@ -202,9 +196,38 @@ class DeleteServiceView(BaseAdminView, View):
             pass
 
 
+class ServiceEnquiryListView(AdminBaseServiceView, ListView):
+    model = AdminServiceEnquiry
+    queryset = model.objects.all().order_by('-created')
+    context_object_name = "enquiries"
+    template_name = "admin_service/enquiry_list.html"
+
+
+class DeleteServiceEnquiryView(AdminBaseServiceView, View):
+    model = AdminServiceEnquiry
+    success_url = redirect_url = reverse_lazy("csc_admin:service_enquiries")
+
+    def get_object(self):
+        try:
+            return get_object_or_404(AdminServiceEnquiry, slug = self.kwargs.get('slug'))
+        except Http404:
+            messages.error(self.request, "Invalid Service Enquiry")
+            return redirect(self.redirect_url)
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()        
+            self.object.delete()
+            messages.success(self.request, "Successfully deleted service enquiry.")
+            return redirect(self.success_url)
+        except Exception as e:
+            print(f"Error: {e}")
+            return redirect(self.redirect_url)
+
+
 # Nuclear Views
 @method_decorator(csrf_exempt, name="dispatch")
-class RemoveServiceImageView(BaseAdminView, UpdateView):
+class RemoveServiceImageView(AdminBaseServiceView, UpdateView):
     model = Service
     field = ['image']    
     
@@ -574,6 +597,12 @@ class DeleteProductCategoryView(BaseAdminView, View):
 
         return JsonResponse({'status': 'success'})
 
+
+class ProductEnquiryListView(BaseAdminView, ListView):
+    model = AdminProductEnquiry
+    queryset = model.objects.all().order_by('-created')
+    context_object_name = "enquiries"
+    template_name = "admin_product/enquiry_list.html"
 
 ##################################### PRODUCT END #####################################
 

@@ -37,10 +37,6 @@ class Product(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
-    @property
-    def get_absolute_url(self):
-        return reverse('products:product', kwargs = {'slug': self.slug})
-
     class Meta:
         db_table = 'Product'
         ordering = ['name']

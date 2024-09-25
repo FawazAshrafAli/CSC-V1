@@ -11,12 +11,16 @@ from .views import (
     ListServiceView, DetailServiceView, UpdateServiceView, 
     CreateServiceView, DeleteServiceView, RemoveServiceImageView,
 
+    ServiceEnquiryListView, DeleteServiceEnquiryView,
+
     BlogListView, BlogDetailView, CreateBlogView,
     UpdateBlogView, DeleteBlogView, RemoveBlogImageView,
     ChangeBlogStatusView, 
 
     CreateProductView, ProductListView, ProductDetailView,
     UpdateProductView, DeleteProductView, 
+
+    ProductEnquiryListView,
     
     get_product_categories, 
     AddProductCategoryView, EditProductCategoryView, DeleteProductCategoryView,
@@ -79,6 +83,9 @@ urlpatterns = [
     path("delete_service/<str:slug>", DeleteServiceView.as_view(), name="delete_service"),
     path("remove_service_image/<pk>", RemoveServiceImageView.as_view(), name="remove_service_image"),
 
+    path("service_enquiries/", ServiceEnquiryListView.as_view(), name="service_enquiries"),
+    path("delete_service_enquiry/<str:slug>", DeleteServiceEnquiryView.as_view(), name="delete_service_enquiry"),
+
     path('blogs/', BlogListView.as_view(), name="blogs"),
     path('blog/<str:slug>', BlogDetailView.as_view(), name="blog"),
     path('create_blog/', CreateBlogView.as_view(), name="create_blog"),
@@ -92,6 +99,8 @@ urlpatterns = [
     path('product/<str:slug>', ProductDetailView.as_view(), name = "product"),
     path('update_product/<str:slug>', UpdateProductView.as_view(), name = "update_product"),
     path('delete_product/<str:slug>', DeleteProductView.as_view(), name = "delete_product"),
+
+    path('product_enquiries/', ProductEnquiryListView.as_view(), name = "product_enquiries"),
 
     path('get_product_categories/', get_product_categories, name = "get_product_categories"),
     path('add_category/', AddProductCategoryView.as_view(), name = "add_category"),

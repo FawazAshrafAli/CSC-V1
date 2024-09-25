@@ -113,24 +113,124 @@
       </div>
       <!-- Sorting - Filtering Section / End -->
 
+      <style>
+        #product-pop-up-box {
+          display: none;
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 1000;
+
+          min-width: 360px;
+          min-height: 120px;          
+          background-color: #fff;
+          border-radius: 5px;
+          box-shadow: 0 0 3px #777;
+        }
+        #product-pop-up-heading-div {
+          position: relative;
+          text-align: center;
+          box-shadow: 0 1px 1px silver;
+          background-color: #f1f1f1;
+          margin: 0;
+          padding: 5px 0;
+        }
+        #product-pop-up-heading-div div {
+          position: absolute;
+          right: 10px;
+          top: 10px;
+        }
+        #product-pop-up-heading-div div button {
+          border: none;
+          background: radial-gradient(orangered, darkred);
+          color: #fff;
+          box-shadow: 0 0 3px #777;
+          width: 30px;
+        }
+        #product-pop-up-heading-div div button:hover {
+          background: radial-gradient(orangered, red);          
+        }
+        #product-pop-up-heading-div h4 {
+          font-weight: bold;
+        }
+        #product-pop-up-box form {
+          padding: 20px 0;
+        }
+        #product-pop-up-box form .row {
+          margin: 0 2px;
+        }
+      </style>
+      <div id="product-pop-up-box">
+        <div id="product-pop-up-heading-div">
+          <div class="close-btn">
+            <button type="button">X</button>
+          </div>
+          <h4>APPLY NOW</h4>
+        </div>
+
+        <form class="with-forms  margin-top-0" method="post" action="#">
+					{% csrf_token %}					
+
+          <div class="row">
+            <div class="col-lg-6 col-md-6">
+              <input type="text" placeholder="Name:" name="name" required>
+            </div>
+            <div class="col-lg-6 col-md-6">
+              <input type="text" placeholder="E-Mail ID:" name="email" required>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-6 col-md-6">
+              <input type="text" placeholder="Phone No:" name="phone" required>
+            </div>
+            <div class="col-lg-6 col-md-6">
+              <select class="chosen-select" data-placeholder="Select Product" name="product" disabled required>
+                <option label="Select Products"></option>
+                {% for product in products %}
+                <option value="{{product.slug}}">{{product.name}}</option>
+                {% endfor %}                      
+              </select> 
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-lg-12 col-md-12">
+              <textarea id="" cols="10" row="2" style="margin-top: 16px;" name="location" placeholder="Location" required></textarea>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12 col-md-12">
+              <textarea id="" cols="10" rows="2" style="margin-top: 16px;" name="message" placeholder="Message" required></textarea>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12 col-md-12">
+              <button type="submit" class="button book-now fullwidth margin-top-5">SUBMIT NOW</button>
+            </div>
+          </div>
+				</form>
+      </div>
+
       <div class="row" id="list-product-div">
 		{% for product in products %}
         <!-- Listing Item -->
         <div class="col-lg-3 col-md-4 row-items">
           <div class="product-grid">
             <div class="product-image">
-              <a href="{{product.get_absolute_url}}" class="image">
-                <img class="pic-1" src="{% if product.image %} {{product.image.url}} {% else %} {% static 'w3/images/noe_image.png' %} {% endif %}" />
-                <img class="pic-2" src="{% if product.image %} {{product.image.url}} {% else %} {% static 'w3/images/noe_image.png' %} {% endif %}" />
+              <a href="#" class="image order-btn" data-slug="{{product.slug}}">
+                <img class="pic-1" data-slug="{{product.slug}}" src="{% if product.image %} {{product.image.url}} {% else %} {% static 'w3/images/noe_image.png' %} {% endif %}" />
+                <img class="pic-2" data-slug="{{product.slug}}" src="{% if product.image %} {{product.image.url}} {% else %} {% static 'w3/images/noe_image.png' %} {% endif %}" />
               </a>
               <span class="product-sale-label">sale!</span>
 
               <div class="product-rating">
-                <a class="add-to-cart" href="{{product.get_absolute_url}}"> ORDER NOW </a>
+                <a class="add-to-cart order-btn" href="#" data-slug="{{product.slug}}"> ORDER NOW </a>
               </div>
             </div>
             <div class="product-content">
-              <h3 class="title"><a href="{{product.get_absolute_url}}">{{product.name}}</a></h3>
+              <h3 class="title"><a href="#" class="order-btn" data-slug="{{product.slug}}">{{product.name}}</a></h3>
               <div class="price">₹{{product.price}}</div>
             </div>
           </div>
@@ -184,18 +284,18 @@
               html = `<div class="col-lg-3 col-md-4">
                       <div class="product-grid">
                         <div class="product-image">
-                          <a href="${product.get_absolute_url}" class="image">
-                            <img class="pic-1" src="${product.image ? product.image : '/static/w3/images/noe_image.png'}" />
-                            <img class="pic-2" src="${product.image ? product.image : '/static/w3/images/noe_image.png'}" />
+                          <a href="#" class="image order-btn" data-slug="${product.slug}">
+                            <img class="pic-1" data-slug="${product.slug}" src="${product.image ? product.image : '/static/w3/images/noe_image.png'}" />
+                            <img class="pic-2" data-slug="${product.slug}" src="${product.image ? product.image : '/static/w3/images/noe_image.png'}" />
                           </a>
                           <span class="product-sale-label">sale!</span>
 
                           <div class="product-rating">
-                            <a class="add-to-cart" href="${product.get_absolute_url}"> ORDER NOW </a>
+                            <a class="add-to-cart order-btn" href="#" data-slug="${product.slug}"> ORDER NOW </a>
                           </div>
                         </div>
                         <div class="product-content">
-                          <h3 class="title"><a href="${product.get_absolute_url}">${product.name}</a></h3>
+                          <h3 class="title"><a href="#" class="order-btn" data-slug="${product.slug}">${product.name}</a></h3>
                           <div class="price">₹${product.price}</div>
                         </div>
                       </div>
@@ -326,6 +426,35 @@
     };
 
     paginator();
+
+    // Toggle product pop up box
+    $(document).on('click', '.order-btn', (e) => {
+      $('body *').css('pointer-events', 'none');
+      $('#product-pop-up-box, #product-pop-up-box *').css('pointer-events', 'auto');
+
+      const slug = e.target.getAttribute("data-slug");
+      let select = $('#product-pop-up-box form select');
+      
+      select.find('option').each(function () {
+        if ($(this).val() == slug) {
+          $(this).prop('selected', true);
+        } else {
+          $(this).prop('selected', false);
+        }
+      })
+      
+      $('#product-pop-up-box form select').trigger('chosen:updated');
+
+      $('#product-pop-up-box form').prop('action', `/products/request_product/${slug}`);
+
+      $('#product-pop-up-box').show();
+    })
+
+    // Close product pop up box
+    $('.close-btn').click(() => {
+      $('#product-pop-up-box').hide();
+      $('body *').css('pointer-events', 'auto');      
+    });
   })
 </script>
 {% endblock scripts %}

@@ -223,8 +223,8 @@
 				
 				<!-- Logo -->
 				<div id="logo">
-					<a href="index.html"><img src="{% static 'images/logo.png' %}" alt="CSC Centers in India"></a>
-					<a href="index.html" class="dashboard-logo"><img src="{% static 'images/logo2.png' %}" alt=""></a>
+					<a href="{% url 'home:view' %}"><img src="{% static 'images/logo.png' %}" alt="CSC Centers in India"></a>
+					<a href="{% url 'home:view' %}" class="dashboard-logo"><img src="{% static 'images/logo2.png' %}" alt=""></a>
 				</div>
 
 				<!-- Mobile Navigation -->
@@ -329,7 +329,8 @@
 				<li {% if service_page %} class="active" {% endif %} ><a><i class="fa fa-handshake"></i> Services</a>
 					<ul>
 						<li><a href="{% url 'csc_admin:services' %}">List Services</a></li>
-						<li><a href="{% url 'csc_admin:create_service' %}">Add Service</a></li>						
+						<li><a href="{% url 'csc_admin:create_service' %}">Add Service</a></li>	
+                        <li><a href="{% url 'csc_admin:service_enquiries' %}">Service Enquiries</a></li>						
 					</ul>	
 				</li>
 
@@ -337,6 +338,7 @@
 					<ul>
 						<li><a href="{% url 'csc_admin:products' %}">List Products</a></li>
 						<li><a href="{% url 'csc_admin:create_product' %}">Add Product</a></li>						
+                        <li><a href="{% url 'csc_admin:product_enquiries' %}">Product Enquiries</a></li>
 					</ul>	
 				</li>
 

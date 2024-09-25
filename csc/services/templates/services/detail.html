@@ -79,6 +79,8 @@
 	<div class="blog-page">
 	<div class="row">
 
+		{% include "components/message.html" %}
+
 
 		<!-- Post Content -->
 		<div class="col-lg-9 col-md-8 padding-right-30">
@@ -138,26 +140,25 @@
 			<!-- Widget -->
 			<div class="widget margin-top-40">
 
-                <div class="with-forms  margin-top-0">
+                <form class="with-forms  margin-top-0" method="post" action="{% url 'services:request_service' service.slug %}">
+					{% csrf_token %}
                     <h3 class="margin-top-0 margin-bottom-25">APPLY NOW</h3>
 					<!-- Date Range Picker - docs: http://www.daterangepicker.com/ -->
 					
-                    <input type="text" placeholder="Name:" value="">
-                    <input type="text" placeholder="E-Mail ID:" value="">
-                    <input type="text" placeholder="Phone No:" value="">
-                    <select class="chosen-select" data-placeholder="Select Services" >
+                    <input type="text" placeholder="Name:" name="name" required>
+                    <input type="text" placeholder="E-Mail ID:" name="email" required>
+                    <input type="text" placeholder="Phone No:" name="phone" required>
+                    <select class="chosen-select" data-placeholder="Select Services" name="service" required>
                         <option label="Select Services"></option>
-                        {% for service in services %}
-                        <option value="{{service.pk}}">{{service.name}}</option>
+                        {% for service_obj in services %}
+                        <option value="{{service_obj.slug}}" {% if service_obj.slug == service.slug %} selected {% endif %} >{{service_obj.name}}</option>
                         {% endfor %}                      
                     </select>
-                    <textarea name="" id="" cols="10" rows="2" style="margin-top: 16px;" placeholder="Message"></textarea>
+					<textarea id="" cols="10" row="2" style="margin-top: 16px;" name="location" placeholder="Location" required></textarea>
+                    <textarea id="" cols="10" rows="2" style="margin-top: 16px;" name="message" placeholder="Message" required></textarea>
 
-                    <a href="pages-booking.html" class="button book-now fullwidth margin-top-5">SUBMIT NOW</a>
-				
-   
-
-				</div>
+                    <button type="submit" class="button book-now fullwidth margin-top-5">SUBMIT NOW</button>
+				</form>
  
 
 			</div>
