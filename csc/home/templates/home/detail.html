@@ -1,8 +1,270 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block title_prefix %} {{center.name}} {% endblock title_prefix %}
+{% block title_prefix %}{{center.name}}{% endblock title_prefix %}
 
+{% block meta_description %}"{{center.name}} provides top-notch government registration services to individuals and businesses."{% endblock meta_description %}
+
+{% block meta_keywords %}"{{center.get_keywords_as_string}}"{% endblock meta_keywords %}
+
+{% block og_title_prefix %}{{center.name}}{% endblock og_title_prefix %}
+
+{% block og_description %}"{{center.name}} provides top-notch government registration services to individuals and businesses."{% endblock og_description %}
+
+{% block schema_markup %}
+<script type="application/ld+json">
+	{
+	  "@context": "http://schema.org",
+	  "@type": "BreadcrumbList",
+	  "itemListElement": [
+		{
+		  "@type": "ListItem",
+		  "position": 1,
+		  "name": "Home",
+		  "item": "https://{{request.get_host}}"
+		},
+		{
+		  "@type": "ListItem",
+		  "position": 2,
+		  "name": "Category",
+		  "item": "https://{{request.get_host}}/csc_centers"
+		},
+		{
+		  "@type": "ListItem",
+		  "position": 3,
+		  "name": "Subcategory",
+		  "item": "https://{{request.get_host}}/{{request.path}}"
+		},
+	  ]
+	}
+</script>
+
+<script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "WebPage",
+      "mainEntity": {
+        "@type": "CreativeWork",
+        "name": "Keyphrases",
+        "about": [
+        {% for keyword in center.keywords.all %}
+          {
+            "@type": "Thing",
+            "name": "{{keyword.keyword}}"
+          },
+          {% endfor %}          
+          // Add more keywords as needed
+        ]
+      }
+    }
+</script>
+
+<script type="application/ld+json">
+    {
+    "@context": "http://schema.org",
+    "@type": "CollectionPage",
+    "name": "Tags Page",
+    "description": "A page listing various tags for categorizing content.",
+    "url": "https://{{request.get_host}}/services",
+    "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": [
+    {% for service in center.services.all %}
+    {
+    "@type": "ListItem",
+    "position": {{forloop.counter}},
+    "url": "https://{{request.get_host}}/service/{{service.slug}}",
+    "name": "{{service.name}}"
+    },
+    {% endfor %}
+    // Add more tags as needed
+    ]
+    }
+    }
+</script>
+
+<script type="application/ld+json">
+	{
+	  "@context": "https://schema.org",
+	  "@type": "LocalBusiness",
+	  "name": "{{center.full_name}}",
+	  "url": "https://{{request.get_host}}{{request.path}}",
+	  "logo": {% if center.logo %}"https://{{request.get_host}}{{center.logo.url}}"{% endif %},
+	  "description": "{{center.name}} provides top-notch government registration services to individuals and businesses.",
+	  "telephone": "+91{{center.contact_number}}",
+	  "priceRange": "₹",
+	  "address": {
+		"@type": "PostalAddress",
+		"streetAddress": "{{center.location}}",
+		"addressLocality": "{{center.block.block}}, {{center.district.district}}",
+		"addressRegion": "{{center.state.state}}",
+		"postalCode": "{{center.zipcode}}",
+		"addressCountry": "IN"
+	  },
+	  "geo": {
+		"@type": "GeoCoordinates",
+		"latitude": {{center.latitude}},
+		"longitude": {{center.longitude}}
+	  },
+	  "openingHoursSpecification": [
+		{
+		  "@type": "OpeningHoursSpecification",
+		  "dayOfWeek": "https://schema.org/Monday",
+		  "opens": "{% if center.mon_opening_time %}{{center.mon_opening_time|date:'H:i'}}{% else %}09:00{% endif %}",
+		  "closes": "{% if center.mon_closing_time %}{{center.mon_closing_time|date:'H:i'}}{% else %}17:00{% endif %}"
+		},
+		{
+		  "@type": "OpeningHoursSpecification",
+		  "dayOfWeek": "https://schema.org/Tuesday",
+		  "opens": "{% if center.tue_opening_time %}{{center.tue_opening_time|date:'H:i'}}{% else %}09:00{% endif %}",
+		  "closes": "{% if center.tue_closing_time %}{{center.tue_closing_time|date:'H:i'}}{% else %}17:00{% endif %}"
+		},
+		{
+		  "@type": "OpeningHoursSpecification",
+		  "dayOfWeek": "https://schema.org/Wednesday",
+		  "opens": "{% if center.wed_opening_time %}{{center.wed_opening_time|date:'H:i'}}{% else %}09:00{% endif %}",
+		  "closes": "{% if center.wed_closing_time %}{{center.wed_closing_time|date:'H:i'}}{% else %}17:00{% endif %}"
+		},
+		{
+		  "@type": "OpeningHoursSpecification",
+		  "dayOfWeek": "https://schema.org/Thursday",
+		  "opens": "{% if center.thu_opening_time %}{{center.thu_opening_time|date:'H:i'}}{% else %}09:00{% endif %}",
+		  "closes": "{% if center.thu_closing_time %}{{center.thu_closing_time|date:'H:i'}}{% else %}17:00{% endif %}"
+		},
+		{
+		  "@type": "OpeningHoursSpecification",
+		  "dayOfWeek": "https://schema.org/Friday",
+		  "opens": "{% if center.fri_opening_time %}{{center.fri_opening_time|date:'H:i'}}{% else %}09:00{% endif %}",
+		  "closes": "{% if center.fri_closing_time %}{{center.fri_closing_time|date:'H:i'}}{% else %}17:00{% endif %}"
+		},
+		{
+		  "@type": "OpeningHoursSpecification",
+		  "dayOfWeek": "https://schema.org/Saturday",
+		  "opens": "{% if center.sat_opening_time %}{{center.sat_opening_time|date:'H:i'}}{% else %}09:00{% endif %}",
+		  "closes": "{% if center.sat_closing_time %}{{center.sat_closing_time|date:'H:i'}}{% else %}15:00{% endif %}"
+		},
+		{
+		  "@type": "OpeningHoursSpecification",
+		  "dayOfWeek": "https://schema.org/Sunday",
+		  "opens": "{% if center.sun_opening_time %}{{center.sun_opening_time|date:'H:i'}}{% else %}Closed{% endif %}",
+		  "closes": "{% if center.sun_closing_time %}{{center.sun_closing_time|date:'H:i'}}{% else %}Closed{% endif %}"
+		}
+	  ]
+	}
+	</script>
+
+    <script type="application/ld+json">
+        {
+          "@context": "http://schema.org",
+          "@type": "ItemList",
+          "itemListElement": [
+          {% for service in center.services.all %}
+            {
+              "@type": "ListItem",
+              "position": {{forloop.counter}},
+              "item": {
+                "@type": "Service",
+                "provider": {
+                  "@type": "Organization",
+                  "name": "CSC Locator",
+                  "url": "https://{{request.get_host}}{{request.path}}",
+                  "logo": {% if center.logo.url %}"https://{{request.get_host}}{{center.logo.url}}"{% endif %}
+                },
+                "name": "{{service.name}}",
+                "description": "Access fast and reliable {{service.first_name}} at your nearest Common Service Center. Get expert assistance and hassle-free solutions tailored to your needs."
+              }
+            }, 
+            {% endfor %}           
+            // Add more products and services provided by companies as needed
+          ]
+        }
+        </script>
+
+        <script type="application/ld+json">
+            {
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": [
+                {% for faq in faqs %}
+                {
+                  "@type": "Question",
+                  "name": "{{faq.question}}",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "{{faq.answer}}"
+                  }
+                },
+                {% endfor %}                
+              ]
+            }
+            </script>
+
+            <script type="application/ld+json">
+                {
+                  "@context": "http://schema.org",
+                  "@type": "ItemList",
+                  "name": "Table of Contents",
+                  "numberOfItems": "6",
+                  "itemListElement": [
+                    {
+                      "@type": "ListItem",
+                      "position": 1,
+                      "item": {
+                        "@type": "CreativeWork",
+                        "name": "Info",
+                        "url": "https://{{request.get_host}}{{request.path}}#csc-overview"
+                      }
+                    },
+                    {
+                      "@type": "ListItem",
+                      "position": 2,
+                      "item": {
+                        "@type": "CreativeWork",
+                        "name": "About Us",
+                        "url": "https://{{request.get_host}}{{request.path}}#about-csc"
+                      }
+                    },
+                    {
+                      "@type": "ListItem",
+                      "position": 3,
+                      "item": {
+                        "@type": "CreativeWork",
+                        "name": "Services",
+                        "url": "https://{{request.get_host}}{{request.path}}#csc-services"
+                      }
+                    }
+                    {
+                        "@type": "ListItem",
+                        "position": 4,
+                        "item": {
+                          "@type": "CreativeWork",
+                          "name": "Faq's",
+                          "url": "https://{{request.get_host}}{{request.path}}#csc-faqs"
+                        }
+                      }
+                      {
+                        "@type": "ListItem",
+                        "position": 5,
+                        "item": {
+                          "@type": "CreativeWork",
+                          "name": "Contact Us",
+                          "url": "https://{{request.get_host}}{{request.path}}#csc-contact"
+                        }
+                      }
+                      {
+                        "@type": "ListItem",
+                        "position": 6,
+                        "item": {
+                          "@type": "CreativeWork",
+                          "name": "Apply Now",
+                          "url": "https://{{request.get_host}}{{request.path}}#apply-registration"
+                        }
+                      }
+                    // Add more chapters as needed
+                  ]
+                }
+              </script>
+{% endblock schema_markup %}
 
 {% block content %}
 <style>

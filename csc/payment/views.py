@@ -12,6 +12,7 @@ from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.templatetags.static import static
 from django.utils import timezone
+from datetime import datetime
 
 from .models import PaymentHistory, Payment, Price
 from csc_center.models import CscCenter
@@ -178,7 +179,7 @@ def get_price(request):
         data = {"price": price.price}
         if price.offer_price:
             today = timezone.now().date()
-            if today >= price.from_date and today <= price.to_date:
+            if today <= price.from_date and price.from_date < price.to_date:
                 data = {
                 "price": price.offer_price,
                 "from_date": price.from_date if price.from_date else None,

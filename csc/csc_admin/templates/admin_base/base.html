@@ -679,7 +679,7 @@
                     <textarea name="description" id="description-input" placeholder="Description"></textarea>
                 </div>
                 <div id="pop-up-add-btn-div">
-                    <button id="pop-up-add-btn" type="button">Save Price</button>
+                    <button class="save-price-btn" id="pop-up-add-btn" type="button">Save Price</button>
                     <button id="pop-up-done-btn" type="button">Done</button>
                 </div>
             `);                    
@@ -698,7 +698,7 @@
                 dataType: 'json',
                 success: response => {
                     defaultPriceForm();                    
-                    $('#pop-up-add-btn').show();                  
+                    $('#pop-up-add-btn').show();
                     if (response.price) {
                         $('#price-input').val(response.price);
                     }
@@ -712,6 +712,34 @@
                         $('#description-input-div').show();
                         $('#description-input').html(response.description);
                     }
+
+                    let previous_price = $('#price-input').val();
+                    let previous_from = $('#from-input').val();
+                    let previous_to = $('#to-input').val();
+                    let previous_description = $('#description-input').val();
+
+                    console.log(previous_price)
+                    console.log(previous_from)
+                    console.log(previous_to)
+                    console.log(previous_description)                    
+
+                    // Enable save price btn only when there is any change in the data
+                    // $(document).on('input', '#price-input, #description-input', function  () {
+                    //     if ($('#offer-input').is(':checked')) {
+                    //         $('.save-price-btn').prop('disabled', $('#price-input').val() == previous_price);
+                    //         $('.save-price-btn').prop('disabled', $('#description-input').val() == previous_description);
+                    //     } else {
+                    //         $('.save-price-btn').prop('disabled', $('#price-input').val() == previous_price);
+                    //     }                        
+                    // })
+
+                    // $(document).on('change', '#to_input, #from_input', function  () {
+                    //     console.log("changed")
+                    //     if ($('#offer-input').is(':checked')) {
+                    //         $('.save-price-btn').prop('disabled', $('#from-input').val() == previous_from);
+                    //         $('.save-price-btn').prop('disabled', $('#to-input').val() == previous_to);
+                    //     }
+                    // })
                 },
                 error: (jqXHR, textStatus, errorThrow) => {
                     console.error("Error: ", textStatus, errorThrow);
@@ -722,6 +750,9 @@
         $('#toggle-price-pop-up').click(() => {
             getPrice(event);
             $('#pop-up-box').show();
+
+            
+            $("#pop-up-add-btn")
         });        
 
         // Return to the default pop up box
@@ -753,7 +784,6 @@
                 url: '/admin/get_product_categories/',
                 dataType: 'json',
                 success: data => {
-                    console.log("200")
                     if (data.categories && Array.isArray(data.categories)) {
                         $('#pop-up-dropdown').html('');
                         data.categories.forEach(category => {
@@ -862,9 +892,6 @@
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
                 success: response => {
-                    console.log(response);
-                    console.log(response.status);
-                    console.log(response.error);
                     if (response.error) {
                         if (successCallback) successCallback(false, response.error);
                     } else if (response.status === 'success') {
@@ -882,6 +909,9 @@
 
         // Create item Form submission
         $(document).on('click', '#pop-up-add-btn', () => {
+            let defaultBtnValue = $('#pop-up-add-btn').html();
+            $('#pop-up-add-btn').html('Processing. . .').prop('disabled', true);
+
             let currentItem = $('#pop-up-box-heading').html().slice(0, -1);
 
             if (currentItem == 'Categorie') {
@@ -925,7 +955,6 @@
                 data = { 'category': category }
             } else if (currentItem == 'Pric') {
                 const price = $('#price-input').val().trim();
-                console.log(price);
                 data = { 'price': price }
                 if ($('#offer-input').is(':checked')) {
                     data['from'] = $('#from-input').val().trim();
@@ -936,11 +965,13 @@
             }
 
             submitPopUpForm('post', `/admin/${endpoint}/`, data, (result, error) => {
+                $('#pop-up-add-btn').html(defaultBtnValue).prop('disabled', false);
                 if (result) {
                     let message;
                     $('#pop-up-msg').show()
                     if (currentItem == 'Pric') {
                         message = `Updated ${currentItem}e`;
+                        // $('#pop-up-box').hide();
                     } else {
                         message = `Added New ${currentItem}`;
                     }
@@ -1198,6 +1229,7 @@
             $('#description-input').prop('disabled', true).empty();
         }
     })
+
 </script>
 
 {% block scripts %}{% endblock scripts %}

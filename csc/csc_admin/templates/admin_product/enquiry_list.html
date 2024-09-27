@@ -76,7 +76,69 @@
 <!-- Delete Confirmation Box Start-->
 
 <div id="product-enquiry-content">
-	<h3>Loading . . .</h3>  
+	<div class="row">
+
+		<!-- Listings -->
+		<div class="col-lg-12 col-md-12">
+			<div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
+				<h4>Product Enquiry</h4>
+				<br />
+				<table id="enquiry-table">
+					<thead>
+					<tr>
+						<th>&nbsp;<small>No</small></th>
+                        <th>&nbsp;<small>Name</small></th>
+                        <th style="text-align:center;"><small>Product</small></th>
+                        <th style="text-align:center;"><small>Email</small></th>
+                        <th style="text-align:center;"><small>Phone</small></th>
+                        <th style="text-align:center;"><small>Location</small></th>
+                        <th style="text-align:center;"><small>Message</small></th>
+						<th></th>
+					</tr>
+					</thead>
+					<tbody id="enquiry-tbody">
+						{% for enquiry in enquiries %}
+						<tr	class="row-items" style="vertical-align: top;">
+                            <td>&nbsp;<small>{{ forloop.counter }}</small></td>
+                            <td>&nbsp;<small>{{ enquiry.applicant_name }}</small></td>
+                            <td style="text-align:center;"><small>{{ enquiry.product }}</small></td>
+                            <td style="text-align:center;"><small><a href="mailto:{{enquiry.applicant_email}}" style="color:blue;">{{ enquiry.applicant_email }}</a></small></td>
+                            <td style="text-align:center;"><small><a href="tel:+91{{enquiry.applicant_phone}}" style="color:blue;">{{ enquiry.applicant_phone }}</a></small></td>
+                            <td style="max-width: 240px"><small>{{ enquiry.location }}</small></td>
+                            <td style="max-width: 240px"><small>{{ enquiry.message }}</small></td>
+							<td style="vertical-align:middle;">
+								<button class="button gray" onclick="event.stopPropagation(); toggleEnquiryDeletion('{{enquiry.slug}}', '{{enquiry.product}}')">Delete</button>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- Pagination -->
+		<div class="clearfix"></div>
+		<div class="row" id="pagination-row">
+			<div class="col-md-12">
+			<!-- Pagination -->
+			<div class="pagination-container margin-top-20 margin-bottom-40">
+			<nav class="pagination" id="pagination-nav">
+			<ul>
+				<li>
+				<a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
+				</li>
+				<li><a href="#" id="first-page">1</a></li>
+				<li><a href="#" id="second-page">2</a></li>
+				<li><a href="#" id="third-page" >3</a></li>
+				<li>
+				<a href="#" class="next-page" id="next-page"><i class="sl sl-icon-arrow-right"></i></a>
+				</li>
+			</ul>
+			</nav>
+			</div>
+			</div>
+		</div>
+		
+	</div>
 </div>
 <div class="row">
 	<!-- Copyrights -->
@@ -91,7 +153,7 @@
 <script>
 	function toggleEnquiryDeletion(productId, productName) {
 		console.log(productId)
-		$('#delete-confirmation-box form').prop('action', `/users/delete_product_enquiry/${productId}`);
+		$('#delete-confirmation-box form').prop('action', `/admin/delete_product_enquiry/${productId}`);
 		$('#product-enquiry').html(productName);
 		$('#delete-confirmation-box').show();
 	}	
@@ -103,123 +165,7 @@
 
 <!-- Get Product Enquiry for multiple centers -->
 <script>
-	$(document).ready(function() {
-
-		function defaultEnquiryView(response = undefined) {
-			$('#product-enquiry-content').html(`
-				<div class="row">
-
-					<!-- Listings -->
-					<div class="col-lg-12 col-md-12">
-						<div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
-							${ (response && response.light_warning_message) ? `<div class="col-md-12" style="background-color: orange; margin-bottom: 5px;"><h5 style="color: #fff"> ${response.light_warning_message} <span style="display: inline-block;">Click <a href="#" style="color: blue; text-decoration: underline;">Pay Now</a> for payment</span></h5></div>`: ''}
-							${ (response && response.hard_warning_message) ? `<div class="col-md-12" style="background-color: orangered; margin-bottom: 5px;"><h5 style="color: #fff"> ${response.hard_warning_message} <span style="display: inline-block;">Click <a href="#" style="color: blue; text-decoration: underline;">Pay Now</a> for payment</span></h5></div>`: ''}
-						</div>
-					</div>
-					<div class="col-lg-12 col-md-12">
-						<div class="dashboard-list-box margin-top-0" style="background-color: #fff;">
-							<h4>Product Enquiry</h4>
-							<br />
-							<table id="enquiry-table">
-								<thead>
-								<tr>
-									<th>No</th>
-									<th>Applicant Name</th>
-									<th style="text-align:center">Product</th>
-									<th style="text-align:center">Applicant Email</th>
-									<th style="text-align:center">Applicant Phone</th>
-									<th style="text-align:center">Message</th>
-									<th></th>
-								</tr>
-								</thead>
-								<tbody id="enquiry-tbody">
-									<tr>
-										<td colspan="7">Loading . . .</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-					</div>
-					<!-- Pagination -->
-					<div class="clearfix"></div>
-					<div class="row" id="pagination-row">
-						<div class="col-md-12">
-						<!-- Pagination -->
-						<div class="pagination-container margin-top-20 margin-bottom-40">
-						<nav class="pagination" id="pagination-nav">
-						<ul>
-							<li>
-							<a href="#" class="prev-page" id="prev-page"><i class="sl sl-icon-arrow-left"></i></a>
-							</li>
-							<li><a href="#" id="first-page">1</a></li>
-							<li><a href="#" id="second-page">2</a></li>
-							<li><a href="#" id="third-page" >3</a></li>
-							<li>
-							<a href="#" class="next-page" id="next-page"><i class="sl sl-icon-arrow-right"></i></a>
-							</li>
-						</ul>
-						</nav>
-						</div>
-						</div>
-					</div>
-					
-				</div>
-			`)
-		}
-
-		function getEnquiries(center) {
-			$.ajax({
-				type: 'GET',
-				url: `/users/product_enquiries/`,
-				dataType: 'json',
-				data: {'center_slug': center},
-				success: response => {
-					if (response) {
-						
-						defaultEnquiryView(response);
-
-						$('#enquiry-tbody').empty().css('pointer-events', 'auto');;
-						$(`#center-dropdown option[value='${center}']`).prop('selected', true).trigger('chosen:updated');
-						if (response.enquiries.length > 0) {
-							response.enquiries.forEach(enquiry => {								
-								let html = `<tr class="row-items"										
-									>
-										<td>${ enquiry.count }</td>
-										<td>&nbsp;${ enquiry.applicant_name }</td>
-										<td style="text-align:center">${ enquiry.product }</td>
-										<td style="text-align:center">${ enquiry.applicant_email }</td>
-										<td style="text-align:center">${ enquiry.applicant_phone }</td>
-										<td style="max-width: 360px">${ enquiry.message }</td>
-										<td>
-										<button
-											class="button gray"
-											onclick="event.stopPropagation(); toggleEnquiryDeletion('${enquiry.slug}', '${enquiry.product}')"
-										>
-											Delete
-										</button>
-										</td>
-									</tr>`
-								$('#enquiry-tbody').append(html);
-							})
-						} else {
-							$('#enquiry-tbody').html(`<tr><td colspan="5" style="color:red;">No Serivce Requests</td></tr>`).css('pointer-events', 'none');
-						}
-						paginator();
-					}
-					
-				},
-				error: error => console.error("Error: ", error),
-			})
-		};
-
-		const center =  localStorage.getItem('centerSlug');
-		const user = localStorage.getItem('cscUser');
-
-		if (user == `{{request.user.email}}` && center) {
-			getEnquiries(center);
-		} else {
-			getEnquiries(`{{center.slug}}`);
-		}
+	$(document).ready(function() {		
 
 		// Pagination
 		function paginator () {

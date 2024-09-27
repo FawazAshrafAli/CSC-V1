@@ -1,14 +1,14 @@
 {% extends "base/base.html" %} {% load static %} {% load crispy_forms_tags%}
 
-<!-- Meta Tags Start -->
-{% block meta_description %}Discover top Common Service Centers (CSCs) near you with detailed information on services, contact details, and operating hours of local CSCs to help you find the best support for your needs.{% endblock meta_description %}
-<!-- Meta Tags Start -->
+{% block title_prefix %}CSC Centers{% endblock title_prefix %}
 
-{% block meta_keywords %}Common Service Centers, CSC list, find CSCs, Common Service Center locations{% endblock meta_keywords %}
+{% block meta_description %}"List of Common Service Centres (CSC) in India"{% endblock meta_description %}
 
-{% block meta_canonical %}https://{{request.get_host}}{{request.path}}{% endblock meta_canonical %}
+{% block meta_keywords %}"CSC Centers in India, Common Service Centres, List of CSC Centers, Find CSC Centers"{% endblock meta_keywords %}
 
-{% block title_prefix %} CSC Centers {% endblock title_prefix %}
+{% block og_title_prefix %}CSC Centers{% endblock og_title_prefix %}
+
+{% block og_description %}"List of Common Service Centres (CSC) in India"{% endblock og_description %}
 
 {% block schema_markup %}
 <script type="application/ld+json">
@@ -18,8 +18,8 @@
     "url": "https://cscindia.info",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://{{request.get_host}}{{request.path}}?state={state_id}&district={district_id}&block={block_id}",
-      "query-input": "required name=state_id, district_id, block_id"
+      "target": "https://{{request.get_host}}{{request.path}}/csc_centers/?state={state_id}&district={district_id}&block={block_id}",
+      "query-input": "required name=search_term_string"
     }
   }
 </script>
@@ -29,27 +29,26 @@
     "@context": "http://schema.org",
     "@type": "WebPage",
     "mainEntity": {
-      "@type": "CreativeWork",
-      "name": "Keyphrases",
-      "about": [
+    "@type": "CreativeWork",
+    "name": "Keyphrases",
+    "about": [
       {
-        "@type": "Thing",
-        "name": "Common Service Center"
+      "@type": "Thing",
+      "name": "CSC Centers in India"
       },
       {
-        "@type": "Thing",
-        "name": "CSC services"
+      "@type": "Thing",
+      "name": "Common Service Centres"
       },
       {
-        "@type": "Thing",
-        "name": "CSC locations"
+      "@type": "Thing",
+      "name": "List of CSC Centers"
       },
       {
-        "@type": "Thing",
-        "name": "CSC contact information"
-      },
-        // Add more keywords as needed
-      ]
+      "@type": "Thing",
+      "name": "Find CSC Centers"
+      }
+    ]
     }
   }
 </script>
@@ -60,25 +59,25 @@
   "@type": "CollectionPage",
   "name": "Tags Page",
   "description": "A page listing various tags for categorizing content.",
-  "url": "https://{{request.get_host}}/tags",
+  "url": "https://{{request.get_host}}/services",
   "mainEntity": {
   "@type": "ItemList",
   "itemListElement": [
-  {% for service in services|slice:':4' %}
-  {
+  {% for service in services %}
+  {				
   "@type": "ListItem",
   "position": {{forloop.counter}},
   "url": "https://{{request.get_host}}/tags/{{service.slug}}",
   "name": "{{service.name}}"
   },
-  {% endfor %}
+  {% endfor %}			
   // Add more tags as needed
   ]
   }
   }
   </script>
 
-  <script type="application/ld+json">
+  {% comment %} <script type="application/ld+json">
     {
       "@context": "http://schema.org",
       "@type": "ItemList",
@@ -91,22 +90,21 @@
             "@type": "Organization",
             "name": "{{center.name}}",
             "url": "https://{{request.get_host}}{{center.get_absolute_url}}",
-            "logo": "https://{{request.get_host}}{{center.get_absolute_url}}{{center.logo.name}}",
-            "description": "{{center.description}}"
+            "logo": "https://{{request.get_host}}{{center.logo.url}}",
+            "description": "{{center.name}} provides top-notch government registration services to individuals and businesses."
           }
         },
       {% endfor %}
         // Add more companies as needed
       ]
     }
-    </script>
+    </script> {% endcomment %}
 
     <script type="application/ld+json">
       {
         "@context": "http://schema.org",
         "@type": "ItemList",
         "itemListElement": [
-        {% for center in centers|slice:':4' %}
           {
             "@type": "ListItem",
             "position": {{forloop.counter}},
@@ -114,17 +112,16 @@
               "@type": "Service",
               "provider": {
                 "@type": "Organization",
-                "name": "{{center.name}}",
-                "url": "https://{{request.get_host}}{{center.get_absolute_url}}",
-                "logo": "https://{{request.get_host}}{{center.get_absolute_url}}{{center.logo.name}}",
+                "name": "CSC Locator",
+                "url": "https://{{request.get_host}}",
+                "logo": "https://{{request.get_host}}{% static 'images/logo.png' %}",
               },
-              {% for service in center.services.all|slice:':1' %}
+              {% for service in services %}
               "name": "{{service.name}}",
-              "description": "{{service.description}}"
+              "description": "Access fast and reliable {{service.first_name}} at your nearest Common Service Center. Get expert assistance and hassle-free solutions tailored to your needs."
               {% endfor %}
             }
           },
-          {% endfor %}
           // Add more products and services provided by companies as needed
         ]
       }
@@ -296,7 +293,7 @@
         {% endif %}
         {% for center in centers %}
         <!-- Listing Item -->
-        <div class="col-lg-4 col-md-6 center-items">
+        <div class="col-lg-4 col-md-6 row-items" data-name="{{center.name}}" data-slug="{{center.slug}}" data-image="{% if center.logo %}{{center.logo.url}}{% endif %}">
           <a
             href="{{center.get_absolute_url}}"
             class="listing-item-container compact"
@@ -388,7 +385,7 @@
           }
 
           response.centers.forEach(center => {
-            let html = `<div class="col-lg-4 col-md-6 center-items">
+            let html = `<div class="col-lg-4 col-md-6 row-items">
                           <a
                             href="listings-single-page.html"
                             class="listing-item-container compact"
@@ -427,7 +424,7 @@
     function paginator () {
       let itemsPerPage = 9;
       let currentPage = 1;
-      let totalItems = $('.center-items').length;
+      let totalItems = $('.row-items').length;
       let totalPages = Math.ceil(totalItems / itemsPerPage);
 
       $('.prev-page').hide();      
@@ -481,8 +478,8 @@
       paginationBtnVisibility();
 
       function renderPage(page) {
-          $('.center-items').hide();
-          $('.center-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
+          $('.row-items').hide();
+          $('.row-items').slice((page - 1) * itemsPerPage, page * itemsPerPage).show();
           $('#pagination a').removeClass('active');
           $('#pagination a').eq(page).addClass('active');
           $('.prev-page').toggleClass('disabled', page === 1);
@@ -565,6 +562,66 @@
       pincodeSelected();
     };
 
+
+
+    // Generate schema for centers on the current page
+    // Remove any existing schema script
+    function removeExistingSchema() {
+        const centerSchemaScript = document.getElementById('center-schema');
+        if (centerSchemaScript) {
+          centerSchemaScript.remove();
+        }
+      }
+
+	  function generateSchema() {
+
+      // Collect the centers currently visible in the #list-centers container
+      const centers = document.querySelectorAll('.row-items');
+      const centerList = [];
+    
+      centers.forEach((center, index) => {
+        // Check if the center is visible
+        if (getComputedStyle(center).display !== 'none') {
+          const centerData = {
+            "@type": "ListItem",
+            "position": centerList.length + 1,
+            "item": {
+              "@type": "Organization",
+              "name": center.getAttribute('data-name'),
+              "url": `https://{{request.get_host}}/csc_center/${center.getAttribute('data-slug')}`,
+              "logo": `https://{{request.get_host}}/${center.getAttribute('data-image')}`,
+              "description": `${center.getAttribute('data-name')} provides top-notch government registration services to individuals and businesses.`
+            }
+          };
+          centerList.push(centerData);
+        }
+      });
+
+      // Create the JSON-LD object
+      const schemaData = {
+        "@context": "http://schema.org",
+        "@type": "ItemList",
+        "itemListElement": centerList
+      };
+  
+      removeExistingSchema();
+    
+        // Inject new JSON-LD schema
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.id = 'center-schema';
+        script.textContent = JSON.stringify(schemaData);
+        document.head.appendChild(script);
+      }
+  
+      // Call the function when the page loads or when pagination is applied
+      generateSchema();
+      
+      // Optional: Hook this function to pagination changes if applicable
+      $(document).on('click', '.next-page, .prev-page, .upcoming-page, .earlier-page', function() {
+        removeExistingSchema();
+        generateSchema();
+      });
 
   })
 </script>

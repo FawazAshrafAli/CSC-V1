@@ -21,7 +21,7 @@
 	  "url": "https://cscindia.info",
 	  "potentialAction": {
 		"@type": "SearchAction",
-		"target": "https://cscindia.info/?state={{state}}&district={{district}}&block={{block}}&pincode={{pincode}}&from=googlesl",
+		"target": "https://{{request.get_host}}{{request.path}}/csc_centers/?state={{state}}&district={{district}}&block={{block}}&pincode={{pincode}}&from=googlesl",
 		"query-input": "required name=search_term_string"
 	  }
 	}
@@ -94,7 +94,8 @@
 			]
 			}
 			}
-			</script>
+		</script>
+
 			<script type="application/ld+json">
 				{
 				  "@context": "http://schema.org",
@@ -145,7 +146,7 @@
 				  {% for service in services %}
 					{
 					  "@type": "ListItem",
-					  "position": 2,
+					  "position": {{forloop.counter}},
 					  "item": {
 						"@type": "Service",
 						"provider": {
@@ -155,7 +156,7 @@
 						  "logo": "https://cscindia.info/images/logo.png"
 						},
 						"name": "{{service.name}}",
-						"description": "Explore a variety of services offered by Common Service Centers (CSCs) across different locations. Find the best services tailored to your needs, including digital and government services."
+						"description": "Access fast and reliable {{service.first_name}} at your nearest Common Service Center. Get expert assistance and hassle-free solutions tailored to your needs."
 					  }
 					},
 					{% endfor %}					

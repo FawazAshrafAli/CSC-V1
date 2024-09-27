@@ -274,7 +274,17 @@
   
       paginator();
 
-      // Generate schema for services on the current page
+    // Generate schema for services on the current page
+
+    // Remove any existing schema script
+    function removeExistingSchema() {
+      const serviceSchemaScript = document.getElementById('service-schema');
+      if (serviceSchemaScript) {
+        serviceSchemaScript.remove();
+        console.log('Blog schema removed:', serviceSchemaScript.textContent);
+      }
+    }
+
 	  function generateSchema() {
 
       // Collect the services currently visible in the #list-services container
@@ -309,17 +319,8 @@
         "@type": "ItemList",
         "itemListElement": serviceList
       };
-    
-      // Remove any existing schema script
-      function removeExistingSchema() {
-        const serviceSchemaScript = document.getElementById('service-schema');
-        if (serviceSchemaScript) {
-          serviceSchemaScript.remove();
-          console.log('Blog schema removed:', serviceSchemaScript.textContent);
-        }
-      }
   
-      removeExistingSchema();
+        removeExistingSchema();
     
         // Inject new JSON-LD schema
         const script = document.createElement('script');
@@ -333,7 +334,7 @@
       generateSchema();
       
       // Optional: Hook this function to pagination changes if applicable
-      $(document).on('click', '.next-page, .prev-page', function() {
+      $(document).on('click', '.next-page, .prev-page, .upcoming-page, .earlier-page', function() {
         removeExistingSchema();
         generateSchema();
       });

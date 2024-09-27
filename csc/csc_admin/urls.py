@@ -20,7 +20,7 @@ from .views import (
     CreateProductView, ProductListView, ProductDetailView,
     UpdateProductView, DeleteProductView, 
 
-    ProductEnquiryListView,
+    ProductEnquiryListView, DeleteProductEnquiryView,
     
     get_product_categories, 
     AddProductCategoryView, EditProductCategoryView, DeleteProductCategoryView,
@@ -101,6 +101,7 @@ urlpatterns = [
     path('delete_product/<str:slug>', DeleteProductView.as_view(), name = "delete_product"),
 
     path('product_enquiries/', ProductEnquiryListView.as_view(), name = "product_enquiries"),
+    path('delete_product_enquiry/<str:slug>', DeleteProductEnquiryView.as_view(), name = "delete_product_enquiry"),
 
     path('get_product_categories/', get_product_categories, name = "get_product_categories"),
     path('add_category/', AddProductCategoryView.as_view(), name = "add_category"),

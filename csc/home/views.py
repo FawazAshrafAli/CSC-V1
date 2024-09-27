@@ -83,7 +83,6 @@ class HomePageView(BaseHomeView, TemplateView):
 #                 response_data.update({
 #                     'message': f"No location found for pincode {pincode}"
 #                 })
-#                 print(f"No location found for pincode {pincode}")
 
 #         else:
 #             response_data.update({'message': "No data available for this pincode."})
@@ -97,11 +96,7 @@ def getStates(request):
     with open(r'C:\Users\HP\Downloads\cities.json', 'r') as file:
         data = json.load(file)
 
-        return JsonResponse(data, safe=False)
-        # print(f"Name: {data['name']}")
-        # print(f"Age: {data['age']}")
-        # print(f"City: {data['city']}")
-        # print(f"Skills: {', '.join(data['skills'])}")
+        return JsonResponse(data, safe=False)        
 
 
 
@@ -125,7 +120,6 @@ def getStates(request):
 #                 response_data.update({
 #                     'place': county,
 #                 })
-#                 print(f"The county for the given coordinates is {county}")
 
 #                 if county:
 #                     try:
@@ -139,7 +133,6 @@ def getStates(request):
 #                 response_data.update({
 #                     'message': f"No location found for the given coordinates."
 #                 })
-#                 print(f"No location found for the given coordinates.")
 
 #         else:
 #             response_data.update({'message': "Please provide both latitude and longitude."})
@@ -155,6 +148,7 @@ def getStates(request):
 class SearchCscCenterView(HomePageView, ListView):
     model = CscCenter
     template_name = 'home/list.html'
+    redirect_url = reverse_lazy('home:view')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -202,7 +196,7 @@ class SearchCscCenterView(HomePageView, ListView):
         if block:
             location = block
         elif district:
-           location = district
+            location = district
         elif state:
             location = state
         else:
@@ -217,15 +211,20 @@ class SearchCscCenterView(HomePageView, ListView):
             'blocks': Block.objects.filter(state = state, district = district) if state and district else None,
             })
 
-        return centers, context
+        return centers, context        
     
     def get(self, request, *args, **kwargs):
-        centers, context = self.initial(request, *args, **kwargs)
-        centers = centers.order_by('name')
-        context.update({
-            'centers': centers,            
-            })
-        return render(request, self.template_name, context)
+        try:
+            centers, context = self.initial(request, *args, **kwargs)
+            centers = centers.order_by('name')
+            context.update({
+                'centers': centers,          
+                })
+            return render(request, self.template_name, context)
+        except Exception as e:
+            messages.error(request, "Something went wrong")
+            print("Error: ", e)   
+            return redirect(self.redirect_url)         
 
 
 class FilterAndSortCscCenterView(SearchCscCenterView):
@@ -313,7 +312,6 @@ class CscCenterDetailView(BaseHomeView, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['center'] = self.get_object()
-        print(context['center'])
         return context
 
 

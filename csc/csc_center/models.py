@@ -8,6 +8,7 @@ from django.core.files.base import ContentFile
 import base64
 from django.conf import settings
 from django.utils import timezone
+from datetime import timedelta, datetime
 
 from django.urls import reverse
 
@@ -103,6 +104,7 @@ class CscCenter(models.Model):
     name = models.CharField(max_length=150)
     slug = models.SlugField(unique=True, blank=True, null=True)
     type = models.ForeignKey(CscNameType, on_delete=models.CASCADE)
+    
     keywords = models.ManyToManyField(CscKeyword)
     state = models.ForeignKey(State, on_delete=models.CASCADE)
     district = models.ForeignKey(District, on_delete=models.CASCADE)
@@ -218,6 +220,12 @@ class CscCenter(models.Model):
         return None
     
     @property
+    def get_keywords_as_string(self):
+        if self.keywords and self.get_keywords is not None:            
+            return ", ".join(self.get_keywords)
+        return None
+
+    @property
     def qr_code(self):            
         url = self.get_absolute_url
         protocol = settings.SITE_PROTOCOL  # e.g., 'http' or 'https'
@@ -246,15 +254,15 @@ class CscCenter(models.Model):
         return (today - created_date).days
     
     def generate_qr_code_image(self):
-        url = self.get_absolute_url  # Call the method correctly
-        protocol = settings.SITE_PROTOCOL  # e.g., 'http' or 'https'
-        domain = settings.SITE_DOMAIN     # e.g., 'example.com'
+        url = self.get_absolute_url  
+        protocol = settings.SITE_PROTOCOL 
+        domain = settings.SITE_DOMAIN    
         full_url = f"{protocol}://{domain}{url}"
 
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=10,  # Adjust for higher resolution
+            box_size=10, 
             border=4,
         )
         qr.add_data(full_url)
@@ -263,11 +271,10 @@ class CscCenter(models.Model):
         img = qr.make_image(fill_color="black", back_color="white")
         buffer = BytesIO()
         img.save(buffer, format='PNG')
-        buffer.seek(0)  # Ensure the buffer is at the beginning
+        buffer.seek(0)
 
-        # Save the image to the model's ImageField
-        filename = f'qr_code_{self.pk}.png'  # Use self.pk or other unique identifier
-        self.qr_code_image.save(filename, ContentFile(buffer.read()), save=False)    
+        filename = f'qr_code_{self.pk}.png'
+        self.qr_code_image.save(filename, ContentFile(buffer.read()), save=False)
 
     class Meta:
         db_table = 'csc_center'

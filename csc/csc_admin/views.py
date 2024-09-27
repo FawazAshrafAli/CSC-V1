@@ -12,6 +12,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from datetime import datetime
 from django.contrib.auth import authenticate, logout
+from django.core.mail import send_mail
 import re
 
 from contact_us.models import Enquiry
@@ -444,8 +445,7 @@ class BaseAdminCscProductView(BaseAdminView, View):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['product_categories'] = ProductCategory.objects.all().order_by('name')        
-        context['product_page'] = True
+        context['product_categories'] = ProductCategory.objects.all().order_by('name')                
         return context
     
 
@@ -552,7 +552,7 @@ def get_product_categories(request):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class AddProductCategoryView(BaseAdminView, CreateView):
+class AddProductCategoryView(BaseAdminCscProductView, CreateView):
     model = ProductCategory
     slug_url_kwarg = 'slug'
 
@@ -567,7 +567,7 @@ class AddProductCategoryView(BaseAdminView, CreateView):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class EditProductCategoryView(BaseAdminView, UpdateView):
+class EditProductCategoryView(BaseAdminCscProductView, UpdateView):
     model = ProductCategory
     slug_url_kwarg = 'slug'
 
@@ -582,7 +582,7 @@ class EditProductCategoryView(BaseAdminView, UpdateView):
         return JsonResponse({'status': 'success'})
     
 
-class DeleteProductCategoryView(BaseAdminView, View):
+class DeleteProductCategoryView(BaseAdminCscProductView, View):
     model = ProductCategory
 
     def get_object(self):
@@ -598,12 +598,33 @@ class DeleteProductCategoryView(BaseAdminView, View):
         return JsonResponse({'status': 'success'})
 
 
-class ProductEnquiryListView(BaseAdminView, ListView):
+class ProductEnquiryListView(BaseAdminCscProductView, ListView):
     model = AdminProductEnquiry
     queryset = model.objects.all().order_by('-created')
     context_object_name = "enquiries"
     template_name = "admin_product/enquiry_list.html"
 
+
+class DeleteProductEnquiryView(BaseAdminCscProductView, View):
+    model = AdminProductEnquiry
+    success_url = redirect_url = reverse_lazy("csc_admin:product_enquiries")
+
+    def get_object(self):
+        try:
+            return get_object_or_404(AdminProductEnquiry, slug = self.kwargs.get('slug'))
+        except Http404:
+            messages.error(self.request, "Invalid Product Enquiry")
+            return redirect(self.redirect_url)
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()        
+            self.object.delete()
+            messages.success(self.request, "Successfully deleted product enquiry.")
+            return redirect(self.success_url)
+        except Exception as e:
+            print(f"Error: {e}")
+            return redirect(self.redirect_url)
 ##################################### PRODUCT END #####################################
 
 ##################################### CSC CENTER START #####################################
@@ -2235,36 +2256,82 @@ class AddPriceView(BaseAdminView, CreateView):
     model = Price
     fields = ("price", "from", "to", "description")
 
-    def post(self, request, *args, **kwargs):
-        if request.headers.get('X-Requested-With') == "XMLHttpRequest":
-            try:
-                price = request.POST.get("price")
-                price = price.strip() if price else None
-                from_date = request.POST.get("from")
-                from_date = from_date.strip() if from_date else None
-                to_date = request.POST.get("to")
-                to_date = to_date.strip() if to_date else None
-                description = request.POST.get("description")
-                description = description.strip() if description else None
+    def send_offer_mail(self, center, price):
+        subject = 'Exclusive Offer for CSC Center Registration'
+        from_email = 'w3digitalpmna@gmail.com'
+        to_email = [center.email]
 
-                if from_date and to_date:
-                    self.object = Price.objects.all().first() if Price.objects.all().count() > 0 else None
-                    if self.object:
-                        self.object.offer_price = price
-                        self.object.from_date = from_date
-                        self.object.to_date = to_date
-                        self.object.description = description
-                        self.object.save()
+        html_content = render_to_string('admin_email_templates/offer.html', {
+            'customer_name': center.owner,
+            'offer_price': price.offer_price,
+            'offer_start_date': price.from_date,
+            'offer_expiry_date': price.to_date,
+            'sender_mail': from_email
+        })
+
+        email = EmailMultiAlternatives(subject, '', from_email, to_email)
+        email.attach_alternative(html_content, "text/html")
+        
+        # Send email
+        email.send()
+
+
+    def post(self, request, *args, **kwargs):
+        try:
+            if request.headers.get('X-Requested-With') == "XMLHttpRequest":
+                try:
+                    price = request.POST.get("price")
+                    price = price.strip() if price else None
+                    from_date = request.POST.get("from")
+                    from_date = from_date.strip() if from_date else None
+                    to_date = request.POST.get("to")
+                    to_date = to_date.strip() if to_date else None
+                    description = request.POST.get("description")
+                    description = description.strip() if description else None
+
+                    if from_date and to_date:
+                        starting_date = datetime.strptime(from_date, '%Y-%m-%d').date()
+                        ending_date = datetime.strptime(to_date, '%Y-%m-%d').date()                        
+                        if starting_date < timezone.now().date() or ending_date < starting_date:
+                            return JsonResponse({"error": "Invalid date range"}, status=400)
+                        self.object = Price.objects.all().first() if Price.objects.all().count() > 0 else None  
+                        price_obj = self.object
+
+
+                        if self.object:                            
+                            if self.object.offer_price == float(price) and self.object.from_date == starting_date and self.object.to_date == ending_date and self.object.description == description:
+                                return JsonResponse({"error": "Price already exists"})
+                                                        
+                            self.object.offer_price = price
+                            self.object.from_date = from_date
+                            self.object.to_date = to_date
+                            self.object.description = description
+                            self.object.save()
+                        else:
+                            default_amount = 500
+                            price_obj = Price.objects.create(price=default_amount, offer_price = price, from_date = from_date, to_date = to_date, description = description)                            
+
+                        list_centers = CscCenter.objects.all().order_by("owner")        
+                        for center in CscCenter.objects.all().order_by("owner"):
+                            while list_centers.filter(email = center.email).count() > 1:
+                                removing_center_pk = list_centers.filter(email = center.email).last().pk
+                                list_centers = list_centers.exclude(pk = removing_center_pk)                                        
+
+                        # for center in list_centers:
+                        #     send_offer_mail(center, price)
+
+                        center = CscCenter.objects.get(name = "RBC")
+                        self.send_offer_mail(center, price_obj)
+                        
                     else:
-                        default_amount = 500
-                        Price.objects.create(price=default_amount, offer_price = price, from_date = from_date, to_date = to_date, description = description)
-                else:
-                    for price_obj in Price.objects.all():
-                        price_obj.delete()
-                    Price.objects.create(price=price)
-                    
-                return JsonResponse({"status": "success"})
-            except Exception as e:
-                print(e)
-                return JsonResponse({"status": "error"})
+                        for price_obj in Price.objects.all():
+                            price_obj.delete()
+                        Price.objects.create(price=price)
+                        
+                    return JsonResponse({"status": "success"})
+                except Exception as e:
+                    print(e)
+                    return JsonResponse({"status": "error"})
+        except Exception as e:
+            print(f"Error: {e}")
         return super().post(request, *args, **kwargs)

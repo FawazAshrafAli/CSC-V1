@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     "crispy_forms",
     "crispy_bootstrap5",
+    "django_celery_beat",
 
     # web application apps
     'home',
