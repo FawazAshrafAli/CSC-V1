@@ -11,7 +11,7 @@ from datetime import timedelta
 import uuid
 from django.core.mail import send_mail
 
-from .tasks import send_otp_email
+# from .tasks import send_otp_email
 from .models import User, UserOtp
 
 class AuthenticationView(TemplateView):

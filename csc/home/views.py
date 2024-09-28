@@ -18,6 +18,10 @@ from products.models import Product, ProductEnquiry
 from faq.models import Faq
 
 
+
+from csc_center.tasks import send_test_email
+
+
 class Error404(TemplateView):
     template_name = "error404.html"
 

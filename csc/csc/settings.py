@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 from django.contrib import messages
+from celery.schedules import crontab
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -141,7 +143,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -211,13 +213,32 @@ CKEDITOR_CONFIGS = {
 AUTH_USER_MODEL = 'authentication.User'
 
 # Celery configuration
-CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Redis as a broker
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Replace with your Redis URL
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'  # Optional, stores task results
+CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Asia/Kolkata'
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_TIMEZONE = 'Asia/Kolkata'
+
+CELERY_TASK_TIME_LIMIT = 600
+
+
+# CELERY BEAT SCHEDULER
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+CELERY_BEAT_SCHEDULE = {
+    'send_test_email_every_30_seconds': {
+        'task': 'csc_center.tasks.send_test_email',
+        # 'schedule': timedelta(seconds=30),  # Runs every 30 seconds
+        'schedule': crontab(hour=15, minute=31), 
+    },
+    'check_csc_center_validity': {
+        'task': 'csc_center.tasks.check_validty',
+        'schedule': crontab(hour=17, minute=27), 
+    },
+
+}
 
 
 # Email Response
@@ -228,8 +249,8 @@ EMAIL_USE_TLS = True  # Use TLS (True/False)
 EMAIL_HOST_USER = 'w3digitalpmna@gmail.com'  # Replace with your email
 EMAIL_HOST_PASSWORD = 'kznq nfik tmpc fqlj'  # Replace with your email password
 
-# CELERY BEAT SCHEDULER
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+
 
 #Logging
 LOGGING = {
